@@ -198,3 +198,4 @@ def create_cube(
 
     return geom
 
+# TODO: intersections
