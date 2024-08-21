@@ -26,6 +26,20 @@ class ContextShowBase(ShowBase):
             )
         )
         
+    def run(self):
+        self.log(
+            "---{} run(), at {}---".format(
+                self, datetime.now()
+            )
+        )
+        super().run()
+        
     def log(self, s:str):
         print(s)
+        
+    def __repr__(self):
+        if hasattr(self, "name"):
+            return self.name
+        else:
+            return super().__repr__()
         
