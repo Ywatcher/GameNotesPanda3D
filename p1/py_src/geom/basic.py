@@ -44,16 +44,26 @@ def uv_curve_surface(
     prim = GeomTriangles(geom_type)
     for row in range(u_size - (not is_u_loop)):
         for col in range(v_size - (not is_v_loop)):
-            prim.addVertices(
-                tup2cnt(vertex_size, row, col),
-                tup2cnt(vertex_size, row+1, col),
-                tup2cnt(vertex_size, row, col+1)               
-            )
+            # prim.addVertices(
+            #     tup2cnt(vertex_size, row, col),
+            #     tup2cnt(vertex_size, row+1, col),
+            #     tup2cnt(vertex_size, row, col+1)               
+            # )
             prim.addVertices(
                 tup2cnt(vertex_size, row+1, col),
                 tup2cnt(vertex_size, row, col+1),
                 tup2cnt(vertex_size, row+1, col+1)
             )
+            prim.addVertices(
+                tup2cnt(vertex_size, row+1, col),
+                tup2cnt(vertex_size, row, col),
+                tup2cnt(vertex_size, row, col+1)               
+            )
+            # prim.addVertices(
+            #     tup2cnt(vertex_size, row, col+1),
+            #     tup2cnt(vertex_size, row+1, col),
+            #     tup2cnt(vertex_size, row+1, col+1)
+            # )
     geom = Geom(vdata)
     geom.addPrimitive(prim)  
     return geom
@@ -112,8 +122,8 @@ def create_sphere(
     geom = uv_curve_surface(
         name=name_sphere,
         coord_mat=vertex_coord_xyz,
-        is_u_loop=False, # for lat: not loop
-        is_v_loop=True,
+        is_u_loop=True,
+        is_v_loop=False, 
         geom_type = geom_type
     )
     
