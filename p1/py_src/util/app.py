@@ -4,6 +4,8 @@ from direct.showbase.ShowBase import ShowBase
 
 
 class ContextShowBase(ShowBase):
+    # use context management to ensure the app
+    # terminates correctly
     
     # @classmethod
     def remove_all_task(self):
@@ -43,3 +45,6 @@ class ContextShowBase(ShowBase):
         else:
             return super().__repr__()
         
+        
+class ControlShowBase(ContextShowBase):
+    pass
