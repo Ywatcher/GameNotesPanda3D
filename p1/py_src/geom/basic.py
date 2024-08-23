@@ -129,16 +129,22 @@ def create_sphere(
     
     return geom
 
-def create_cube_node(
+def create_cube_node():
+    pass
+
+def create_cube():
+    pass
+
+def create_colored_cube_node(
     name:str,
     geom_type: GeomEnums = Geom.UH_static, vformat=format_
 ) -> GeomNode:
     node = GeomNode("CbNd."+name)
-    geom = create_cube(name, geom_type, vformat)
+    geom = create_colored_cube(name, geom_type, vformat)
     node.addGeom(geom)
     return node
 
-def create_cube(
+def create_colored_cube(
     name:str,  #TODO: name_postfix
     geom_type: GeomEnums = Geom.UH_static, vformat=format_
 ) -> Geom:

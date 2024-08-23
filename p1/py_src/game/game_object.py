@@ -4,7 +4,7 @@ from panda3d.core import NodePath
 
 class GameObject:
     nodePath: NodePath
-    geomNodePath: NodePath
+    geomNodePath: NodePath # FIXME: different NodePath for different resolution
     childrenObjects: List["GameObject"]
     parent: Union["GameObject", NodePath]
 
@@ -26,4 +26,15 @@ class GameObject:
             self.parent = other
         else:
             raise NotImplementedError
-
+            
+            
+    def setPos(self, pos):
+        pass
+    
+    def rotate(self, mat):
+        # TODO: use matrix for rotation, torch.Tensor
+        pass
+    
+    def setScale(self, scale):
+        pass
+            
