@@ -1,7 +1,7 @@
 import torch
 from numpy import cos, pi, sin
 import numpy as np
-from py_src.util.indexing import loop_bound_idx, tup2cnt
+from util.indexing import loop_bound_idx, tup2cnt
 
 
 from panda3d.core import (

@@ -1,5 +1,5 @@
 from direct.showbase.ShowBase import ShowBase
-from py_src.util.app import ContextShowBase
+from util.app import ContextShowBase
 from direct.task import Task
 from panda3d.core import (
     Geom,
@@ -12,7 +12,7 @@ from panda3d.core import (
 )
 import numpy as np
 import torch
-from py_src.geom.basic import create_cube_node, create_sphere_node,uv_curve_surface
+from geom.basic import create_cube_node, create_sphere_node,uv_curve_surface
 import builtins
 
 

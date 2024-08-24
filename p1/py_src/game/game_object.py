@@ -1,8 +1,9 @@
 from typing import List, Union
 from panda3d.core import NodePath
+from util.log import Loggable
 
 
-class GameObject:
+class GameObject(Loggable):
     nodePath: NodePath
     geomNodePath: NodePath # FIXME: different NodePath for different resolution
     childrenObjects: List["GameObject"]
@@ -38,3 +39,11 @@ class GameObject:
     def setScale(self, scale):
         pass
             
+
+class ControlledObject(GameObject):
+    def register_controller(self, controller):
+        self.controller = controller
+        # TODO: T typing
+        pass
+    
+    

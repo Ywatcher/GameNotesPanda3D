@@ -1,9 +1,10 @@
 # import datetime
 from datetime import datetime
 from direct.showbase.ShowBase import ShowBase
+from util.log import Loggable
 
 
-class ContextShowBase(ShowBase):
+class ContextShowBase(ShowBase, Loggable):
     # use context management to ensure the app
     # terminates correctly
     
