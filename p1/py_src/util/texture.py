@@ -1,11 +1,90 @@
 import numpy as np
 from PIL import Image
 from typing import Tuple
+from panda3d.core import PNMImage
 
 # TODO： colors
 # TODO: put this outside util
 
-def create_checkerboard_(size:Tuple[int,int], num_squares) -> Image.Image:
+
+def np2pnm(arr: np.ndarray) -> PNMImage:
+    # create PNMImage object
+    if len(arr.shape) == 3:
+        # if arr.shape[2] == 3:
+        #     # 3 rgb channels
+            
+        # coloured image
+        assert arr.shape[2] == 3 \
+            or arr.shape[2] == 4, \
+            f"must have three or four colour channels i.e. shape[2]==3or4, got arr shape:{arr.shape}" 
+        # FIXME: case when there is alpha
+        if arr.shape[2] == 4:
+            raise NotImplementedError
+        pnm_image = PNMImage(arr.shape[1], arr.shape[0], 3)  # FIXME
+    else:
+        assert len(arr.shape) == 2, f"arr expected to have 2 or 3 axis, got shape:{arr.shape}"
+        pnm_image = PNMImage(arr.shape[1], arr.shape[0])
+    # fill array into PNMImage
+    pnm_image.setXelVal(arr.flatten())
+    return pnm_image
+
+# def npm2np
+# def npm2pil
+
+
+# example textures --------------
+## checkerboards
+
+
+def create_grey_checkerboard(
+    size:Tuple[int,int],
+    square_size:int,
+    color1:int=0,
+    color2:int=255
+) -> np.ndarray:
+    # TODO: assertions
+    
+    # size and square_size must be int for indexing
+    size = (int(size[0]),int(size[1]))
+    square_size = int(square_size)
+    # calculate row and col len
+    num_squares_x = int(np.ceil(size[0] / square_size))
+    num_squares_y = int(np.ceil(size[1] / square_size))
+    
+    # create an array as checkerboard
+    checkerboard = np.full((size[1], size[0]), color1, dtype=np.uint8)
+    # fill checkerboard grids
+    for y in range(num_squares_y):
+        for x in range(num_squares_x):
+            if (x + y) % 2 == 0:
+                checkerboard[
+                    y*square_size:(y+1)*square_size, 
+                    x*square_size:(x+1)*square_size
+                ] = color2
+    return checkerboard
+
+
+def create_color_checkerboard(size, num_squares):
+    # FIXME
+    square_size = size[0] // num_squares
+    checkerboard = np.zeros((size[1], size[0], 3), dtype=np.uint8)
+    
+    for y in range(num_squares):
+        for x in range(num_squares):
+            color = [255, 255, 255] if (x + y) % 2 == 0 else [0, 0, 0]
+            checkerboard[y*square_size:(y+1)*square_size, x*square_size:(x+1)*square_size] = color
+    
+    return checkerboard
+
+
+    
+    
+# TODO: torch2pnm
+
+
+# --------------------------------------------------------
+
+def create_checkerboard_PIL_(size:Tuple[int,int], num_squares) -> Image.Image:
     # size 是图像的尺寸 (width, height)
     # num_squares 是每行和每列的方格数量
 
@@ -26,7 +105,7 @@ def create_checkerboard_(size:Tuple[int,int], num_squares) -> Image.Image:
     
     return image
 
-def create_checkerboard(size:Tuple[int,int], square_size:int) -> Image.Image:
+def create_checkerboard_PIL(size:Tuple[int,int], square_size:int) -> Image.Image:
     size = (int(size[0]),int(size[1]))
     square_size = int(square_size)
     # size 是图像的尺寸 (width, height)
