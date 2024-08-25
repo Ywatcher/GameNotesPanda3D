@@ -1,4 +1,5 @@
 # from panda3d.core import PointLight, DirectionalLight
+import traceback
 from direct.task import Task
 import numpy as np
 import torch

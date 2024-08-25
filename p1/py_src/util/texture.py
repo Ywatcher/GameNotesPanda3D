@@ -37,6 +37,7 @@ def np2texture(
     format_:int=None,
     name:str=None
 ) -> Texture:
+    # TODO: optimize texture t
     h = arr.shape[1]
     w = arr.shape[0]
     # FIMXE: autodetect format
