@@ -25,6 +25,10 @@ from abc import ABC
 from util.log import Loggable
 
 
+# TODO: 
+# implement a PlayerController with InputState
+from direct.showbase.InputStateGlobal import inputState
+
 class PlayerController(DirectObject.DirectObject, Loggable):
     # another way is to use dict
     def __init__(self):
