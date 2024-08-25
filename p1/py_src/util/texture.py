@@ -43,6 +43,7 @@ def np2texture(
     if format_ == Texture.F_rgb:
         assert len(arr.shape) == 3 \
             and arr.shape[2] == 3
+        # TODO: fix rgb order
     elif format_ == Texture.F_rgba:
         assert len(arr.shape) == 3 \
             and arr.shape[2] == 4
@@ -106,7 +107,11 @@ def create_grey_checkerboard(
     return checkerboard
 
 
-def create_color_checkerboard(size, square_size):
+def create_color_checkerboard(
+    size, square_size,
+    color1 = [0,0,0],
+    color2 = [255,255,255]
+):
     # FIXME
     size = (int(size[0]),int(size[1]))
     square_size = int(square_size)
@@ -117,7 +122,7 @@ def create_color_checkerboard(size, square_size):
     
     for y in range(num_squares_y):
         for x in range(num_squares_x):
-            color = [255, 255, 255] if (x + y) % 2 == 0 else [0, 0, 0]
+            color = color2 if (x + y) % 2 == 0 else color1
             checkerboard[y*square_size:(y+1)*square_size, x*square_size:(x+1)*square_size] = color
     
     return checkerboard
