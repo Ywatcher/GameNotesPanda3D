@@ -1,5 +1,5 @@
 from typing import List, Union
-from panda3d.core import NodePath
+from panda3d.core import NodePath, LODNode
 from util.log import Loggable
 
 
@@ -37,6 +37,9 @@ class GameObject(Loggable):
         pass
     
     def setScale(self, scale):
+        pass
+    
+    def lod(self, dist) -> LODNode:
         pass
             
 
