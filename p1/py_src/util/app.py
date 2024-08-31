@@ -91,7 +91,7 @@ class ControlShowBase(ContextShowBase):
         self.accept('z', self.toggle_camera)
         self.accept("escape", self.cursor_out)
         self.accept("b", self.cursor_in)  # FIXME
-        self.accept('control-w',self.userExit)
+        self.accept('control-w', self.userExit)
         
         self.taskMgr.add(self.update_camera, "update_camera_task")
         self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
@@ -134,8 +134,8 @@ class ControlShowBase(ContextShowBase):
         self.prev_mouse_y = window_center_y
         
     def toggle_camera(self):
-        self.camera.setPos(*self.default_cam_pos)
-        self.camera.setHpr(0, 0, 0)
+        self.display_camera.setPos(*self.default_cam_pos)
+        self.display_camera.setHpr(0, 0, 0)
 
     def update_camera(self, task):
         """每帧更新摄像机的方向，使其跟随鼠标的移动"""
@@ -149,12 +149,12 @@ class ControlShowBase(ContextShowBase):
             delta_y = mouse_y - self.prev_mouse_y
 
             # 调整摄像机的水平旋转和俯仰角度
-            camera_h = self.camera.getH() - delta_x * 0.1
-            camera_p = self.camera.getP() - delta_y * 0.1
+            camera_h = self.display_camera.getH() - delta_x * 0.1
+            camera_p = self.display_camera.getP() - delta_y * 0.1
 
             # 设置新的摄像机角度
-            self.camera.setH(camera_h)
-            self.camera.setP(camera_p)
+            self.display_camera.setH(camera_h)
+            self.display_camera.setP(camera_p)
 
             # 将鼠标指针重置到窗口的中心
             self.center_mouse()
