@@ -113,5 +113,6 @@ class PlayerCamController(CameraController, PlayerController):
             'a': self.call_move_left,
             'd': self.call_move_right,
             'lshift': self.call_move_up,
-            'space': self.call_move_down
+            'space': self.call_move_down,
+            'lcontrol': self.call_move_up
         }

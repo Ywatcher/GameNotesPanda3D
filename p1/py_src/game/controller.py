@@ -19,7 +19,7 @@ from panda3d.core import (
      WindowProperties
 )
 from direct.showbase import DirectObject
-from typing import Set, List, Dict,Callable
+from typing import Set, List, Dict,Callable, Union
 from datetime import datetime
 from abc import ABC
 from util.log import Loggable
@@ -44,7 +44,9 @@ class PlayerController(DirectObject.DirectObject, Loggable):
         # TODO: implement
         return True
         
-    def register_key(self, pattern:str, func:Callable[[Task],object]):
+    def register_key(self, pattern:Union[List[str],str], func:Callable[[Task],object]):
+        if isinstance(pattern, list):
+            pattern = self.key_str_sep.join(pattern)
         if not self.is_valid_pattern(pattern):
             self.log(
                 "---`{}` is not a valid pattern, register failed at {}---".format(
@@ -71,10 +73,10 @@ class PlayerController(DirectObject.DirectObject, Loggable):
         # print("down_", self.held_keys)
         
     def key_up(self, button:str):
-        # print(button,"up")
-        # print("up_", self.held_keys)
+        # TODO: remove combined keys
         if button in self.held_keys:
             self.held_keys.remove(button)
+        
         
         
     def has_key(self, button:str) -> bool:
@@ -89,6 +91,7 @@ class PlayerController(DirectObject.DirectObject, Loggable):
     def update(self, task:Task):
         for pattern, func in self.key_maps.items():
             if self.has_keys(pattern.split(self.key_str_sep)):
+                
                 try:
                     func(task)
                 except Exception as e:
@@ -97,5 +100,4 @@ class PlayerController(DirectObject.DirectObject, Loggable):
                     self.log(traceback.format_exc())
                     self.log("-------------------------------------")
         return Task.cont
-
 
