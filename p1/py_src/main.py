@@ -12,7 +12,7 @@ from panda3d.core import (
 )
 import numpy as np
 import torch
-from geom.basic import create_cube_node, create_sphere_node,uv_curve_surface
+from geom.basic import create_cube_node, create_sphere_node, uv_curve_surface
 import builtins
 
 
@@ -21,7 +21,7 @@ class MyApp(ContextShowBase):
         super().__init__()
 
         # cube = create_cube()
-        sphere = create_sphere_node("01",4, 4)
+        sphere = create_sphere_node("01", 4, 4)
         self.render.attachNewNode(sphere)
 
         # Set the camera position
@@ -31,12 +31,13 @@ class MyApp(ContextShowBase):
     def spin_camera_task(self, task):
         angleDegrees = task.time * 60.0
         angleRadians = angleDegrees * (np.pi / 180.0)
-        self.camera.setPos(20 * np.sin(angleRadians), -20 * np.cos(angleRadians), 3)
+        self.camera.setPos(
+            20 * np.sin(angleRadians), -20 * np.cos(angleRadians), 3)
         self.camera.setHpr(angleDegrees, 0, 0)
 
         return Task.cont
-    
-    
+
+
 if __name__ == "__main__":
     import traceback
     try:

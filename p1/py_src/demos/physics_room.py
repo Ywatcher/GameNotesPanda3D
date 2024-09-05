@@ -11,7 +11,6 @@ from panda3d.core import (
     PointLight,
     DirectionalLight,
     CardMaker,
-    
     Texture,
     CardMaker,
     Point2

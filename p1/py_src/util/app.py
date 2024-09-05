@@ -124,6 +124,8 @@ class ControlShowBase(ContextShowBase):
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = False
+        
+    
 
     def center_mouse(self):
         """将鼠标指针重置到窗口的中心"""
