@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from abc import ABC
 from enum import Enum
-from typing import Callable, Union
+from typing import Callable, Dict, Union
 from util.log import Loggable
+
+
 class WinType(Enum):
     PandaWindow = 0
     CmdWindow = 1
+
 
 class AbstractGUI(ABC, Loggable):
 
@@ -13,6 +16,11 @@ class AbstractGUI(ABC, Loggable):
         super().__init__()
         self._manager_start_game:Union[Callable,None] = None
         self._manager_end_game:Union[Callable,None] = None
+        self.commands: Dict[str, Union[Callable, None]] = {
+            "setPos": None,
+            "setCurrObj": None,
+            "ls": None
+        }
 
     @classmethod
     def new_window(cls):
@@ -47,9 +55,8 @@ class AbstractGUI(ABC, Loggable):
             self.log("cannot end game, without end_game hooked")
 
     def startGUI(self):
+        # TODO: multithread
         pass
-
-
 
 
 

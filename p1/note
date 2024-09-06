@@ -1,0 +1,11 @@
+gameobj
+-> agent
+-> control system
+
+control system can be serial
+
+each control system may have its specific ui
+
+gui for player
+
+gui for god

@@ -2,12 +2,15 @@
 from datetime import datetime
 from direct.showbase.ShowBase import ShowBase
 from util.log import Loggable
-from game.camera_controller import CameraController, PlayerCamController
-from game.controller import PlayerController
+from panda3d_game.camera_controller import CameraController, PlayerCamController
+from panda3d_game.controller import PlayerController
 from panda3d.core import (
     WindowProperties,
-    KeyboardButton
+    KeyboardButton,
 )
+from direct.task import Task
+from queue import Queue as PyQueue
+
 from direct.showbase.InputStateGlobal import inputState
 
 
@@ -17,14 +20,23 @@ class ContextShowBase(ShowBase, Loggable):
     def __init__(self):
         super().__init__()
         self.isContextShowBaseInit = True
-    
+        self.to_exit = False
+        self.actionq = PyQueue()
+        # self.taskMgr.add(self.check_exit, "check_exit")
+
     # @classmethod
     def remove_all_task(self):
         pass
-        
+
+
     def __enter__(self):
         return self
-    
+
+    # def check_exit(self, task):
+        # if self.to_exit:
+            # self.userExit()
+        # return Task.cont
+
     def __exit__(self, *args):
         self.remove_all_task()
         self.log(
@@ -38,7 +50,7 @@ class ContextShowBase(ShowBase, Loggable):
                 self, datetime.now()
             )
         )
-        
+
     def run(self):
         self.log(
             "---{} run(), at {}---".format(
@@ -46,29 +58,30 @@ class ContextShowBase(ShowBase, Loggable):
             )
         )
         super().run()
-        
+
     def log(self, s:str):
         print(s)
-        
+
     def __repr__(self):
         if hasattr(self, "name"):
             return self.name
         else:
             return super().__repr__()
-        
-        
-   
-        
-        
+
+
+
+
+
+
 class ControlShowBase(ContextShowBase):
     @property
     def display_camera(self):
         return self.camera
-    
+
     @property
     def rdr_scene(self):
         return self.render
-    
+
     def __init__(self):
         if not hasattr(self, 'isContextShowBaseInit'):
             print("init context showbase")
@@ -92,15 +105,17 @@ class ControlShowBase(ContextShowBase):
         self.accept("escape", self.cursor_out)
         self.accept("b", self.cursor_in)  # FIXME
         self.accept('control-w', self.userExit)
-        
+
         self.taskMgr.add(self.update_camera, "update_camera_task")
         self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
+        self.taskMgr.add(self.handle_actions, "handle_actions")
         # self.taskMgr.add(self.game_controller.update, "update_game_controller")
-        
-    def userExit(self):
-        self.log("exit")
-        super().userExit()
-        
+
+    # def userExit(self):
+        # self.log("exit")
+        # super().userExit()
+        # self.log("exit finish") # FIXME
+
     def cursor_in(self):
         # center the mouse
         self.center_mouse()
@@ -113,7 +128,7 @@ class ControlShowBase(ContextShowBase):
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = True
-        
+
     def cursor_out(self):
         # enable default mouse control
         self.enable_mouse()
@@ -124,8 +139,8 @@ class ControlShowBase(ContextShowBase):
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = False
-        
-    
+
+
 
     def center_mouse(self):
         """将鼠标指针重置到窗口的中心"""
@@ -134,7 +149,7 @@ class ControlShowBase(ContextShowBase):
         self.win.movePointer(0, window_center_x, window_center_y)
         self.prev_mouse_x = window_center_x
         self.prev_mouse_y = window_center_y
-        
+
     def toggle_camera(self):
         self.display_camera.setPos(*self.default_cam_pos)
         self.display_camera.setHpr(0, 0, 0)
@@ -166,3 +181,19 @@ class ControlShowBase(ContextShowBase):
         props = WindowProperties()
         props.setFullscreen(not self.win.isFullscreen())
         self.win.requestProperties(props)
+
+
+    def handle_actions(self, task):
+        # FIXME: handle events
+        if not self.actionq.empty():
+            try:
+                action = self.actionq.get()
+                self.handle_an_action(action)
+            except Exception as e:
+                self.log(str(e))
+        return Task.cont
+
+    def handle_an_action(self, action):
+        # TODO: use dict
+        if action == "quit":
+            self.userExit()

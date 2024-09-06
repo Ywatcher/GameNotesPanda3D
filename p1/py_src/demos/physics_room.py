@@ -2,6 +2,7 @@
 # a camera that can fly
 # from panda3d.core import PointLight, DirectionalLight
 from panda3d.bullet import BulletWorld
+from ui.console import Console
 from util.app import ControlShowBase
 from util.log import Loggable
 from direct.task import Task
@@ -15,8 +16,7 @@ from panda3d.core import (
     CardMaker,
     Point2
 )
-from direct.showbase import DirectObject
-from game.game_object import GameObject
+from panda3d_game.game_object import GameObject
 
 from util.texture import (
     create_color_checkerboard,
@@ -53,8 +53,28 @@ def make_wall_texture(
     return t
 
 
+class PhyscRoomConsole(Console):
+    # print as output
+    def __init__(self, showbase:'PhyscRoom') -> None:
+        super().__init__(name="physics_room", namespace="room")
+        self.showbase = showbase
+        self.command_dict = {
+            "h": (self._help, "print help"),
+            "quit":(self.end_game, "end game")
+        }
+        self._end_interface:Callable = lambda:None
+
+
+    def log(self, s: str, logtype="print"):
+        print(s)
+
+    def end_game(self):
+        # self.showbase.userExit()
+        self.showbase.actionq.put("quit")
+        self._end_interface()
+
 class PhyscRoom(ControlShowBase):
-    
+
     def __init__(self, xb: int, yb: int, zb: int):
         super().__init__()
         self.name = "Physics Room"
@@ -154,7 +174,7 @@ class PhyscRoom(ControlShowBase):
         node_path_sphere_x.setScale(0.2)
         node_path_sphere_y.setScale(0.2)
         node_path_sphere_z.setScale(0.2)
-        
+
         # 每帧更新摄像机
         self.taskMgr.add(self.update, 'updateWorld')
         # 保存鼠标的初始位置
@@ -172,12 +192,87 @@ class PhyscRoom(ControlShowBase):
             self.bullet_world.do_physics(dt)
         return task.cont
 
+from threading import Thread, Lock
 
+# class CMDInterface(
+    # ABC,
+    # Generic[parser_T]
+# ):
+class CMDInterface:
+    def __init__(self, console:Console) -> None:
+        # self.queue = Queue()
+        self.thread = Thread(
+            target=self.listen_input
+        )
+        self.console = console
+        self.lock = Lock()
+        # TODO: a boolean flag to indicate whether the thread
+        # is started
+        self.prompt = "(game prompt)"
+        self.is_end=False
+        # self.console.command_dict.update({
+            # "quit": (self.end_interface, "end game")
+        # })
+        self.console._end_interface = self.end_interface
+
+    def end_interface(self):
+        self.is_end = True
+
+    def listen_input(self):
+        while not self.is_end:
+            self.lock.acquire()
+            prompt = self.prompt
+            self.lock.release()
+            input_str = input(prompt)
+            self.lock.acquire()
+            try:
+                Console.parse(self.console, input_str)
+            except Exception as e:
+                print(e)
+                None
+            self.lock.release()
+            # TODO: to stop
+            # if parsed_input_obj is not None:
+                # to_stop = self.respond(parsed_input_obj)
+                # if to_stop:
+                    # break
+
+    # def respond(self, parsed_input_obj) -> bool:
+        # if parsed_input_obj == MenuAction.quit:
+            # self.queue.put(parsed_input_obj)
+            # return False
+        # else:
+            # self.queue.put(FreddyQuitAction())
+            # return True
+
+    def start(self):
+        self.thread.start()
+
+    def join(self):
+        self.thread.join()
+
+    # def get_input(self):
+        # # TODO use try
+        # if not self.queue.empty():
+            # return self.queue.get(False)
+    def set_prompt(self, s):
+        self.lock.acquire()
+        self.prompt = s
+        self.lock.release()
+
+class InterfacePlaceHolder:
+    def join(self):
+        pass
 if __name__ == "__main__":
     import builtins
     import traceback
+    interface = InterfacePlaceHolder()
     try:
         with PhyscRoom(25, 25, 25) as app:
+            console = PhyscRoomConsole(showbase=app)
+            interface = CMDInterface(console=console)
+            interface.start()
+            # start a thread of app
             app.run()
     except Exception as e:
         print(e)
@@ -185,3 +280,4 @@ if __name__ == "__main__":
     finally:
         if hasattr(builtins, 'base'):
             builtins.base.destroy()
+        interface.join()

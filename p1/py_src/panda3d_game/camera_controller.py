@@ -4,7 +4,7 @@
 from util.log import Loggable
 from direct.task import Task
 
-from game.controller import PlayerController
+from panda3d_game.controller import PlayerController
 
 # controller
 # player controller
