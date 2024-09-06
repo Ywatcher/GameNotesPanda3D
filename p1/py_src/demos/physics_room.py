@@ -2,7 +2,7 @@
 from threading import Thread, Lock
 from panda3d.bullet import BulletWorld
 from ui.console import Console
-from util.app import ControlShowBase
+from panda3d_game.app import ControlShowBase
 from util.log import Loggable
 from direct.task import Task
 from geom.basic import (
@@ -23,14 +23,7 @@ from util.texture import (
 )
 from typing import Set, List, Dict, Callable, Union
 # import gizeh as gz
-
-from enum import Enum
-
-class Events(Enum):
-    GameEndEvent = "game end event"
-    InterfaceEndEvent = "interface end event"
-
-
+from game.events import Events
 def make_wall_texture(
     w, h,
     square_size: float = 1,
@@ -55,36 +48,7 @@ def make_wall_texture(
     return t
 
 
-class PhyscRoomConsole(Console):
-    # print as output
-    def __init__(self, showbase:'PhyscRoom') -> None:
-        super().__init__(name="physics_room", namespace="room")
-        self.showbase = showbase
-        self.command_dict = {
-            "h": (self._help, "print help"),
-            "quit":(self.end_game, "end game")
-        }
-        self._end_interface:Callable = lambda:None
-        self.objects:Dict[str, Union[NodePath, GameObject]]
-        self.messageq = PyQueue()
-        self.output_buffer = PyQueue()
-        self.log_buffer = PyQueue()
-
-    def log(self, s: str, logtype="print"):
-        # TODO: put to buffer
-        print(s)
-
-    def end_game(self):
-        # self.showbase.userExit()
-        # self.showbase.actionq.put("quit")
-        self.messageq.put(Events.GameEndEvent)
-        self.messageq.put(Events.InterfaceEndEvent)
-        # Task.messenger.send(Events.GameEndEvent)
-        # Task.messenger.send(Events.InterfaceEndEvent)
-        # self._end_interface()
-
 class PhyscRoom(ControlShowBase):
-
     def __init__(self, xb: int, yb: int, zb: int):
         super().__init__()
         self.name = "Physics Room"
@@ -192,7 +156,6 @@ class PhyscRoom(ControlShowBase):
         self.prev_mouse_y = 0
         # quit game event
         # TODO: move to control show base
-        self.accept(Events.InterfaceEndEvent, self.userExit)
 
     def pause_switch(self):
         self.paused = not self.paused
@@ -212,6 +175,36 @@ class PhyscRoom(ControlShowBase):
 # ):
 from direct.showbase.DirectObject import DirectObject
 from queue import Queue as PyQueue
+
+class PhyscRoomConsole(Console):
+    # print as output
+    def __init__(self, showbase:'PhyscRoom') -> None:
+        super().__init__(name="physics_room", namespace="room")
+        self.showbase = showbase
+        self.command_dict = {
+            "h": (self._help, "print help"),
+            "quit":(self.end_game, "end game")
+        }
+        self._end_interface:Callable = lambda:None
+        self.objects:Dict[str, Union[NodePath, GameObject]]
+        self.messageq = PyQueue()
+        self.output_buffer = PyQueue()
+        self.log_buffer = PyQueue()
+
+    def log(self, s: str, logtype="print"):
+        # TODO: put to buffer
+        print(s)
+
+    def end_game(self):
+        # self.showbase.userExit()
+        self.showbase.actionq.put(Events.GameEndEvent)
+        # self.messageq.put(Events.GameEndEvent)
+        # self.messageq.put(Events.InterfaceEndEvent)
+        # Task.messenger.send(Events.GameEndEvent)
+        # Task.messenger.send(Events.InterfaceEndEvent)
+        self._end_interface()
+
+
 class CMDInterface(DirectObject):
     def __init__(self, console:Console) -> None:
         super().__init__()
@@ -229,22 +222,22 @@ class CMDInterface(DirectObject):
             # "quit": (self.end_interface, "end game")
         # })
         self.accept(Events.InterfaceEndEvent, self.end_interface)
-        # self.console._end_interface = self.end_interface
+        self.console._end_interface = self.end_interface
 
-    @property
-    def messageq(self):
-        # TODO: self.buffer
-        return self.console.messageq
+    # @property
+    # def messageq(self):
+        # # TODO: self.buffer
+        # return self.console.messageq
 
     def end_interface(self):
         print("end interface")
         self.is_end = True
 
-    def send_messages(self):
-        while not self.messageq.empty():
-            message = self.messageq.get()
-            print(message)
-            Task.messenger.send(message)
+    # def send_messages(self):
+        # while not self.messageq.empty():
+            # message = self.messageq.get()
+            # print(message)
+            # Task.messenger.send(message)
 
     def listen_input(self):
         while not self.is_end:
@@ -258,7 +251,7 @@ class CMDInterface(DirectObject):
             except Exception as e:
                 print(e)
             self.lock.release()
-            self.send_messages()
+            # self.send_messages()
 
     def start(self):
         self.thread.start()

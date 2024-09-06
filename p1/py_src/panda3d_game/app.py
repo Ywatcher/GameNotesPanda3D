@@ -1,6 +1,7 @@
 # import datetime
 from datetime import datetime
 from direct.showbase.ShowBase import ShowBase
+from game.events import Events
 from util.log import Loggable
 from panda3d_game.camera_controller import CameraController, PlayerCamController
 from panda3d_game.controller import PlayerController
@@ -69,10 +70,6 @@ class ContextShowBase(ShowBase, Loggable):
             return super().__repr__()
 
 
-
-
-
-
 class ControlShowBase(ContextShowBase):
     @property
     def display_camera(self):
@@ -105,6 +102,7 @@ class ControlShowBase(ContextShowBase):
         self.accept("escape", self.cursor_out)
         self.accept("b", self.cursor_in)  # FIXME
         self.accept('control-w', self.userExit)
+        self.accept(Events.GameEndEvent, self.userExit)
 
         self.taskMgr.add(self.update_camera, "update_camera_task")
         self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
@@ -188,12 +186,11 @@ class ControlShowBase(ContextShowBase):
         if not self.actionq.empty():
             try:
                 action = self.actionq.get()
-                self.handle_an_action(action)
+                # TODO: use arguments
+                # TODO: log as events
+                # print("action",action)
+                Task.messenger.send(action)
             except Exception as e:
                 self.log(str(e))
         return Task.cont
 
-    def handle_an_action(self, action):
-        # TODO: use dict
-        if action == "quit":
-            self.userExit()
