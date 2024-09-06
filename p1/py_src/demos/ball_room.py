@@ -8,17 +8,7 @@ import torch
 from torch import Tensor
 from geom.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
 from panda3d.core import (
-    Geom,
-    GeomNode,
-    GeomTriangles,
-    GeomVertexData,
-    GeomVertexFormat,
-    GeomVertexWriter,
-    GeomEnums,
     NodePath,
-    PointLight,
-    DirectionalLight,
-    CardMaker,
     WindowProperties
 )
 from direct.gui.OnscreenText import OnscreenText
@@ -34,10 +24,8 @@ from panda3d_game.controller import PlayerController
 # player controller
 # agent controller
 from typing import Set, List, Dict,Callable
-from datetime import datetime
 from abc import ABC
 from panda3d.core import PNMImage, Texture
-from panda3d.core import PTAUchar
 from panda3d.core import CardMaker
 from panda3d.core import Point2
 from panda3d.core import NodePath, Camera, PerspectiveLens
@@ -71,7 +59,7 @@ tmoon.read(os.path.join(res_root, "moon.jpeg"))
 tmoon.setWrapU(Texture.WM_repeat)
 tmoon.setWrapV(Texture.WM_repeat)
 
-class MassedBall(): # not yet inherent GameObject
+class MassedBall(GameObject): # not yet inherent GameObject
     def __init__(
         self,
         name,
@@ -250,6 +238,10 @@ class PhysicsRoomBalls(MultiRegionApp):
         self.planet1.setZ(-4)
         self.planet1.toBulletWorld(self.bullet_world)
         self.gravitational_bodies = [self.planet1, self.planet2]
+        self.objects.update({
+            "planet1": self.planet1,
+            "planet2": self.planet2
+        })
 
         print(self.masses)
         dist = self.get_node_dist(self.gravitational_bodies)
@@ -335,15 +327,15 @@ class PhysicsRoomBalls(MultiRegionApp):
         return super().update(task)
 
 
-
-import builtins
-import traceback
-try:
-    with PhysicsRoomBalls(25,25,25) as app:
-        app.run()
-except Exception as e:
-    print(e)
-    print(traceback.format_exc())
-finally:
-    if hasattr(builtins, 'base'):
-        builtins.base.destroy()
+if __name__ == '__main__':
+    import builtins
+    import traceback
+    try:
+        with PhysicsRoomBalls(25,25,25) as app:
+            app.run()
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())
+    finally:
+        if hasattr(builtins, 'base'):
+            builtins.base.destroy()

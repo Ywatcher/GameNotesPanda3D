@@ -27,26 +27,26 @@ class GameObject(Loggable):
             self.parent = other
         else:
             raise NotImplementedError
-            
-            
+
+
     def setPos(self, pos):
         pass
-    
+
     def rotate(self, mat):
         # TODO: use matrix for rotation, torch.Tensor
         pass
-    
+
     def setScale(self, scale):
         pass
-    
+
     def lod(self, dist) -> LODNode:
         pass
-            
+
 
 class ControlledObject(GameObject):
     def register_controller(self, controller):
         self.controller = controller
         # TODO: T typing
         pass
-    
-    
+
+

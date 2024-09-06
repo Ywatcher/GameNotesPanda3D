@@ -6,15 +6,10 @@ from util.app import ControlShowBase
 from util.log import Loggable
 from direct.task import Task
 from geom.basic import (
-    create_cube_node,
     create_sphere_node,
-    uv_curve_surface,
-    create_colored_cube_node
 )
 from panda3d.core import (
     NodePath,
-    PointLight,
-    DirectionalLight,
     CardMaker,
     Texture,
     CardMaker,
@@ -26,11 +21,14 @@ from util.texture import (
     create_color_checkerboard,
     np2texture
 )
-from typing import Set, List, Dict, Callable
+from typing import Set, List, Dict, Callable, Union
 # import gizeh as gz
-import sympy
-import torch
-from torch import Tensor
+
+from enum import Enum
+
+class Events(Enum):
+    GameEndEvent = "game end event"
+    InterfaceEndEvent = "interface end event"
 
 
 def make_wall_texture(
@@ -67,15 +65,23 @@ class PhyscRoomConsole(Console):
             "quit":(self.end_game, "end game")
         }
         self._end_interface:Callable = lambda:None
-
+        self.objects:Dict[str, Union[NodePath, GameObject]]
+        self.messageq = PyQueue()
+        self.output_buffer = PyQueue()
+        self.log_buffer = PyQueue()
 
     def log(self, s: str, logtype="print"):
+        # TODO: put to buffer
         print(s)
 
     def end_game(self):
         # self.showbase.userExit()
-        self.showbase.actionq.put("quit")
-        self._end_interface()
+        # self.showbase.actionq.put("quit")
+        self.messageq.put(Events.GameEndEvent)
+        self.messageq.put(Events.InterfaceEndEvent)
+        # Task.messenger.send(Events.GameEndEvent)
+        # Task.messenger.send(Events.InterfaceEndEvent)
+        # self._end_interface()
 
 class PhyscRoom(ControlShowBase):
 
@@ -179,11 +185,14 @@ class PhyscRoom(ControlShowBase):
         node_path_sphere_y.setScale(0.2)
         node_path_sphere_z.setScale(0.2)
 
-        # 每帧更新摄像机
+        # update physisc world
         self.taskMgr.add(self.update, 'updateWorld')
-        # 保存鼠标的初始位置
+        # save initial pos for mouse
         self.prev_mouse_x = 0
         self.prev_mouse_y = 0
+        # quit game event
+        # TODO: move to control show base
+        self.accept(Events.InterfaceEndEvent, self.userExit)
 
     def pause_switch(self):
         self.paused = not self.paused
@@ -201,8 +210,11 @@ class PhyscRoom(ControlShowBase):
     # ABC,
     # Generic[parser_T]
 # ):
-class CMDInterface:
+from direct.showbase.DirectObject import DirectObject
+from queue import Queue as PyQueue
+class CMDInterface(DirectObject):
     def __init__(self, console:Console) -> None:
+        super().__init__()
         # self.queue = Queue()
         self.thread = Thread(
             target=self.listen_input
@@ -216,10 +228,23 @@ class CMDInterface:
         # self.console.command_dict.update({
             # "quit": (self.end_interface, "end game")
         # })
-        self.console._end_interface = self.end_interface
+        self.accept(Events.InterfaceEndEvent, self.end_interface)
+        # self.console._end_interface = self.end_interface
+
+    @property
+    def messageq(self):
+        # TODO: self.buffer
+        return self.console.messageq
 
     def end_interface(self):
+        print("end interface")
         self.is_end = True
+
+    def send_messages(self):
+        while not self.messageq.empty():
+            message = self.messageq.get()
+            print(message)
+            Task.messenger.send(message)
 
     def listen_input(self):
         while not self.is_end:
@@ -232,8 +257,8 @@ class CMDInterface:
                 Console.parse(self.console, input_str)
             except Exception as e:
                 print(e)
-                None
             self.lock.release()
+            self.send_messages()
 
     def start(self):
         self.thread.start()

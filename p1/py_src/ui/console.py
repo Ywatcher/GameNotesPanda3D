@@ -1,5 +1,7 @@
 from abc import ABC
 from typing import Callable, Dict, Iterable, List, Optional, Union, Tuple
+
+from direct.showbase.DirectObject import DirectObject
 from util.log import Loggable
 
 # TODO: console log place
