@@ -26,6 +26,8 @@ class Console(ABC, Loggable):
 
     @staticmethod
     def parse(console:"Console", s:str):
+        # TODO: use ; to split commands
+        # TODO: before that, need to deal with return values
         # TODO: kwargs
         fields = s.split()
         if len(fields) == 0:

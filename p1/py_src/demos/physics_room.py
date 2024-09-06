@@ -1,6 +1,7 @@
 # TODO: a room with walls
 from threading import Thread, Lock
 from panda3d.bullet import BulletWorld
+from sympy import arg
 from ui.console import Console
 from panda3d_game.app import ControlShowBase
 from util.log import Loggable
@@ -13,7 +14,8 @@ from panda3d.core import (
     CardMaker,
     Texture,
     CardMaker,
-    Point2
+    Point2,
+    Vec3
 )
 from panda3d_game.game_object import GameObject
 
@@ -22,7 +24,6 @@ from util.texture import (
     np2texture
 )
 from typing import Set, List, Dict, Callable, Union
-# import gizeh as gz
 from game.events import Events
 def make_wall_texture(
     w, h,
@@ -149,6 +150,9 @@ class PhyscRoom(ControlShowBase):
         node_path_sphere_y.setScale(0.2)
         node_path_sphere_z.setScale(0.2)
 
+        # objects to access
+        self.objects: Dict[str, Union[GameObject, NodePath]] = {}
+
         # update physisc world
         self.taskMgr.add(self.update, 'updateWorld')
         # save initial pos for mouse
@@ -168,6 +172,9 @@ class PhyscRoom(ControlShowBase):
             self.bullet_world.do_physics(dt)
         return task.cont
 
+    def setG(self, G_val:float):
+        pass
+
 
 # class CMDInterface(
     # ABC,
@@ -183,25 +190,88 @@ class PhyscRoomConsole(Console):
         self.showbase = showbase
         self.command_dict = {
             "h": (self._help, "print help"),
-            "quit":(self.end_game, "end game")
+            "quit":(self.end_game, "end game"),
+            "ls":(self.lst_objs, "list accessible objects"),
+            "sel": (self.sel_obj, "select objs"),
+            "setv": (self.set_v, "set linear velocity"),
+            "setG":(self.showbase.setG, "set gravity constant"),
+            "p":(self.showbase.pause_switch, "pause or resume")
         }
         self._end_interface:Callable = lambda:None
-        self.objects:Dict[str, Union[NodePath, GameObject]]
+        # self.objects:Dict[str, Union[NodePath, GameObject]]
         self.messageq = PyQueue()
         self.output_buffer = PyQueue()
         self.log_buffer = PyQueue()
+        self.curr_objs = []  # currently selected objs
+
+    @property
+    def objects(self):
+        return self.showbase.objects
 
     def log(self, s: str, logtype="print"):
         # TODO: put to buffer
         print(s)
 
+    # commands
+    def lst_objs(self, *args):
+        self.log(
+            str(self.showbase.objects),
+            "print"
+        )
+
+    def sel_obj(self, *args):
+        # TODO: kwargs, unionmode = True
+        if len(args)>0:
+            objs_selected = [
+                s for s in args if s in self.showbase.objects.keys()
+            ]
+            obj_omitted = [
+                s for s in args if s not in self.showbase.objects.keys()
+            ]
+            if len(objs_selected)>0:
+                self.curr_objs = objs_selected
+                self.log(
+                    "selected objs: {}".format(self.curr_objs)
+                )
+            else:
+                self.log(
+                    "no valid objs found, use dsel [obj] or dsel all "
+                    + "to deselect objects",
+                    "print"
+                )
+                self.log(
+                    "not found in accessible objects: {}".format(obj_omitted),
+                    "print"
+                )
+
+    def set_v(self, *args):
+        # TODO:
+        # add syntax: setv planet1=(1,0,0) planet2=(-1,0,0)
+        try:
+            vx = float(args[0])
+            vy = float(args[1])
+            vz = float(args[2])
+            if len(args)>3:
+                curr_objs = [
+                    s for s in args[3:]
+                    if s in self.showbase.objects
+                ]
+            else:
+                curr_objs = self.curr_objs
+            for s in curr_objs:
+                obj = self.showbase.objects[s]
+                if isinstance(obj, GameObject):
+                    obj.set_linear_velocity(Vec3(vx,vy,vz))
+                else:
+                    raise NotImplementedError
+        except Exception as e:
+            self.log(str(e), "log")
+
+
+
     def end_game(self):
         # self.showbase.userExit()
         self.showbase.actionq.put(Events.GameEndEvent)
-        # self.messageq.put(Events.GameEndEvent)
-        # self.messageq.put(Events.InterfaceEndEvent)
-        # Task.messenger.send(Events.GameEndEvent)
-        # Task.messenger.send(Events.InterfaceEndEvent)
         self._end_interface()
 
 
@@ -221,7 +291,7 @@ class CMDInterface(DirectObject):
         # self.console.command_dict.update({
             # "quit": (self.end_interface, "end game")
         # })
-        self.accept(Events.InterfaceEndEvent, self.end_interface)
+        # self.accept(Events.InterfaceEndEvent, self.end_interface)
         self.console._end_interface = self.end_interface
 
     # @property

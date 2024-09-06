@@ -9,13 +9,14 @@ from torch import Tensor
 from geom.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
 from panda3d.core import (
     NodePath,
-    WindowProperties
+    WindowProperties,
+    Vec3
 )
 from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import TextNode
 from collections import OrderedDict
 
-from util.app import ControlShowBase, ContextShowBase
+from panda3d_game.app import ControlShowBase, ContextShowBase
 from direct.showbase import DirectObject
 from panda3d_game.game_object import GameObject
 from panda3d_game.controller import PlayerController
@@ -29,7 +30,6 @@ from panda3d.core import PNMImage, Texture
 from panda3d.core import CardMaker
 from panda3d.core import Point2
 from panda3d.core import NodePath, Camera, PerspectiveLens
-# import gizeh as gz
 import torch
 
 from demos.physics_room import PhyscRoom, PhyscRoomConsole, CMDInterface
@@ -42,7 +42,6 @@ from panda3d.bullet import (
     BulletPlaneShape,
     BulletRigidBodyNode, BulletSphereShape
 )
-import sympy as sp
 from sympy.physics.units import (
     kilometer, meter,centimeter,
     gram, kilogram, tonne,
@@ -134,6 +133,9 @@ class MassedBall(GameObject): # not yet inherent GameObject
     def setZ(self,*args):
         self.rigid_body_np.setZ(*args)
 
+    def set_linear_velocity(self,v:Vec3):
+        self.rigid_body_node.set_linear_velocity(v)
+
     def apply_force(self, force, pos):
         # print(force, pos)
         self.rigid_body_node.apply_force(LVector3f(*force), LVector3f(*pos))
@@ -192,6 +194,9 @@ class MultiRegionApp(PhyscRoom):
         self.taskMgr.add(self.update_text, "update text")
 
 class PhysicsRoomBalls(MultiRegionApp):
+    def setG(self, G_game):
+        self.G_game = float(G_game)
+
     @property
     def masses(self):
         if hasattr(self, "_masses"):
@@ -243,10 +248,8 @@ class PhysicsRoomBalls(MultiRegionApp):
             "planet2": self.planet2
         })
 
-        print(self.masses)
         dist = self.get_node_dist(self.gravitational_bodies)
         gravity = self.cal_gravity(self.masses, dist)
-        print(gravity)
 
 
     def apply_gravitational_force(self, task):
@@ -326,12 +329,19 @@ class PhysicsRoomBalls(MultiRegionApp):
             self.apply_gravitational_force(task)
         return super().update(task)
 
+class BallRoomConsole(PhyscRoomConsole):
+    pass
+
 
 if __name__ == '__main__':
     import builtins
     import traceback
     try:
         with PhysicsRoomBalls(25,25,25) as app:
+            console = PhyscRoomConsole(showbase=app)
+            interface = CMDInterface(console=console)
+            # TODO: use game manager to restart
+            interface.start()
             app.run()
     except Exception as e:
         print(e)
