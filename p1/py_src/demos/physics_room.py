@@ -1,12 +1,16 @@
 # TODO: a room with walls
-# a camera that can fly
-# from panda3d.core import PointLight, DirectionalLight
+from threading import Thread, Lock
 from panda3d.bullet import BulletWorld
 from ui.console import Console
 from util.app import ControlShowBase
 from util.log import Loggable
 from direct.task import Task
-from geom.basic import create_cube_node, create_sphere_node, uv_curve_surface, create_colored_cube_node
+from geom.basic import (
+    create_cube_node,
+    create_sphere_node,
+    uv_curve_surface,
+    create_colored_cube_node
+)
 from panda3d.core import (
     NodePath,
     PointLight,
@@ -192,7 +196,6 @@ class PhyscRoom(ControlShowBase):
             self.bullet_world.do_physics(dt)
         return task.cont
 
-from threading import Thread, Lock
 
 # class CMDInterface(
     # ABC,
@@ -231,19 +234,6 @@ class CMDInterface:
                 print(e)
                 None
             self.lock.release()
-            # TODO: to stop
-            # if parsed_input_obj is not None:
-                # to_stop = self.respond(parsed_input_obj)
-                # if to_stop:
-                    # break
-
-    # def respond(self, parsed_input_obj) -> bool:
-        # if parsed_input_obj == MenuAction.quit:
-            # self.queue.put(parsed_input_obj)
-            # return False
-        # else:
-            # self.queue.put(FreddyQuitAction())
-            # return True
 
     def start(self):
         self.thread.start()
@@ -251,19 +241,13 @@ class CMDInterface:
     def join(self):
         self.thread.join()
 
-    # def get_input(self):
-        # # TODO use try
-        # if not self.queue.empty():
-            # return self.queue.get(False)
     def set_prompt(self, s):
         self.lock.acquire()
         self.prompt = s
         self.lock.release()
 
-class InterfacePlaceHolder:
-    def join(self):
-        pass
 if __name__ == "__main__":
+    from ui.abstract_ui import InterfacePlaceHolder
     import builtins
     import traceback
     interface = InterfacePlaceHolder()

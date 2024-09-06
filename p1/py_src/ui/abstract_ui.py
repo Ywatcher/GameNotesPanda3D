@@ -9,6 +9,11 @@ class WinType(Enum):
     PandaWindow = 0
     CmdWindow = 1
 
+class InterfacePlaceHolder:
+    def join(self):
+        pass
+
+
 
 class AbstractGUI(ABC, Loggable):
 
@@ -57,6 +62,7 @@ class AbstractGUI(ABC, Loggable):
     def startGUI(self):
         # TODO: multithread
         pass
+
 
 
 

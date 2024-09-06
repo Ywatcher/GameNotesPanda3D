@@ -9,3 +9,24 @@ each control system may have its specific ui
 gui for player
 
 gui for god
+
+
+----
+
+press :
+float text to input, in game window 
+text printed to console 
+
+
+todo:
+reconstruct, make new demos
+with new interface and consoles
+reconstruct console superclass
+
+each control group / player:
+a set of windows : game window/ console window 
+interface can switch between windows(if gui)
+regardless whether same player
+
+
+console(game.controlgroup) when init
