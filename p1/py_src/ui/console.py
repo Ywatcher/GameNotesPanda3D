@@ -8,6 +8,7 @@ from util.log import Loggable
 # FIXME: command_dict: to command: func, doc
 
 class Console(ABC, Loggable):
+    history: list  # TODO
 
     @property
     def command_list(self) -> List[str]:

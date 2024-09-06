@@ -18,7 +18,7 @@ from collections import OrderedDict
 
 from panda3d_game.app import ControlShowBase, ContextShowBase
 from direct.showbase import DirectObject
-from panda3d_game.game_object import GameObject
+from panda3d_game.game_object import GameObject, PhysicsGameObject
 from panda3d_game.controller import PlayerController
 
 # controller
@@ -58,7 +58,7 @@ tmoon.read(os.path.join(res_root, "moon.jpeg"))
 tmoon.setWrapU(Texture.WM_repeat)
 tmoon.setWrapV(Texture.WM_repeat)
 
-class MassedBall(GameObject): # not yet inherent GameObject
+class MassedBall(PhysicsGameObject): # not yet inherent GameObject
     def __init__(
         self,
         name,
@@ -92,11 +92,7 @@ class MassedBall(GameObject): # not yet inherent GameObject
         # bind geom to rigid body
         # self.rigid_body_np.attachNewNode(self.geom_node)
         self.geom_np.reparent_to(self.rigid_body_np)
-        # bind self to rigid body
-        # self.reparent_to(self.rigid)
-        # self.geom_np.reparentTo(self)
         # todo: add collison
-
 
     def toBulletWorld(self, world:BulletWorld):
         self.worlds.append(world)
@@ -108,37 +104,6 @@ class MassedBall(GameObject): # not yet inherent GameObject
 
     def set_tex_scale(self, t):
         self.geom_np.set_tex_scale(t)
-
-    def setPos(self, *args):
-        # super().setPos(self,*args)
-        self.rigid_body_np.setPos(*args)
-
-    @property
-    def mainPath(self):
-        return self.rigid_body_np
-
-    def getPos(self, other=None):
-        if other is None:
-            return self.rigid_body_np.getPos()
-        elif isinstance(other, NodePath):
-            return self.rigid_body_np.getPos(other)
-        else:
-            return self.rigid_body_np.getPos(other.mainPath)
-
-    def reparentTo(self, *args):
-        self.rigid_body_np.reparentTo(*args)
-    def reparent_to(self, *args):
-        self.rigid_body_np.reparent_to(*args)
-
-    def setZ(self,*args):
-        self.rigid_body_np.setZ(*args)
-
-    def set_linear_velocity(self,v:Vec3):
-        self.rigid_body_node.set_linear_velocity(v)
-
-    def apply_force(self, force, pos):
-        # print(force, pos)
-        self.rigid_body_node.apply_force(LVector3f(*force), LVector3f(*pos))
 
 class MultiRegionApp(PhyscRoom):
 
@@ -248,10 +213,6 @@ class PhysicsRoomBalls(MultiRegionApp):
             "planet2": self.planet2
         })
 
-        dist = self.get_node_dist(self.gravitational_bodies)
-        gravity = self.cal_gravity(self.masses, dist)
-
-
     def apply_gravitational_force(self, task):
         # N by N matrix, upper triaglar
         gravity = self.cal_gravity(
@@ -293,7 +254,9 @@ class PhysicsRoomBalls(MultiRegionApp):
             o.game_mass for o in objs
         ])
 
-    def cal_gravity(self, mass:torch.Tensor, dist:torch.Tensor, sumup=False) -> torch.Tensor:
+    def cal_gravity(
+        self, mass:torch.Tensor,
+        dist:torch.Tensor, sumup=False) -> torch.Tensor:
         dist_sq = torch.einsum(
             "mnd -> mn",
             dist ** 2
