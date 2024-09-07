@@ -2,10 +2,12 @@
 from threading import Thread, Lock
 from panda3d.bullet import BulletWorld
 from sympy import arg
-from ui.console import Console
-from panda3d_game.app import ControlShowBase
+from console.console import Console
+from panda3d_game.app import ContextShowBase, ControlShowBase, PhysicsShowBase
 from util.log import Loggable
 from direct.task import Task
+from direct.showbase.DirectObject import DirectObject
+
 from geom.basic import (
     create_sphere_node,
 )
@@ -25,7 +27,12 @@ from util.texture import (
 )
 from typing import Set, List, Dict, Callable, Union
 from game.events import Events
+from console import PhyscRoomConsole
+
+
+
 def make_wall_texture(
+    # make a checkerboard texture for walls
     w, h,
     square_size: float = 1,
     res: int = 8,
@@ -48,16 +55,9 @@ def make_wall_texture(
     )
     return t
 
-
-class PhyscRoom(ControlShowBase):
+class RoomScene(ContextShowBase):
     def __init__(self, xb: int, yb: int, zb: int):
-        super().__init__()
-        self.name = "Physics Room"
-        self.bullet_world = BulletWorld()
-        self.paused = True
-        # for controlledShowBase
-        # self.display_camera = self.
-        self.accept('p', self.pause_switch)
+        ContextShowBase.__init__(self)
         resolution = 8  # 8pxs a grid
         tex_top = make_wall_texture(
             yb*2, xb*2, square_size=5,
@@ -150,129 +150,23 @@ class PhyscRoom(ControlShowBase):
         node_path_sphere_y.setScale(0.2)
         node_path_sphere_z.setScale(0.2)
 
+
+class PhyscRoom(ControlShowBase, PhysicsShowBase, RoomScene):
+    def __init__(self, xb: int, yb: int, zb: int):
+        ControlShowBase.__init__(self)
+        RoomScene.__init__(self,xb,yb,zb)
+        PhysicsShowBase.__init__(self)
+        self.name = "Physics Room"
+        self.accept('p', self.pause_switch)
         # objects to access
         self.objects: Dict[str, Union[GameObject, NodePath]] = {}
 
-        # update physisc world
-        self.taskMgr.add(self.update, 'updateWorld')
-        # save initial pos for mouse
-        self.prev_mouse_x = 0
-        self.prev_mouse_y = 0
-        # quit game event
-        # TODO: move to control show base
-
-    def pause_switch(self):
-        self.paused = not self.paused
-        self.log("paused:{}".format(self.paused))
-        return self.paused
-
-    def update(self, task):  # FIXME: decorator
-        if not self.paused:
-            dt = globalClock.get_dt()
-            self.bullet_world.do_physics(dt)
-        return task.cont
-
-    def setG(self, G_val:float):
+    def set_G_game(self, G):
         pass
 
 
-# class CMDInterface(
-    # ABC,
-    # Generic[parser_T]
-# ):
-from direct.showbase.DirectObject import DirectObject
-from queue import Queue as PyQueue
-
-class PhyscRoomConsole(Console):
-    # print as output
-    def __init__(self, showbase:'PhyscRoom') -> None:
-        super().__init__(name="physics_room", namespace="room")
-        self.showbase = showbase
-        self.command_dict = {
-            "h": (self._help, "print help"),
-            "quit":(self.end_game, "end game"),
-            "ls":(self.lst_objs, "list accessible objects"),
-            "sel": (self.sel_obj, "select objs"),
-            "setv": (self.set_v, "set linear velocity"),
-            "setG":(self.showbase.setG, "set gravity constant"),
-            "p":(self.showbase.pause_switch, "pause or resume")
-        }
-        self._end_interface:Callable = lambda:None
-        # self.objects:Dict[str, Union[NodePath, GameObject]]
-        self.messageq = PyQueue()
-        self.output_buffer = PyQueue()
-        self.log_buffer = PyQueue()
-        self.curr_objs = []  # currently selected objs
-
-    @property
-    def objects(self):
-        return self.showbase.objects
-
-    def log(self, s: str, logtype="print"):
-        # TODO: put to buffer
-        print(s)
-
-    # commands
-    def lst_objs(self, *args):
-        self.log(
-            str(self.showbase.objects),
-            "print"
-        )
-
-    def sel_obj(self, *args):
-        # TODO: kwargs, unionmode = True
-        if len(args)>0:
-            objs_selected = [
-                s for s in args if s in self.showbase.objects.keys()
-            ]
-            obj_omitted = [
-                s for s in args if s not in self.showbase.objects.keys()
-            ]
-            if len(objs_selected)>0:
-                self.curr_objs = objs_selected
-                self.log(
-                    "selected objs: {}".format(self.curr_objs)
-                )
-            else:
-                self.log(
-                    "no valid objs found, use dsel [obj] or dsel all "
-                    + "to deselect objects",
-                    "print"
-                )
-                self.log(
-                    "not found in accessible objects: {}".format(obj_omitted),
-                    "print"
-                )
-
-    def set_v(self, *args):
-        # TODO:
-        # add syntax: setv planet1=(1,0,0) planet2=(-1,0,0)
-        try:
-            vx = float(args[0])
-            vy = float(args[1])
-            vz = float(args[2])
-            if len(args)>3:
-                curr_objs = [
-                    s for s in args[3:]
-                    if s in self.showbase.objects
-                ]
-            else:
-                curr_objs = self.curr_objs
-            for s in curr_objs:
-                obj = self.showbase.objects[s]
-                if isinstance(obj, GameObject):
-                    obj.set_linear_velocity(Vec3(vx,vy,vz))
-                else:
-                    raise NotImplementedError
-        except Exception as e:
-            self.log(str(e), "log")
-
-
-
-    def end_game(self):
-        # self.showbase.userExit()
-        self.showbase.actionq.put(Events.GameEndEvent)
-        self._end_interface()
+class QtInterface(DirectObject):
+    pass
 
 
 class CMDInterface(DirectObject):
@@ -308,6 +202,13 @@ class CMDInterface(DirectObject):
             # message = self.messageq.get()
             # print(message)
             # Task.messenger.send(message)
+    def print_output(self):
+        while not self.console.out_buffer.empty():
+            print(self.console.out_buffer.get())
+
+    def print_log(self):
+        while not self.console.log_buffer.empty():
+            print(self.console.log_buffer.get())
 
     def listen_input(self):
         while not self.is_end:
@@ -318,6 +219,8 @@ class CMDInterface(DirectObject):
             self.lock.acquire()
             try:
                 Console.parse(self.console, input_str)
+                self.print_output()
+                self.print_log()
             except Exception as e:
                 print(e)
             self.lock.release()

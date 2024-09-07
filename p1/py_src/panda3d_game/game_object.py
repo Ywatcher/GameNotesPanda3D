@@ -77,6 +77,7 @@ class GameObject(Loggable):
 class PhysicsGameObject(GameObject):
     rigid_body_node: BulletRigidBodyNode
     rigid_body_np: NodePath
+    game_mass:float
 
 
     def toBulletWorld(self, world:BulletWorld):

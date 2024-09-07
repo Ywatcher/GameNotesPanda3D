@@ -16,19 +16,28 @@ from direct.showbase.InputStateGlobal import inputState
 
 
 class ContextShowBase(ShowBase, Loggable):
+    @property
+    def display_camera(self):
+        return self.camera
+
+    @property
+    def rdr_scene(self):
+        return self.render
     # use context management to ensure the app
     # terminates correctly
     def __init__(self):
-        super().__init__()
-        self.isContextShowBaseInit = True
-        self.to_exit = False
-        self.actionq = PyQueue()
+        if not hasattr(self, "isContextShowBaseInit"):
+            ShowBase.__init__(self)
+            Loggable.__init__(self)
+            self.log("init ContextShowBase", "log")
+            self.isContextShowBaseInit = True
+            self.to_exit = False
+            self.actionq = PyQueue()
         # self.taskMgr.add(self.check_exit, "check_exit")
 
     # @classmethod
     def remove_all_task(self):
         pass
-
 
     def __enter__(self):
         return self
@@ -60,7 +69,7 @@ class ContextShowBase(ShowBase, Loggable):
         )
         super().run()
 
-    def log(self, s:str):
+    def log(self, s:str, logtype:str="print"):
         print(s)
 
     def __repr__(self):
@@ -71,43 +80,38 @@ class ContextShowBase(ShowBase, Loggable):
 
 
 class ControlShowBase(ContextShowBase):
-    @property
-    def display_camera(self):
-        return self.camera
-
-    @property
-    def rdr_scene(self):
-        return self.render
-
     def __init__(self):
-        if not hasattr(self, 'isContextShowBaseInit'):
-            print("init context showbase")
-            super().__init__()
-        self.is_cursor_in_game: bool = True
-        self.cursor_in()
-        self.default_cam_pos = (0, -10, 1)
-        self.display_camera.setPos(*self.default_cam_pos)
-        # self.game_controller = PlayerController()
-        # self.game_controller.register_key(
-        #     pattern=['control', 'w'],
-        #     func=lambda:print("ehy")
-        # )
-        self.cam_controller = PlayerCamController(self.display_camera)
-        self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
-        # control ------------
-        self.buttonThrowers[0].node().setButtonDownEvent('button')
-        self.buttonThrowers[0].node().setButtonUpEvent('button-up')
-        # self.accept("space", lambda: print(self.camera.get_pos()))
-        self.accept('z', self.toggle_camera)
-        self.accept("escape", self.cursor_out)
-        self.accept("b", self.cursor_in)  # FIXME
-        self.accept('control-w', self.userExit)
-        self.accept(Events.GameEndEvent, self.userExit)
+        # if not hasattr(self, 'isContextShowBaseInit'):
+            # print("init context showbase")
+            # ContextShowBase.__init__(self)
+        if not hasattr(self, "isControlShowBaseInit"):
+            ContextShowBase.__init__(self)
+            self.isControlShowBaseInit = True
+            self.is_cursor_in_game: bool = True
+            self.cursor_in()
+            self.default_cam_pos = (0, -10, 1)
+            self.display_camera.setPos(*self.default_cam_pos)
+            # self.game_controller = PlayerController()
+            # self.game_controller.register_key(
+            #     pattern=['control', 'w'],
+            #     func=lambda:print("ehy")
+            # )
+            self.cam_controller = PlayerCamController(self.display_camera)
+            self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
+            # control ------------
+            self.buttonThrowers[0].node().setButtonDownEvent('button')
+            self.buttonThrowers[0].node().setButtonUpEvent('button-up')
+            # self.accept("space", lambda: print(self.camera.get_pos()))
+            self.accept('z', self.toggle_camera)
+            self.accept("escape", self.cursor_out)
+            self.accept("b", self.cursor_in)  # FIXME
+            self.accept('control-w', self.userExit)
+            self.accept(Events.GameEndEvent, self.userExit)
 
-        self.taskMgr.add(self.update_camera, "update_camera_task")
-        self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
-        self.taskMgr.add(self.handle_actions, "handle_actions")
-        # self.taskMgr.add(self.game_controller.update, "update_game_controller")
+            self.taskMgr.add(self.update_camera, "update_camera_task")
+            self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
+            self.taskMgr.add(self.handle_actions, "handle_actions")
+            # self.taskMgr.add(self.game_controller.update, "update_game_controller")
 
     # def userExit(self):
         # self.log("exit")
@@ -138,10 +142,8 @@ class ControlShowBase(ContextShowBase):
         # which controls whether camera updates
         self.is_cursor_in_game = False
 
-
-
     def center_mouse(self):
-        """将鼠标指针重置到窗口的中心"""
+        """move cursor to the center of the window"""
         window_center_x = self.win.getXSize() // 2
         window_center_y = self.win.getYSize() // 2
         self.win.movePointer(0, window_center_x, window_center_y)
@@ -153,13 +155,12 @@ class ControlShowBase(ContextShowBase):
         self.display_camera.setHpr(0, 0, 0)
 
     def update_camera(self, task):
-        """每帧更新摄像机的方向，使其跟随鼠标的移动"""
+        """updata camera to follow mouse movement"""
         if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
-            # 获取鼠标的位置（归一化的 -1 到 1 范围内）
+            # get mouse position (unified to range(-1,1))
             mouse_x = self.win.getPointer(0).getX()
             mouse_y = self.win.getPointer(0).getY()
-
-            # 计算鼠标移动的增量
+            # calculate the shift of the mouse
             delta_x = (mouse_x - self.prev_mouse_x)
             delta_y = mouse_y - self.prev_mouse_y
 
@@ -180,7 +181,6 @@ class ControlShowBase(ContextShowBase):
         props.setFullscreen(not self.win.isFullscreen())
         self.win.requestProperties(props)
 
-
     def handle_actions(self, task):
         # FIXME: handle events
         if not self.actionq.empty():
@@ -193,4 +193,5 @@ class ControlShowBase(ContextShowBase):
             except Exception as e:
                 self.log(str(e))
         return Task.cont
+
 
