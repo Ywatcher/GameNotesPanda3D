@@ -135,7 +135,7 @@ class ControlShowBase(ContextShowBase):
 
     def cursor_out(self):
         # enable default mouse control
-        self.enable_mouse()
+        # self.enable_mouse()
         # show mouse cursor
         props = WindowProperties()
         props.setCursorHidden(False)
