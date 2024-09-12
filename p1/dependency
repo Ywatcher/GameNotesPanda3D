@@ -1,0 +1,3 @@
+/*conda install anaconda::sip*/
+/*conda install ipa::pyqt5*/
+conda install conda-forge::pyqt

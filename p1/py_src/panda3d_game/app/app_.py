@@ -27,7 +27,9 @@ class ContextShowBase(ShowBase, Loggable):
     # terminates correctly
     def __init__(self):
         if not hasattr(self, "isContextShowBaseInit"):
-            ShowBase.__init__(self)
+            if not hasattr(self, "isShowBaseInit"):
+                ShowBase.__init__(self)
+                self.isShowBaseInit = True
             Loggable.__init__(self)
             self.log("init ContextShowBase", "log")
             self.isContextShowBaseInit = True

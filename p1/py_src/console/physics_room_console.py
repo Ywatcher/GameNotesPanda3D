@@ -1,8 +1,10 @@
 from queue import Queue as PyQueue
 from typing import Callable
+from panda3d.core import Vec3
 from console.console import Console
 from panda3d_game.app import UniversalGravitySpace, PhysicsShowBase
 from game.events import Events
+from panda3d_game.game_object import GameObject
 
 
 class PhyscRoomConsole(Console):
@@ -16,6 +18,7 @@ class PhyscRoomConsole(Console):
             "ls":(self.lst_objs, "list accessible objects"),
             "sel": (self.sel_obj, "select objs"),
             "setv": (self.set_v, "set linear velocity"),
+            "setp": (self.set_p, "set pos"),
             "p":(self.showbase.pause_switch, "pause or resume")
         }
         if isinstance(showbase, UniversalGravitySpace):
@@ -90,6 +93,32 @@ class PhyscRoomConsole(Console):
                     raise NotImplementedError
         except Exception as e:
             self.log(str(e), "log")
+
+    def set_p(self, *args):
+        # TODO:
+        # add syntax: setv planet1=(1,0,0) planet2=(-1,0,0)
+        try:
+            px = float(args[0])
+            py = float(args[1])
+            pz = float(args[2])
+            if len(args)>3:
+                curr_objs = [
+                    s for s in args[3:]
+                    if s in self.showbase.objects
+                ]
+            else:
+                curr_objs = self.curr_objs
+            for s in curr_objs:
+                obj = self.showbase.objects[s]
+                if isinstance(obj, GameObject):
+                    obj.setPos(Vec3(px,py,pz))
+                else:
+                    raise NotImplementedError
+        except Exception as e:
+            self.log(str(e), "log")
+
+
+
 
     def end_game(self):
         # self.showbase.userExit()

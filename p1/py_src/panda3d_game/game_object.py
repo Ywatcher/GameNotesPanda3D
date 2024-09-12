@@ -1,6 +1,6 @@
 from typing import List, Union
 from panda3d.core import NodePath, LODNode,Vec3
-from panda3d.core import Point3, LVector3f
+from panda3d.core import Point3, LVector3f, Vec3
 
 from util.log import Loggable
 from panda3d.bullet import (
