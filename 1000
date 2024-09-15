@@ -1,0 +1,26 @@
+exec `/media/ywatcher/ExtDisk1/Files/Games/learn_panda3d/p1/py_src/demos/ball_room.py` frm `/media/ywatcher/ExtDisk1/Files/
+Games/learn_panda3d/p1/py_src`:
+
+Known pipe types:
+  glxGraphicsPipe
+(all display modules loaded.)
+:audio(error): Couldn't open default OpenAL device
+:audio(error): OpenALAudioManager: No open device or context
+:audio(error):   OpenALAudioManager is not valid, will use NullAudioManager
+:audio(error): Couldn't open default OpenAL device
+:audio(error): OpenALAudioManager: No open device or context
+:audio(error):   OpenALAudioManager is not valid, will use NullAudioManager
+init ContextShowBase
+---set ref---:render,<class 'panda3d.core.NodePath'>
+(game prompt)---Physics Room run(), at 2024-09-12 23:18:00.061841---
+setp 0 0 9 planet1
+(game prompt)setp 0 0 8 planet1
+(game prompt)setp 0 0 -8 planet2
+(game prompt)setv 8 0 0 planet1
+(game prompt)setv -8 0 0  planet2
+(game prompt)p
+paused:False
+(game prompt)quit
+end interface
+---Physics Room destroy at 2024-09-12 23:19:19.117260---
+---Physics Room destroyed at 2024-09-12 23:19:19.131652, exit---
