@@ -48,8 +48,8 @@ class ContextShowBase(ShowBase, Loggable):
         # if self.to_exit:
             # self.userExit()
         # return Task.cont
-
-    def __exit__(self, *args):
+        
+    def close(self):
         self.remove_all_task()
         self.log(
             "---{} destroy at {}---".format(
@@ -62,6 +62,9 @@ class ContextShowBase(ShowBase, Loggable):
                 self, datetime.now()
             )
         )
+
+    def __exit__(self, *args):
+        self.close()
 
     def run(self):
         self.log(
