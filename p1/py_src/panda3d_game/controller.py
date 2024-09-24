@@ -75,7 +75,9 @@ class PlayerController(DirectObject.DirectObject, Loggable):
     def key_up(self, button:str):
         # TODO: remove combined keys
         if button in self.held_keys:
+            # print(
             self.held_keys.remove(button)
+            
         
         
         

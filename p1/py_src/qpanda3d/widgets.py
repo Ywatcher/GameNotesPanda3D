@@ -45,6 +45,9 @@ __all__ = ["QPanda3DWidget"]
 #         self.stop()
 
 
+# TODO: handle key press and mouse move together
+
+
 
 def get_panda_key_modifiers(evt):
     panda_mods = []
@@ -182,6 +185,8 @@ class QPanda3DWidget(QWidget):
             if self.debug:
                 print(k)
             messenger.send(k)
+            # FIXME: if k in the list that can be sent
+            messenger.send('button', [k])
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem")
             print(e)
@@ -193,6 +198,8 @@ class QPanda3DWidget(QWidget):
             if self.debug:
                 print(k)
             messenger.send(k)
+            # FIXME:
+            messenger.send('button-up', [k.strip('-up')])
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem")
             print(e)
@@ -221,3 +228,33 @@ class QPanda3DWidget(QWidget):
             self.paintSurface.drawImage(0, 0, img)
 
             self.paintSurface.end()
+
+    def movePointer(self, device, x, y):
+        # Get the global position of the widget (top-left corner)
+        widget_pos = self.mapToGlobal(QPoint(0, 0))
+        global_x = widget_pos.x() + int(x)
+        global_y = widget_pos.y() + int(y)
+        #TODO: multi device
+        QCursor.setPos(global_x,global_y)
+
+    
+    def update_camera_tmp(self, task):
+        """updata camera to follow mouse movement"""
+        if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
+            # get mouse position (unified to range(-1,1))
+            mouse_x, mouse_y = self.getMouseXY() #FIXME
+            # calculate the shift of the mouse
+            delta_x = (mouse_x - self.prev_mouse_x)
+            delta_y = mouse_y - self.prev_mouse_y
+
+            # 调整摄像机的水平旋转和俯仰角度
+            camera_h = self.display_camera.getH() - delta_x * 0.1
+            camera_p = self.display_camera.getP() - delta_y * 0.1
+
+            # 设置新的摄像机角度
+            self.display_camera.setH(camera_h)
+            self.display_camera.setP(camera_p)
+
+            # 将鼠标指针重置到窗口的中心
+            self.center_mouse()
+        return task.cont

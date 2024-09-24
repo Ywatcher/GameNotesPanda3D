@@ -13,6 +13,7 @@ from direct.task import Task
 from queue import Queue as PyQueue
 
 from direct.showbase.InputStateGlobal import inputState
+from typing import Tuple
 
 
 class ContextShowBase(ShowBase, Loggable):
@@ -117,6 +118,7 @@ class ControlShowBase(ContextShowBase):
             self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
             self.taskMgr.add(self.handle_actions, "handle_actions")
             # self.taskMgr.add(self.game_controller.update, "update_game_controller")
+            self.cam_sensitivity = .1
 
     # def userExit(self):
         # self.log("exit")
@@ -155,8 +157,10 @@ class ControlShowBase(ContextShowBase):
 
     def center_mouse(self):
         """move cursor to the center of the window"""
+        # print("center mouse")
         window_center_x = self.win.getXSize() // 2
         window_center_y = self.win.getYSize() // 2
+        
         self.movePointer(0, window_center_x, window_center_y)
         self.prev_mouse_x = window_center_x
         self.prev_mouse_y = window_center_y
@@ -169,15 +173,14 @@ class ControlShowBase(ContextShowBase):
         """updata camera to follow mouse movement"""
         if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
             # get mouse position (unified to range(-1,1))
-            mouse_x = self.win.getPointer(0).getX()
-            mouse_y = self.win.getPointer(0).getY()
+            mouse_x, mouse_y = self.getMouseXY() #FIXME
             # calculate the shift of the mouse
             delta_x = (mouse_x - self.prev_mouse_x)
             delta_y = mouse_y - self.prev_mouse_y
 
             # 调整摄像机的水平旋转和俯仰角度
-            camera_h = self.display_camera.getH() - delta_x * 0.1
-            camera_p = self.display_camera.getP() - delta_y * 0.1
+            camera_h = self.display_camera.getH() - delta_x * self.cam_sensitivity
+            camera_p = self.display_camera.getP() - delta_y * self.cam_sensitivity
 
             # 设置新的摄像机角度
             self.display_camera.setH(camera_h)
@@ -206,9 +209,17 @@ class ControlShowBase(ContextShowBase):
         return Task.cont
 
 
-    def movePointer(self, *args):
+    def movePointer(self, device, x, y):
         try:
-            self.win.movePointer(*args)
+            self.win.movePointer(device,x,y)
         except:
             pass
 
+    def _getMouseX(self):
+        return self.win.getPointer(0).getX()
+
+    def _getMouseY(self):
+        return self.win.getPointer(0).getY()
+
+    def getMouseXY(self) -> Tuple[int, int]:
+        return self._getMouseX(), self._getMouseY()

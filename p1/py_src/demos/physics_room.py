@@ -161,6 +161,11 @@ class PhyscRoom(ControlShowBase, PhysicsShowBase, RoomScene):
         # objects to access
         self.objects: Dict[str, Union[GameObject, NodePath]] = {}
 
+    def getMouseXY(self):
+        ret = ControlShowBase.getMouseXY(self)
+        # print(ret)
+        return ret
+
     def set_G_game(self, G):
         pass
 
