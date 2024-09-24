@@ -10,6 +10,7 @@ from panda3d_game.app import (
     ControlShowBase, UniversalGravitySpace,
     ContextShowBase
 )
+from qpanda3d import QShowBase
 import threading
 
 
@@ -25,68 +26,20 @@ class QtInterface:
 class StarScene(ContextShowBase):
     pass
 
-class StarSceneApp(ControlShowBase, UniversalGravitySpace):
+class StarSceneApp(ControlShowBase, UniversalGravitySpace, QShowBase):
     def __init__(self):
+        ControlShowBase.__init__(self)
+        UniversalGravitySpace.__init__(self)
+        QShowBase.__init__(self)
         self.log_buffer = PyQueue()
         self.out_buffer = PyQueue()
-        super().__init__()
+        self.startQt()
     pass
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from panda3d.core import WindowProperties, GraphicsPipe
 from direct.showbase.ShowBase import ShowBase
-
-class PandaApp(RoomScene):
-    def __init__(self, window_id,buffer=None):
-        ShowBase.__init__(self, windowType='offscreen')
-        self.isShowBaseInit = True
-        # ContextShowBase.__init__(self)
-        RoomScene.__init__(self,25,25,25)
-
-        # 设置窗口属性以嵌入到 PyQt 窗口中
-        # props = WindowProperties()
-        # window_id_int = int(sip.cast(window_id, int))
-        # window_id_int = int(window_id)
-        # print(type(window_id), window_id)
-        # print(type(window_id_int), window_id_int)
-        # props.set_parent_window(window_id_int)
-        # self.win.request_properties(props)
-        # window_handle = self.win.get_window_handle().get_int_handle()
-        # self.window_handle = window_handle
-        # print(self.window_handle)
-        # self.create_window(window_id)
-        from panda3d.core import GraphicsBuffer, GraphicsOutput
-        from panda3d.core import Texture
-        # self.buffer = self.graphicsEngine.make_buffer('buffer', GraphicsOutput.RTMCopyRam)
-        texture = Texture()
-
-        # 将纹理添加到 GraphicsBuffer
-        self.win.add_render_texture(texture, GraphicsBuffer.RTMCopyRam)
-        self.win.set_camera(self.cam.node())
-        self.graphicsEngine.render_frame()
-
-
-        # texture = self.win.get_texture()
-        print(texture)
-        self.buffer = buffer
-        self.lock = threading.Lock()
-        # self.taskMgr.add(self.write_graphic_buffer, "write graphics")
-
-
-    def create_window(self, window_id):
-        window_id_int = int(window_id)
-        wp = WindowProperties()
-        wp.set_parent_window(window_id_int)  # 设置窗口 ID
-
-        w = self.openWindow(props=wp, type='onscreen',keepCamera=True)  # 创建并打开窗口
-        print(w)
-
-    def write_graphic_buffer(self, task):
-        texture = self.win.get_texture()
-        pnm_image = texture.get_ram_image()
-        return Task.cont
-
 
 
 class MainWindow(QMainWindow):
@@ -111,6 +64,8 @@ class MainWindow(QMainWindow):
         )
         self.setCentralWidget(self.panda_widget)
         # self.add_widget(self.panda_widget)
+
+
 
 
 if __name__ == "__main__":

@@ -31,6 +31,9 @@ from QPanda3D import Panda3DWorld
 import builtins
 
 
+__all__ = ["QShowBase"]
+
+
 class QShowBase(ContextShowBase):
     """
     edited from Panda3DWorld
@@ -96,7 +99,11 @@ class QShowBase(ContextShowBase):
             else:
                 self.buff.set_clear_color(clear_color)
                 self.buff.set_clear_active(GraphicsOutput.RTPColor, True)
+            self.movePointer = self.empty
             self._isQtStart = True
+
+    def empty(self,*args, **kwargs):
+        pass
 
     def set_parent(self, parent: QWidget):
         self.parent = parent
@@ -108,3 +115,6 @@ class QShowBase(ContextShowBase):
         else:
             return super().getAspectRatio(win)
 
+class QControlShowBase:
+    def __init__(self):
+        pass

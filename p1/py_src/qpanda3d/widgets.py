@@ -92,7 +92,10 @@ class QPanda3DWidget(QWidget):
     debug: Switch printing key events to console on/off
     """
 
-    def __init__(self, panda3DWorld, parent=None, FPS=60, debug=False):
+    def __init__(
+        self, panda3DWorld, parent=None, FPS=60, debug=False,
+        synchronizer=None
+    ):
         QWidget.__init__(self, parent)
 
         # set fixed geometry
@@ -119,8 +122,12 @@ class QPanda3DWidget(QWidget):
         self.initial_film_size = QSizeF(size.x, size.y)
         self.initial_size = self.size()
 
-        self.synchronizer = QPanda3DSynchronizer(self, FPS)
-        self.synchronizer.start()
+        # if synchronizer is None:
+        #     self.synchronizer = QPanda3DSynchronizer(self, FPS)
+        # else:
+        #     self.synchronizer = synchronizer
+        # if not self.synchronizer.isActive():
+        #     self.synchronizer.start()
 
         self.debug = debug
 

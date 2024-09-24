@@ -129,9 +129,12 @@ class ControlShowBase(ContextShowBase):
         # disable default mouse control
         self.disable_mouse()
         # hide mouse cursor
-        props = WindowProperties()
-        props.setCursorHidden(True)
-        self.win.requestProperties(props)
+        try:
+            props = WindowProperties()
+            props.setCursorHidden(True)
+            self.win.requestProperties(props)
+        except:  #FIXME
+            pass
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = True
@@ -140,9 +143,12 @@ class ControlShowBase(ContextShowBase):
         # enable default mouse control
         # self.enable_mouse()
         # show mouse cursor
-        props = WindowProperties()
-        props.setCursorHidden(False)
-        self.win.requestProperties(props)
+        try:
+            props = WindowProperties()
+            props.setCursorHidden(False)
+            self.win.requestProperties(props)
+        except:
+            pass
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = False
@@ -151,7 +157,7 @@ class ControlShowBase(ContextShowBase):
         """move cursor to the center of the window"""
         window_center_x = self.win.getXSize() // 2
         window_center_y = self.win.getYSize() // 2
-        self.win.movePointer(0, window_center_x, window_center_y)
+        self.movePointer(0, window_center_x, window_center_y)
         self.prev_mouse_x = window_center_x
         self.prev_mouse_y = window_center_y
 
@@ -199,4 +205,10 @@ class ControlShowBase(ContextShowBase):
                 self.log(str(e))
         return Task.cont
 
+
+    def movePointer(self, *args):
+        try:
+            self.win.movePointer(*args)
+        except:
+            pass
 

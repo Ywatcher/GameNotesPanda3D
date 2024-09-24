@@ -16,10 +16,14 @@ class QtGUI(AbstractGUI):
 
 class RawQtGUI(QtGUI):
     # triggers _manager_start_game when starts
-    pass
+    def __init__(self, FPS=60):
+        self.FPS = FPS
+        self.synchronizer = QPanda3DSynchronizer(FPS)
+
 
 class AdvancedQtGUI(QtGUI):
     # create a menu, with buttons to start game
     # button "new window"
     pass
+
 
