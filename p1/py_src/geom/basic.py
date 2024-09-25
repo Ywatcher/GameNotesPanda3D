@@ -102,13 +102,15 @@ def create_sphere(
         and lat_res > 0, \
         "lat_res should be postive int, got {}".format(lat_res)
     name_sphere = "Spr.{}".format(name)
-    vertex_size = (lon_res, lat_res)
+    # vertex_size = (lon_res, lat_res)
     # color = GeomVertexWriter(vdata, "color")
     # vertex: n_lat * n_lon * 3
     axis_coord_theta = torch.arange(0,1,step=1/lon_res) * 2 * np.pi
     axis_coord_phi = torch.arange(0,1,step=1/lat_res) * 2 * np.pi
-    vertex_coord_theta = torch.broadcast_to(axis_coord_theta.view(-1, 1), vertex_size)
-    vertex_coord_phi = torch.broadcast_to(axis_coord_phi.view(1, -1), vertex_size)
+    vertex_coord_theta, vertex_coord_phi = torch.meshgrid(
+        axis_coord_theta,axis_coord_phi,
+        indexing='ij'
+    )
     vertex_coord_r = torch.cos(vertex_coord_phi)
     vertex_coord_z = torch.sin(vertex_coord_phi)
     vertex_coord_x = torch.cos(vertex_coord_theta) * vertex_coord_r

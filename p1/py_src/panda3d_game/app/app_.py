@@ -175,7 +175,7 @@ class ControlShowBase(ContextShowBase):
             # get mouse position (unified to range(-1,1))
             mouse_x, mouse_y = self.getMouseXY() #FIXME
             # calculate the shift of the mouse
-            delta_x = (mouse_x - self.prev_mouse_x)
+            delta_x = mouse_x - self.prev_mouse_x
             delta_y = mouse_y - self.prev_mouse_y
 
             # 调整摄像机的水平旋转和俯仰角度

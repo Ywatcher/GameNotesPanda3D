@@ -154,15 +154,15 @@ class QControl(ControlShowBase, QShowBase):
             self.taskMgr.add(self.update_camera, "update_camera_task")
             self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
             self.taskMgr.add(self.handle_actions, "handle_actions")
-            self.cam_sensitivity = 100
-        
         ControlShowBase.__init__(self)
 
     def startQt(self):
         self.getMouseXY = self.getMouseXY_Q
         self.movePointer = self.movePointer_Q
         # self.update_camera = self.update_camera_tmp
-        self.center_mouse = self.center_mouse_tmp
+        # self.center_mouse = self.center_mouse_tmp
+        self.center_mouse = self.center_mouse_Q
+        self.cam_sensitivity = 10
         QShowBase.startQt(self)
 
     def getMouseXY_Q(self):
@@ -186,8 +186,19 @@ class QControl(ControlShowBase, QShowBase):
         self.prev_mouse_x = mouse_x
         self.prev_mouse_y = mouse_y
 
+    def center_mouse_Q(self):
+        window_center_x = self.parent.width() // 2
+        window_center_y = self.parent.height() // 2
+        self.movePointer(0, window_center_x, window_center_y)
+        # rel_x = -1 + 2 * pos.x() / self.parent.width()
+        # rel_y = -1 + 2 * pos.y() / self.parent.height()
+        rel_x = -1 + 2 * window_center_x / self.parent.width()
+        rel_y = -1 + 2 * window_center_y / self.parent.height()
+        rel_y = -rel_y
+        self.prev_mouse_x = (rel_x)
+        self.prev_mouse_y = (rel_y)
+
     def update_camera_tmp(self): # FIXME
-        print("tmp")
         if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
             mouse_x, mouse_y = self.getMouseXY()
             # calculate the shift of the mouse

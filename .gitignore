@@ -5,4 +5,7 @@
 *.jpg
 *.jpeg
 *.png
-
+*.mypy_cache/*
+p1/py_src/demos/.mypy_cache/*
+*.data.json
+*.meta.json

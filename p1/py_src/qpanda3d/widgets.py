@@ -186,6 +186,7 @@ class QPanda3DWidget(QWidget):
                 print(k)
             messenger.send(k)
             # FIXME: if k in the list that can be sent
+            print(k)
             messenger.send('button', [k])
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem")
@@ -193,12 +194,14 @@ class QPanda3DWidget(QWidget):
 
     def keyReleaseEvent(self, evt):
         key = evt.key()
+        # print(evt.nativeScanCode())
         try:
             k = f"{get_panda_key_modifiers_prefix(evt)}{QPanda3D_Key_translation[key]}-up"
             if self.debug:
                 print(k)
             messenger.send(k)
             # FIXME:
+            print(k)
             messenger.send('button-up', [k.strip('-up')])
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem")
