@@ -8,7 +8,7 @@ from util.log import Loggable
 from direct.task import Task
 from direct.showbase.DirectObject import DirectObject
 
-from geom.basic import (
+from art.basic import (
     create_sphere_node,
 )
 from panda3d.core import (
@@ -151,23 +151,7 @@ class RoomScene(ContextShowBase):
         node_path_sphere_z.setScale(0.2)
 
 
-class PhyscRoom(ControlShowBase, PhysicsShowBase, RoomScene):
-    def __init__(self, xb: int, yb: int, zb: int):
-        ControlShowBase.__init__(self)
-        RoomScene.__init__(self,xb,yb,zb)
-        PhysicsShowBase.__init__(self)
-        self.name = "Physics Room"
-        self.accept('p', self.pause_switch)
-        # objects to access
-        self.objects: Dict[str, Union[GameObject, NodePath]] = {}
 
-    def getMouseXY(self):
-        ret = ControlShowBase.getMouseXY(self)
-        # print(ret)
-        return ret
-
-    def set_G_game(self, G):
-        pass
 
 
 class QtInterface(DirectObject):

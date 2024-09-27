@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from geom.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
+from art.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
 from panda3d.core import (
     Geom,
     GeomNode,
