@@ -9,9 +9,9 @@ import numpy as np
 
 def noisegrid(*shape, boundary=False, seed=None):
     """
-    Generate grid noise. 
+    Generate grid noise.
     Genretaes grod of noise in range (0,1) in each grid cell.
-    
+z
     Parameters
     ----------
     *shape
@@ -46,9 +46,9 @@ def noisegrid(*shape, boundary=False, seed=None):
 
 def noisecoords(*shape, boundary=False, seed=None):
     """
-    Utility function to generate grid noise coordinates. 
+    Utility function to generate grid noise coordinates.
     Generates coordinate meshgrid and add noise in range (0,1).
-    
+
     Parameters
     ----------
     *shape
@@ -85,8 +85,8 @@ def noisecoords(*shape, boundary=False, seed=None):
 
 def gridcoords(*shape, dens=4):
     """
-    Utility function to generate grid coordinates. 
-    
+    Utility function to generate grid coordinates.
+
     Parameters
     ----------
     *shape
@@ -118,8 +118,8 @@ def gridcoords(*shape, dens=4):
 
 def worley(*shape, dens=4, seed=None):
     """
-    Utility function to generate Worley noise. 
-    
+    Utility function to generate Worley noise.
+
     Parameters
     ----------
     *shape
@@ -145,7 +145,7 @@ def worley(*shape, dens=4, seed=None):
     >>> plt.imshow(w[0].T)
     >>> plt.scatter(*c)
 
-    """    
+    """
     shape = tuple(shape[0]) if isinstance(shape[0], (tuple, list)) else shape
     ndim = len(shape)
     noise = noisecoords(shape, boundary=True, seed=seed)

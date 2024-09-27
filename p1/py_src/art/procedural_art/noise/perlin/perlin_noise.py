@@ -44,9 +44,9 @@ def unfold_grid(vectors: Tensor) -> Tensor:
     batch_size, _, gpy, gpx = vectors.shape
     return (
         unfold(vectors, (2, 2))
-        .view(batch_size, 2, 4, -1)
-        .permute(0, 2, 3, 1)
-        .view(batch_size, 4, gpy - 1, gpx - 1, 2)
+            .view(batch_size, 2, 4, -1)
+            .permute(0, 2, 3, 1)
+            .view(batch_size, 4, gpy - 1, gpx - 1, 2)
     )
 
 
