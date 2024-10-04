@@ -26,9 +26,12 @@ def uv_curve_surface(
     name:str, 
     coord_mat:torch.Tensor, is_u_loop:bool, is_v_loop:bool,
     uv_mat:torch.Tensor=None, 
-    geom_type: GeomEnums = Geom.UH_static, vformat=format_uv
+    geom_type: GeomEnums = Geom.UH_static, vformat=format_uv,
+    interior:bool=False
 ) -> Geom:
     # coord_mat: [u_size, v_size, format_size]
+    if interior:
+        uv_mat = uv_mat[:,:,::-1]
     u_size = coord_mat.shape[0]
     v_size = coord_mat.shape[1]
     vertex_size = (u_size+is_u_loop, v_size+is_v_loop)
@@ -101,13 +104,15 @@ def create_sphere_node(
     lat_res:int,
     lon_res:int,
     # scale:float=1,
-    geom_type: GeomEnums = Geom.UH_static
+    geom_type: GeomEnums = Geom.UH_static,
+    interior:bool=False
 ) -> GeomNode:
     node = GeomNode("SphNd."+name)
     geom = create_sphere(
         name, lat_res, lon_res,
         # scale, 
-        geom_type
+        geom_type,
+        interior
     )
     node.addGeom(geom)
     return node
@@ -117,7 +122,8 @@ def create_sphere(
     lat_res:int,
     lon_res:int,
     scale:float=1,
-    geom_type: GeomEnums = Geom.UH_static
+    geom_type: GeomEnums = Geom.UH_static,
+    interior:bool=False
 ) -> Geom:
     assert isinstance(lat_res, int) \
         and lat_res > 0, \
@@ -147,7 +153,8 @@ def create_sphere(
         coord_mat=vertex_coord_xyz,
         is_u_loop=True,
         is_v_loop=False, 
-        geom_type = geom_type
+        geom_type = geom_type,
+        interior=interior
     )
     
     return geom
@@ -234,13 +241,16 @@ def create_cylinder_node(
     lat_res:int,
     lon_res:int,
     # scale:float=1,
-    geom_type: GeomEnums = Geom.UH_static
+    geom_type: GeomEnums = Geom.UH_static,
+    interior:bool=False
+    
 ) -> GeomNode:
     node = GeomNode("CldrNd."+name)
     geom = create_cylinder(
         name, lat_res, lon_res,
         # scale, 
-        geom_type
+        geom_type,
+        interior
     )
     node.addGeom(geom)
     return node
@@ -252,7 +262,8 @@ def create_cylinder(
     lat_res:int,
     lon_res:int,
     scale:float=1,
-    geom_type: GeomEnums = Geom.UH_static
+    geom_type: GeomEnums = Geom.UH_static,
+    interior:bool=False
 ) -> Geom:
     assert isinstance(lat_res, int) \
         and lat_res > 0, \
@@ -285,7 +296,8 @@ def create_cylinder(
         coord_mat=vertex_coord_xyz,
         is_u_loop=True,
         is_v_loop=False, 
-        geom_type = geom_type
+        geom_type = geom_type,
+        interior=interior
     )
     
     return geom
