@@ -18,28 +18,49 @@ from panda3d.core import (
 # https://docs.panda3d.org/1.10/python/programming/internal-structures/procedural-generation/custom-vertex-format
 # https://docs.panda3d.org/1.10/python/programming/internal-structures/procedural-generation/predefined-vertex-formats
 format_ = GeomVertexFormat.getV3c4()
+format_uv = GeomVertexFormat.getV3t2()
 format_ = GeomVertexFormat.registerFormat(format_)
 
 
 def uv_curve_surface(
     name:str, 
     coord_mat:torch.Tensor, is_u_loop:bool, is_v_loop:bool,
-    geom_type: GeomEnums = Geom.UH_static, vformat=format_
+    uv_mat:torch.Tensor=None, 
+    geom_type: GeomEnums = Geom.UH_static, vformat=format_uv
 ) -> Geom:
     # coord_mat: [u_size, v_size, format_size]
     u_size = coord_mat.shape[0]
     v_size = coord_mat.shape[1]
-    vertex_size = (u_size, v_size)
+    vertex_size = (u_size+is_u_loop, v_size+is_v_loop)
+    has_uv = (vformat == format_uv) # FIXME
+    
     vdata = GeomVertexData(name, vformat, geom_type)
     vertex_writer = GeomVertexWriter(vdata, "vertex")
+    if has_uv:
+        uv_writer = GeomVertexWriter(vdata, 'texcoord')
+        if uv_mat is None:
+            u_step = 1 / (u_size-1+is_u_loop)
+            v_step = 1 / (v_size-1+is_v_loop)
+            u,v = torch.meshgrid(
+                
+                torch.arange(0,1+u_step,step=u_step), #FIXME:[0,1+step)
+                torch.arange(0,1+v_step,step=v_step)
+            )
+            uv_mat = torch.concat(
+                [u.unsqueeze(-1), v.unsqueeze(-1)], dim=-1
+            )
     # vertex_size = (lon_res, lat_res)
-    for row in range(u_size):
-        for col in range(v_size):
-            coord = coord_mat[row, col]
+    for row in range(u_size + is_u_loop):
+        for col in range(v_size + is_v_loop):
+            coord = coord_mat[row % u_size, col % v_size]
+            uv = uv_mat[row,col]
             vertex_writer.addData3f(
                 coord[0], coord[1], coord[2]
             )
-            # TODO: add colour
+            if has_uv:
+                uv_writer.addData2f(
+                    uv[0], uv[1]
+                )
     # add triangles
     prim = GeomTriangles(geom_type)
     for row in range(u_size - (not is_u_loop)):

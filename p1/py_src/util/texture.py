@@ -29,6 +29,22 @@ from panda3d.core import PNMImage, Texture
 # def npm2np
 # def npm2pil
 
+
+def rgba_mpl2pd3d(colors:np.ndarray):
+    # matplotlib and vispy: r,g,b,a
+    # panda3d: b,g,r,a
+    # for rgba
+    return np.einsum(
+        'ijk, kl -> ijl',
+        colors,
+        np.array([
+            [0,0,1,0],
+            [0,1,0,0],
+            [1,0,0,0],
+            [0,0,0,1]
+        ])
+    )
+
 def np2texture(
     arr: np.ndarray,
     component_type:int = Texture.T_unsigned_byte, # for 0-255
