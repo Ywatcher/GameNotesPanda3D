@@ -6,7 +6,7 @@ from direct.task import Task
 import numpy as np
 import torch
 from torch import Tensor
-from geom.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
+from art.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
 from panda3d.core import (
     NodePath,
     WindowProperties,

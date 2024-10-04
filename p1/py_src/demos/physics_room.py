@@ -24,7 +24,7 @@ from panda3d_game.game_object import GameObject
 from util.texture import (
     np2texture
 )
-from art.textures.checkboard import(
+from art.textures.checkerboard import(
     create_color_checkerboard,
 )
 from typing import Set, List, Dict, Callable, Union
@@ -154,7 +154,22 @@ class RoomScene(ContextShowBase):
 
 
 
+class PhyscRoom(ControlShowBase, PhysicsShowBase, RoomScene):
+    def __init__(self, xb: int, yb: int, zb: int):
+        ControlShowBase.__init__(self)
+        RoomScene.__init__(self,xb,yb,zb)
+        PhysicsShowBase.__init__(self)
+        self.name = "Physics Room"
+        self.accept('p', self.pause_switch)
+        # objects to access
+        self.objects: Dict[str, Union[GameObject, NodePath]] = {}
+    def getMouseXY(self):
+        ret = ControlShowBase.getMouseXY(self)
+        # print(ret)
+        return ret
 
+    def set_G_game(self, G):
+        pass
 
 class QtInterface(DirectObject):
     pass
