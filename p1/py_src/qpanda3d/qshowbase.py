@@ -78,6 +78,7 @@ class QShowBase(ContextShowBase):
             self.isQShowBaseInit = True
             self.size = size
             self.cams = []
+            # self.pipe = GraphicsPipeSelection.get_global_ptr().make_pipe()
 
     def startQt(self):
         if not self._isQtStart:
@@ -130,6 +131,14 @@ class QShowBase(ContextShowBase):
             return float(self.parent.width()) / float(self.parent.height())
         else:
             return super().getAspectRatio(win)
+
+    def run(self):
+        # FIXME
+        if not self._isQtStart:
+            self.win = self.make_window(
+                "", 
+                WindowProperties(),FrameBufferProperties())
+        ContextShowBase.run(self)
 
 class QControl(ControlShowBase, QShowBase):
     def __init__(self):

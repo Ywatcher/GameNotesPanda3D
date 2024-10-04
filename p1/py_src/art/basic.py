@@ -207,3 +207,64 @@ def create_colored_cube(
     return geom
 
 # TODO: intersections
+
+def create_cylinder_node(
+    name:str,
+    lat_res:int,
+    lon_res:int,
+    # scale:float=1,
+    geom_type: GeomEnums = Geom.UH_static
+) -> GeomNode:
+    node = GeomNode("CldrNd."+name)
+    geom = create_cylinder(
+        name, lat_res, lon_res,
+        # scale, 
+        geom_type
+    )
+    node.addGeom(geom)
+    return node
+
+# TODO: fix 
+
+def create_cylinder(
+    name:str,
+    lat_res:int,
+    lon_res:int,
+    scale:float=1,
+    geom_type: GeomEnums = Geom.UH_static
+) -> Geom:
+    assert isinstance(lat_res, int) \
+        and lat_res > 0, \
+        "lat_res should be postive int, got {}".format(lat_res)
+    name_cylinder = "Cldr.{}".format(name)
+    # vertex_size = (lon_res, lat_res)
+    # color = GeomVertexWriter(vdata, "color")
+    # vertex: n_lat * n_lon * 3
+    axis_coord_theta = torch.arange(0,1,step=1/lon_res) * 2 * np.pi
+    # axis_coord_phi = torch.arange(0,1,step=1/lat_res) * 2 * np.pi
+    axis_coord_z = torch.arange(0,1,step=1/lat_res)
+    vertex_coord_theta, vertex_coord_z = torch.meshgrid(
+        axis_coord_theta,axis_coord_z,
+        indexing='ij'
+    )
+    # vertex_coord_r = torch.cos(vertex_coord_phi)
+    vertex_coord_r = 1
+    # vertex_coord_z = torch.sin(vertex_coord_phi)
+    # vertex_coord_z = 
+    vertex_coord_x = torch.cos(vertex_coord_theta) * vertex_coord_r
+    vertex_coord_y = torch.sin(vertex_coord_theta) * vertex_coord_r
+    vertex_coord_xyz = torch.concat([
+        vertex_coord_x.unsqueeze(-1),
+        vertex_coord_y.unsqueeze(-1),
+        vertex_coord_z.unsqueeze(-1)
+    ], dim=-1)
+
+    geom = uv_curve_surface(
+        name=name_cylinder,
+        coord_mat=vertex_coord_xyz,
+        is_u_loop=True,
+        is_v_loop=False, 
+        geom_type = geom_type
+    )
+    
+    return geom

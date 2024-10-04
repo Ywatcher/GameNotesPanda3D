@@ -22,8 +22,10 @@ from panda3d.core import (
 from panda3d_game.game_object import GameObject
 
 from util.texture import (
-    create_color_checkerboard,
     np2texture
+)
+from art.textures.checkboard import(
+    create_color_checkerboard,
 )
 from typing import Set, List, Dict, Callable, Union
 from game.events import Events

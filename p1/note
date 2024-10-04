@@ -30,3 +30,6 @@ regardless whether same player
 
 
 console(game.controlgroup) when init
+
+todo:
+a plot visualization buffer in qt
