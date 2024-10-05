@@ -119,6 +119,9 @@ class ControlShowBase(ContextShowBase):
             self.taskMgr.add(self.handle_actions, "handle_actions")
             # self.taskMgr.add(self.game_controller.update, "update_game_controller")
             self.cam_sensitivity = .1
+            self.delta_h = 0
+            self.delta_p = 0
+            self.delta_r = 0
 
     # def userExit(self):
         # self.log("exit")
@@ -188,6 +191,8 @@ class ControlShowBase(ContextShowBase):
 
             # 将鼠标指针重置到窗口的中心
             self.center_mouse()
+            self.delta_h = delta_x * self.cam_sensitivity
+            self.delta_p = delta_y * self.cam_sensitivity
         return task.cont
 
     def toggle_fullscreen(self):

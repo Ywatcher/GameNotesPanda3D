@@ -87,4 +87,18 @@ def np2texture(
     tex.setRamImage(buffer)
     return tex
 
+def texture_load_np(
+    texture: Texture, 
+    arr: np.ndarray,
+    component_type:int = Texture.T_unsigned_byte, # for 0-255
+    format_:int=None,
+):
+    h = arr.shape[1]
+    w = arr.shape[0]
+    # TODO: assertion
+    texture.setup2dTexture(h, w, component_type, format_)
+    buffer = arr.tobytes()
+    texture.setRamImage(buffer)
+    return texture
+
 
