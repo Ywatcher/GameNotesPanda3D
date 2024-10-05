@@ -1,32 +1,51 @@
-rom vispy.gloo import *
-# https://vispy.org/gallery/gloo/hello_fbo.html
+import sys
+from vispy import app, scene, visuals, use
+import numpy as np
+from vispy.visuals.transforms.linear import MatrixTransform
+import traceback
+try:
+    use('glfw')
+except Exception as e:
+    print(e)
+    print(traceback.format_exc())
+    raise(e)
+    pass
+from vispyutil.scene import UnboundedTurnableCam
 
-class ContextCanvas(FakeCanvas):
-    def __init__(self, size, px_scale=1):
-        # Create texture to render to
-        FakeCanvas.__init__(self)  # create context
-        self._px_scale = int(px_scale)
-        self.size = size
-        self._size = tuple(int(s) * px_scale for s in size)
+class SynchronizedCanvas(scene.SceneCanvas):
+    def __init__(self):
+        scene.SceneCanvas.__init__(
+            self,
+            keys='interactive',
+            show=False,
+        )
+        self.unfreeze()
+        # Set up a viewbox to display camera
+        self.view = self.central_widget.add_view()
+        # Compared to vispy.scene.TurnableCamera,
+        # this camera is unbounded in elevation axis
+        # which agrees with panda3d
+        self.view.camera = UnboundedTurnableCam()
+        self.view.camera.set_range()
 
-        shape = self.physical_size[1], self.physical_size[0]
-        self._rendertex = gloo.Texture2D((shape + (3,))) # FIXME: rgba,4
-        # Create FBO, attach the color buffer and depth buffer
-        self._fbo = gloo.FrameBuffer(self._rendertex, gloo.RenderBuffer(shape))
+    def update_camera(self, mat: np.ndarray, fov=None, aspect=None):
+        self.view.camera._set_scene_transform(MatrixTransform(
+            mat
+        ))
+        self.view.camera.view_changed()
+        # self.view.camera.orbit(1,0)
+        if fov is not None:
+            self.view.camera.fov=fov
+        if aspect is not None:
+            self.view.camera.aspect = aspect
+        self.update()
 
-
-    @property
-    def physical_size(self):
-        pass # TODO
-
-    @property
-    def pixel_scale(self):
-        """The ratio between the number of logical pixels, or 'points', and
-        the physical pixels on the device. In most cases this will be 1.0,
-        but on certain backends this will be greater than 1. This should be
-        used as a scaling factor when writing your own visualisations
-        with gloo (make a copy and multiply all your logical pixel values
-        by it). When writing Visuals or SceneGraph visualisations, this value
-        is exposed as `TransformSystem.px_scale`.
-        """
-        return self.physical_size[0] / self.size[0]
+    def update_camera_hpr(self, h=0,p=0,r=0,fov=None, aspect=None):
+        self.view.camera.azimuth = h
+        self.view.camera.elevation = p
+        self.view.camera.roll = r
+        if fov is not None:
+            self.view.camera.fov=fov
+        if aspect is not None:
+            self.view.camera.aspect = aspect
+        self.update()

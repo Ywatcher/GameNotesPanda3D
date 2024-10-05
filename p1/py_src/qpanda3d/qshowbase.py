@@ -7,7 +7,7 @@ Description :
     Inherit this object to create your custom world
 """
 # from panda3d.core import
-from panda3d_game.app import ContextShowBase, ControlShowBase
+from panda3d_game.app.app_ import ContextShowBase, ControlShowBase
 # PyQt imports
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -46,7 +46,7 @@ from queue import Queue as PyQueue
 from direct.showbase.InputStateGlobal import inputState
 
 
-__all__ = ["QShowBase"]
+__all__ = ["QShowBase", "QControl"]
 
 
 class QShowBase(ContextShowBase):
@@ -136,7 +136,7 @@ class QShowBase(ContextShowBase):
         # FIXME
         if not self._isQtStart:
             self.win = self.make_window(
-                "", 
+                "",
                 WindowProperties(),FrameBufferProperties())
         ContextShowBase.run(self)
 

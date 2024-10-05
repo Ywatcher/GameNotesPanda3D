@@ -80,7 +80,7 @@ class MassedBall(PhysicsGameObject): # not yet inherent GameObject
         self.game_radius:float = (radius / units["length"]).simplify().evalf()
         self.game_mass: float = (mass / units["mass"]).simplify().evalf()
         # create geom
-        self.geom_node = create_sphere_node(name, lat_res=12,lon_res=12)
+        self.geom_node = create_sphere_node(name, lat_res=24,lon_res=24)
         self.geom_np = NodePath(self.geom_node)
         # print(self.game_radius)
         self.geom_np.setScale(self.game_radius)
