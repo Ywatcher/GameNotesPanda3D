@@ -3,8 +3,9 @@ from typing import Callable
 from panda3d.core import Vec3
 from console.console import Console
 from panda3d_game.app import UniversalGravitySpace, PhysicsShowBase
-from game.events import Events
 from panda3d_game.game_object import GameObject
+from game.events import Events
+
 
 
 class PhyscRoomConsole(Console):

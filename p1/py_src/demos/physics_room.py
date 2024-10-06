@@ -1,16 +1,11 @@
 # TODO: a room with walls
 from threading import Thread, Lock
-from panda3d.bullet import BulletWorld
+from typing import Set, List, Dict, Callable, Union
 from sympy import arg
-from console.console import Console
-from panda3d_game.app import ContextShowBase, ControlShowBase, PhysicsShowBase
-from util.log import Loggable
+
+from panda3d.bullet import BulletWorld
 from direct.task import Task
 from direct.showbase.DirectObject import DirectObject
-
-from art.basic import (
-    create_sphere_node,
-)
 from panda3d.core import (
     NodePath,
     CardMaker,
@@ -20,16 +15,22 @@ from panda3d.core import (
     Vec3
 )
 from panda3d_game.game_object import GameObject
+from panda3d_game.app import ContextShowBase, ControlShowBase, PhysicsShowBase
 
 from util.texture import (
     np2texture
 )
+from util.log import Loggable
+from console.console import Console
+from console import PhyscRoomConsole
 from art.textures.checkerboard import(
     create_color_checkerboard,
 )
-from typing import Set, List, Dict, Callable, Union
+from art.basic import (
+    create_sphere_node,
+)
 from game.events import Events
-from console import PhyscRoomConsole
+
 
 
 

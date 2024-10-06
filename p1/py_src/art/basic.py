@@ -1,8 +1,6 @@
 import torch
 from numpy import cos, pi, sin
 import numpy as np
-from util.indexing import loop_bound_idx, tup2cnt
-
 
 from panda3d.core import (
     Geom,
@@ -13,6 +11,7 @@ from panda3d.core import (
     GeomVertexWriter,
     GeomEnums
 )
+from util.indexing import loop_bound_idx, tup2cnt
 # Declare the format of the vertex
 # (what and how data will be stored in the vertex buffer)
 # https://docs.panda3d.org/1.10/python/programming/internal-structures/procedural-generation/custom-vertex-format

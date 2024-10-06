@@ -12,18 +12,16 @@ from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
 # Panda imports
-from panda3d.core import Texture, WindowProperties, CallbackGraphicsWindow
-from panda3d.core import loadPrcFileData
+import builtins
+from panda3d.core import loadPrcFileData, Texture 
 
 from QPanda3D.QPanda3D_Buttons_Translation import QPanda3D_Button_translation
 from QPanda3D.QPanda3D_Keys_Translation import QPanda3D_Key_translation
 from QPanda3D.QPanda3D_Modifiers_Translation import QPanda3D_Modifier_translation
-import builtins
+
 
 __all__ = ["QPanda3DWidget", "Synchronizer"]
-
 
 class Synchronizer(QTimer):
 
@@ -93,7 +91,6 @@ def get_panda_key_modifiers_prefix(evt):
         prefix += "-"
 
     return prefix
-
 class QPanda3DWidget(QWidget):
     """
     An interactive panda3D QWidget
@@ -251,7 +248,6 @@ class QPanda3DWidget(QWidget):
         self.setCursor(QCursor(Qt.ArrowCursor))
 
     def hideCursor(self):
-        print("hide")
         self.setCursor(QCursor(Qt.BlankCursor))
 
     

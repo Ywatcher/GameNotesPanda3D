@@ -1,6 +1,6 @@
 import sys
-from vispy import app, scene, visuals, use
 import numpy as np
+from vispy import app, scene, visuals, use
 from vispy.visuals.transforms.linear import MatrixTransform
 import traceback
 try:

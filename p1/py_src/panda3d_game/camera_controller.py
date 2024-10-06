@@ -1,20 +1,16 @@
-# TODO: a room with walls
 # a camera that can fly
 # from panda3d.core import PointLight, DirectionalLight
-from util.log import Loggable
+# import random
+import numpy as np
 from direct.task import Task
-
-from panda3d_game.controller import PlayerController
-
+from panda3d.core import Camera, PerspectiveLens
 # controller
 # player controller
 # agent controller
-from panda3d.core import Camera, PerspectiveLens
-
-import numpy as np
 # import gizeh as gz
-import random
 
+from util.log import Loggable
+from panda3d_game.controller import PlayerController
 
 class CameraController:
     from panda3d.core import (

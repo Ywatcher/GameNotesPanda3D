@@ -1,25 +1,16 @@
 # import datetime
 from datetime import datetime
+from queue import Queue as PyQueue
 from typing import Dict, Union, List
 from direct.showbase.ShowBase import ShowBase
+from direct.task import Task
+from direct.showbase.InputStateGlobal import inputState
 from panda3d.bullet import BulletWorld
-from game.events import Events
-from util.physics import autocomplete_units, getG
-from util.math import safe_reciprocal
-from util.log import Loggable
-from panda3d_game.camera_controller import CameraController, PlayerCamController
-from panda3d_game.controller import PlayerController
 from panda3d.core import (
     WindowProperties,
     KeyboardButton,
     NodePath,
 )
-from direct.task import Task
-from queue import Queue as PyQueue
-
-from direct.showbase.InputStateGlobal import inputState
-from panda3d_game.app.app_ import ContextShowBase
-from panda3d_game.game_object import GameObject, PhysicsGameObject
 import sympy as sp
 import torch
 from torch import Tensor
@@ -29,7 +20,15 @@ from sympy.physics.units import (
     gram, kilogram, tonne,
     newton, second
 )
+from panda3d_game.camera_controller import CameraController, PlayerCamController
+from panda3d_game.controller import PlayerController
+from panda3d_game.app.app_ import ContextShowBase
+from panda3d_game.game_object import GameObject, PhysicsGameObject
 
+from game.events import Events
+from util.physics import autocomplete_units, getG
+from util.math import safe_reciprocal
+from util.log import Loggable
 
 class PhysicsShowBase(ContextShowBase):
     def __init__(

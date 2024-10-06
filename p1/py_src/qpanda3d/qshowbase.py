@@ -7,14 +7,13 @@ Description :
     Inherit this object to create your custom world
 """
 # from panda3d.core import
-from panda3d_game.app.app_ import ContextShowBase, ControlShowBase
+
 # PyQt imports
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 # from .QtGui import QCursor
 from PyQt5.QtWidgets import *
-# Panda imports
-# from panda3d.core import *
+# panda3d imports
 from panda3d.direct import throw_new_frame, init_app_for_gui
 # from panda3d.core import loadPrcFileData
 # loadPrcFileData("", "window-type none") # Set Panda to draw its main window in an offscreen buffer
@@ -25,7 +24,9 @@ from panda3d.core import (
     LVecBase4f, FrameBufferProperties,
     GraphicsPipe
 )
+from panda3d_game.app.app_ import ContextShowBase, ControlShowBase
 # Set up Panda environment
+
 import platform
 from QPanda3D.QMouseWatcherNode import QMouseWatcherNode
 from QPanda3D import Panda3DWorld
@@ -44,7 +45,6 @@ from direct.task import Task
 from queue import Queue as PyQueue
 
 from direct.showbase.InputStateGlobal import inputState
-
 
 __all__ = ["QShowBase", "QControl"]
 
@@ -119,9 +119,6 @@ class QShowBase(ContextShowBase):
             # self.movePointer = self.empty
             self._isQtStart = True
 
-    def empty(self,*args, **kwargs):
-        pass
-
     def set_parent(self, parent: QWidget):
         self.parent = parent
         self.mouseWatcherNode = QMouseWatcherNode(parent)
@@ -140,6 +137,7 @@ class QShowBase(ContextShowBase):
                 WindowProperties(),FrameBufferProperties())
         ContextShowBase.run(self)
 
+    
 class QControl(ControlShowBase, QShowBase):
     def __init__(self):
         QShowBase.__init__(self)
@@ -215,4 +213,3 @@ class QControl(ControlShowBase, QShowBase):
         QShowBase.set_parent(self, parent)
         if self.is_cursor_in_game:
             self.parent.hideCursor()
-        

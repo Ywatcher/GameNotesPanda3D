@@ -1,19 +1,21 @@
-# import datetime
 from datetime import datetime
+from queue import Queue as PyQueue
+from typing import Tuple
+
 from direct.showbase.ShowBase import ShowBase
-from game.events import Events
-from util.log import Loggable
-from panda3d_game.camera_controller import CameraController, PlayerCamController
-from panda3d_game.controller import PlayerController
+from direct.showbase.InputStateGlobal import inputState
+from direct.task import Task
 from panda3d.core import (
     WindowProperties,
     KeyboardButton,
 )
-from direct.task import Task
-from queue import Queue as PyQueue
 
-from direct.showbase.InputStateGlobal import inputState
-from typing import Tuple
+from game.events import Events
+from util.log import Loggable
+from panda3d_game.camera_controller import (
+    CameraController, PlayerCamController
+)
+from panda3d_game.controller import PlayerController
 
 
 class ContextShowBase(ShowBase, Loggable):
@@ -239,5 +241,3 @@ class ControlShowBase(ContextShowBase):
 
     def getMouseXY(self) -> Tuple[int, int]:
         return self._getMouseX(), self._getMouseY()
-
-

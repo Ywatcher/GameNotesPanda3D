@@ -1,7 +1,9 @@
 from abc import ABC
-from typing import Callable, Dict, Iterable, List, Optional, Union, Tuple
+from typing import (
+    Callable, Dict, Iterable, 
+    List, Optional, Union, Tuple
+)
 from queue import Queue as PyQueue
-
 from direct.showbase.DirectObject import DirectObject
 from util.log import Loggable
 from game.events import Events

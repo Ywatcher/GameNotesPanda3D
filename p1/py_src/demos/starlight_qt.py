@@ -1,4 +1,5 @@
 import sys
+import threading
 from PyQt5 import sip
 import threading
 from PyQt5 import QtWidgets, QtGui
@@ -11,7 +12,7 @@ from panda3d_game.app import (
     ContextShowBase
 )
 from qpanda3d import QShowBase
-import threading
+
 
 
 class QtInterface:

@@ -1,8 +1,12 @@
 # from panda3d.core import PointLight, DirectionalLight
+
 import traceback
-from direct.task import Task
+from abc import ABC
+from typing import Set, List, Dict,Callable, Union
+from datetime import datetime
 import numpy as np
-import torch
+from direct.task import Task
+
 from panda3d.core import (
     Geom,
     GeomNode,
@@ -19,15 +23,13 @@ from panda3d.core import (
      WindowProperties
 )
 from direct.showbase import DirectObject
-from typing import Set, List, Dict,Callable, Union
-from datetime import datetime
-from abc import ABC
-from util.log import Loggable
-
-
 # TODO: 
 # implement a PlayerController with InputState
 from direct.showbase.InputStateGlobal import inputState
+
+from util.log import Loggable
+
+
 
 class PlayerController(DirectObject.DirectObject, Loggable):
     # another way is to use dict
@@ -76,10 +78,7 @@ class PlayerController(DirectObject.DirectObject, Loggable):
         # TODO: remove combined keys
         if button in self.held_keys:
             # print(
-            self.held_keys.remove(button)
-            
-        
-        
+            self.held_keys.remove(button)        
         
     def has_key(self, button:str) -> bool:
         return button in self.held_keys
@@ -102,4 +101,3 @@ class PlayerController(DirectObject.DirectObject, Loggable):
                     self.log(traceback.format_exc())
                     self.log("-------------------------------------")
         return Task.cont
-

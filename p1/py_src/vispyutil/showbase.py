@@ -1,7 +1,5 @@
-from vispy import app
 import numpy as np
-from util.texture import np2texture, rgba_mpl2pd3d, texture_load_np
-from panda3d_game.app.app_ import ContextShowBase
+from vispy import app
 from panda3d.core import (
     Geom,
     GeomNode,
@@ -17,7 +15,10 @@ from panda3d.core import (
     Point2,
     Vec3
 )
+from panda3d_game.app.app_ import ContextShowBase
+
 from util.rendering import *
+from util.texture import np2texture, rgba_mpl2pd3d, texture_load_np
 from vispyutil.scene import UnboundedTurnableCam
 from vispyutil.canvas import SynchronizedCanvas
 

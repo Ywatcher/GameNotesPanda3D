@@ -2,53 +2,54 @@
 # a camera that can fly
 # from panda3d.core import PointLight, DirectionalLight
 import os
-from direct.task import Task
+from typing import List,Set, List, Dict,Callable
+from collections import OrderedDict
+from abc import ABC
 import numpy as np
 import torch
 from torch import Tensor
-from art.basic import create_cube_node, create_sphere_node,uv_curve_surface, create_colored_cube_node
+from torch.nn import functional as F
+from sympy.physics.units import (
+    kilometer, meter,centimeter,
+    gram, kilogram, tonne,
+    newton, second
+)
+
 from panda3d.core import (
     NodePath,
     WindowProperties,
-    Vec3
+    Vec3,
+    TextNode,
+    PNMImage, Texture,
+    CardMaker,Point2,
+    NodePath, Camera, PerspectiveLens,
+    Point3, LVector3f
 )
 from direct.gui.OnscreenText import OnscreenText
-from panda3d.core import TextNode
-from collections import OrderedDict
-
-from panda3d_game.app import ControlShowBase, ContextShowBase
+from direct.task import Task
 from direct.showbase import DirectObject
-from panda3d_game.game_object import GameObject, PhysicsGameObject
-from panda3d_game.controller import PlayerController
-
-# controller
-# player controller
-# agent controller
-from typing import Set, List, Dict,Callable
-from abc import ABC
-from panda3d.core import PNMImage, Texture
-from panda3d.core import CardMaker
-from panda3d.core import Point2
-from panda3d.core import NodePath, Camera, PerspectiveLens
-import torch
-
-from demos.physics_room import PhyscRoom, PhyscRoomConsole, CMDInterface
-
-
-from panda3d.core import Point3, LVector3f
 from panda3d.bullet import (
     BulletWorld,
     BulletBoxShape,
     BulletPlaneShape,
     BulletRigidBodyNode, BulletSphereShape
 )
-from sympy.physics.units import (
-    kilometer, meter,centimeter,
-    gram, kilogram, tonne,
-    newton, second
+
+from panda3d_game.app import ControlShowBase, ContextShowBase
+from panda3d_game.game_object import GameObject, PhysicsGameObject
+from panda3d_game.controller import PlayerController
+
+# controller
+# player controller
+# agent controller
+
+from art.basic import (
+    create_cube_node, create_sphere_node,
+    uv_curve_surface, create_colored_cube_node
 )
-from typing import List
-from torch.nn import functional as F
+from demos.physics_room import (
+    PhyscRoom, PhyscRoomConsole, CMDInterface
+)
 
 from util.math import one,safe_reciprocal
 from util.physics import autocomplete_units, G_val, getG
