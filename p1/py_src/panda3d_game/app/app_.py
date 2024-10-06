@@ -124,6 +124,7 @@ class ControlShowBase(ContextShowBase):
             self.delta_r = 0
         self.flip_x = flip_x
         self.flip_y = flip_y
+        self.cursor_in()
 
     @property
     def flip_x_coefficient(self) -> int:
@@ -238,3 +239,5 @@ class ControlShowBase(ContextShowBase):
 
     def getMouseXY(self) -> Tuple[int, int]:
         return self._getMouseX(), self._getMouseY()
+
+

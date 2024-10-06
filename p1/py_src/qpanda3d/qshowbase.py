@@ -163,18 +163,18 @@ class QControl(ControlShowBase, QShowBase):
             self.taskMgr.add(self.update_camera, "update_camera_task")
             self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
             self.taskMgr.add(self.handle_actions, "handle_actions")
+            self.delta_h = 0
+            self.delta_p = 0
+            self.delta_r = 0
         ControlShowBase.__init__(self, False, False)
 
     @property
     def flip_y_coefficient(self) -> int:
         return 2*int(self.flip_y) - 1
 
-
     def startQt(self):
         self.getMouseXY = self.getMouseXY_Q
         self.movePointer = self.movePointer_Q
-        # self.update_camera = self.update_camera_tmp
-        # self.center_mouse = self.center_mouse_tmp
         self.center_mouse = self.center_mouse_Q
         self.cam_sensitivity = 10
         QShowBase.startQt(self)
@@ -189,16 +189,6 @@ class QControl(ControlShowBase, QShowBase):
         # print("move")
         self.parent.movePointer(device,x,y)
 
-    # def getMouseX_Q(self):
-    #     pass
-    # def getMouseY_Q(self):
-    #     pass
-
-    # def center_mouse_tmp(self):
-    #     mouse_x, mouse_y = self.getMouseXY()
-    #     self.prev_mouse_x = mouse_x
-    #     self.prev_mouse_y = mouse_y
-
     def center_mouse_Q(self):
         window_center_x = self.parent.width() // 2
         window_center_y = self.parent.height() // 2
@@ -211,23 +201,18 @@ class QControl(ControlShowBase, QShowBase):
         self.prev_mouse_x = (rel_x)
         self.prev_mouse_y = (rel_y)
 
-    # def update_camera_tmp(self): # FIXME
-    #     if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
-    #         mouse_x, mouse_y = self.getMouseXY()
-    #         # calculate the shift of the mouse
-    #         delta_x = (mouse_x - self.prev_mouse_x)
-    #         delta_y = mouse_y - self.prev_mouse_y
+    def cursor_in(self):
+        ControlShowBase.cursor_in(self)
+        if self.parent is not None:
+            self.parent.hideCursor()
 
-    #         # 调整摄像机的水平旋转和俯仰角度
-    #         camera_h = self.display_camera.getH() - delta_x * 0.1
-    #         camera_p = self.display_camera.getP() - delta_y * 0.1
+    def cursor_out(self):
+        ControlShowBase.cursor_out(self)
+        if self.parent is not None:
+            self.parent.showCursor()
 
-    #         # 设置新的摄像机角度
-    #         self.display_camera.setH(camera_h)
-    #         self.display_camera.setP(camera_p)
-
-    #         # 将鼠标指针重置到窗口的中心
-    #         # self.center_mouse()
-    #         self.prev_mouse_x = mouse_x
-    #         self.prev_mouse_y = mouse_y
-    #     return task.cont
+    def set_parent(self,  parent: QWidget):
+        QShowBase.set_parent(self, parent)
+        if self.is_cursor_in_game:
+            self.parent.hideCursor()
+        

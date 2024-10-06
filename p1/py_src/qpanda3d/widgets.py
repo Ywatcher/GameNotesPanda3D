@@ -193,7 +193,6 @@ class QPanda3DWidget(QWidget):
                 print(k)
             messenger.send(k)
             # FIXME: if k in the list that can be sent
-            print(k)
             messenger.send('button', [k])
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem")
@@ -245,6 +244,15 @@ class QPanda3DWidget(QWidget):
         global_y = widget_pos.y() + int(y)
         #TODO: multi device
         QCursor.setPos(global_x,global_y)
+
+    # TODO:
+    # requestProperties
+    def showCursor(self):
+        self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def hideCursor(self):
+        print("hide")
+        self.setCursor(QCursor(Qt.BlankCursor))
 
     
     # def update_camera_tmp(self, task):

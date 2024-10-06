@@ -24,6 +24,7 @@ from vispyutil.canvas import SynchronizedCanvas
 
 class CanvasBackgroundShowBase(ContextShowBase):
     def __init__(self, canvas: SynchronizedCanvas):
+        # if not has
         ContextShowBase.__init__(self)
         # ControlShowBase.__init__(self)
         self.bg_canvas = canvas
