@@ -22,27 +22,34 @@ from QPanda3D.QPanda3D_Keys_Translation import QPanda3D_Key_translation
 from QPanda3D.QPanda3D_Modifiers_Translation import QPanda3D_Modifier_translation
 import builtins
 
-__all__ = ["QPanda3DWidget"]
+__all__ = ["QPanda3DWidget", "Synchronizer"]
 
 
-# class QPanda3DSynchronizer(QTimer):
-#     def __init__(self, qPanda3DWidget, FPS=60):
-#         QTimer.__init__(self)
-#         self.qPanda3DWidget = qPanda3DWidget
-#         dt = 1000 // FPS
-#         self.setInterval(int(round(dt)))
-#         self.timeout.connect(self.tick)
+class Synchronizer(QTimer):
 
-#     def tick(self):
-#         if self.isActive():
-#             try:
-#                 builtins.base.taskMgr.step()
-#             except:
-#                 pass
-#             self.qPanda3DWidget.update()
+    def __init__(self, FPS=60):
+        QTimer.__init__(self)
+        dt = 1000 // FPS
+        self.setInterval(int(round(dt)))
+        self.timeout.connect(self.tick)
+        self.showbase = [] # it should have only one member
+        self.widgets = []
 
-#     def __del__(self):
-#         self.stop()
+    def addWidget(self, widget):
+        self.widgets.append(widget)
+
+    def setShowBase(self,  showbase):
+        assert hasattr(showbase, "taskMgr")
+        self.showbase.append(showbase)
+
+    def tick(self):
+        # print(self.showbase)
+        if len(self.showbase)>0:
+            self.showbase[0].taskMgr.step()
+            # self.showbsae.taskMgr.step()
+        for widget in self.widgets:
+            # print(widget.mapToGlobal(QPoint(0, 0)))
+            widget.update()
 
 
 # TODO: handle key press and mouse move together
@@ -201,7 +208,6 @@ class QPanda3DWidget(QWidget):
                 print(k)
             messenger.send(k)
             # FIXME:
-            print(k)
             messenger.send('button-up', [k.strip('-up')])
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem")
@@ -241,23 +247,23 @@ class QPanda3DWidget(QWidget):
         QCursor.setPos(global_x,global_y)
 
     
-    def update_camera_tmp(self, task):
-        """updata camera to follow mouse movement"""
-        if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
-            # get mouse position (unified to range(-1,1))
-            mouse_x, mouse_y = self.getMouseXY() #FIXME
-            # calculate the shift of the mouse
-            delta_x = (mouse_x - self.prev_mouse_x)
-            delta_y = mouse_y - self.prev_mouse_y
+    # def update_camera_tmp(self, task):
+    #     """updata camera to follow mouse movement"""
+    #     if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
+    #         # get mouse position (unified to range(-1,1))
+    #         mouse_x, mouse_y = self.getMouseXY() #FIXME
+    #         # calculate the shift of the mouse
+    #         delta_x = mouse_x - self.prev_mouse_x
+    #         delta_y = mouse_y - self.prev_mouse_y
 
-            # 调整摄像机的水平旋转和俯仰角度
-            camera_h = self.display_camera.getH() - delta_x * 0.1
-            camera_p = self.display_camera.getP() - delta_y * 0.1
+    #         # 调整摄像机的水平旋转和俯仰角度
+    #         camera_h = self.display_camera.getH() - delta_x * 0.1
+    #         camera_p = self.display_camera.getP() - delta_y * 0.1
 
-            # 设置新的摄像机角度
-            self.display_camera.setH(camera_h)
-            self.display_camera.setP(camera_p)
+    #         # 设置新的摄像机角度
+    #         self.display_camera.setH(camera_h)
+    #         self.display_camera.setP(camera_p)
 
-            # 将鼠标指针重置到窗口的中心
-            self.center_mouse()
-        return task.cont
+    #         # 将鼠标指针重置到窗口的中心
+    #         self.center_mouse()
+    #     return task.cont

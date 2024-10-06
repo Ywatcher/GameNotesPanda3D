@@ -86,7 +86,7 @@ class ContextShowBase(ShowBase, Loggable):
 
 
 class ControlShowBase(ContextShowBase):
-    def __init__(self):
+    def __init__(self, flip_x = False, flip_y=False):
         # if not hasattr(self, 'isContextShowBaseInit'):
             # print("init context showbase")
             # ContextShowBase.__init__(self)
@@ -122,6 +122,16 @@ class ControlShowBase(ContextShowBase):
             self.delta_h = 0
             self.delta_p = 0
             self.delta_r = 0
+        self.flip_x = flip_x
+        self.flip_y = flip_y
+
+    @property
+    def flip_x_coefficient(self) -> int:
+        return -2*int(self.flip_x) + 1
+
+    @property
+    def flip_y_coefficient(self) -> int:
+        return -2*int(self.flip_y) + 1
 
     # def userExit(self):
         # self.log("exit")
@@ -182,8 +192,8 @@ class ControlShowBase(ContextShowBase):
             delta_y = mouse_y - self.prev_mouse_y
 
             # 调整摄像机的水平旋转和俯仰角度
-            camera_h = self.display_camera.getH() - delta_x * self.cam_sensitivity
-            camera_p = self.display_camera.getP() - delta_y * self.cam_sensitivity
+            camera_h = self.display_camera.getH() - delta_x * self.cam_sensitivity * self.flip_x_coefficient
+            camera_p = self.display_camera.getP() - delta_y * self.cam_sensitivity * self.flip_y_coefficient
 
             # 设置新的摄像机角度
             self.display_camera.setH(camera_h)
