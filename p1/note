@@ -10,6 +10,7 @@ gui for player
 
 gui for god
 
+todo: customize layout
 
 ----
 
@@ -33,3 +34,33 @@ console(game.controlgroup) when init
 
 todo:
 a plot visualization buffer in qt
+
+
+
+----
+
+a spy game:
+chatgroup spy game:
+there are different chatgroups
+each person has their own gifts and interest
+ - interest
+ - interest unfound 
+
+use embedding vectors to assign these gifts
+learn from realworld data
+
+people tend to discuss topic of their interest
+
+secret topics
+some people are hostile 
+so do not talk things with potentially hostile people
+
+inactive groups can be dimissed
+
+each group has a holder
+
+create group-assign a holder
+
+
+
+
