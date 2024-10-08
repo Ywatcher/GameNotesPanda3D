@@ -17,12 +17,14 @@ class Console(ABC, Loggable):
     def log(self, s: str, logtype="print"):
         if logtype == "output":
             self.out_buffer.put(s)
-        elif logtype == "print":
-            print(s)
-        elif logtype == "log":
-            self.log_buffer.put(s)
         else:
-            raise NotImplementedError
+            super().log(s, logtype)
+        # elif logtype == "print":
+        #     print(s)
+        # elif logtype == "log":
+        #     self.log_buffer.put(s)
+        # else:
+        #     raise NotImplementedError
 
     @property
     def command_list(self) -> List[str]:

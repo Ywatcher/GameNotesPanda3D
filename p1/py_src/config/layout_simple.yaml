@@ -1,0 +1,4 @@
+left:
+    top: "panda3d"
+    bot: "console"
+right: "logger"
