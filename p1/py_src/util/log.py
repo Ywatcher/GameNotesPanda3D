@@ -10,18 +10,26 @@ class Loggable(Logger):
 
     all_loggables = []
     default_handlers = []
-    def __init__(self, name=None, level=logging.DEBUG):
+    def __init__(self, name=None, level=logging.DEBUG, use_parent=False):
         if not hasattr(self, "isLoggableInit"):
             if name is None: 
                 if not hasattr(self, "name"):
                     name = "anon"
                 else:
                     name = self.name
-            Logger.__init__(self, name)
-            self.setLevel(level)
+            self.logger = Logger(name)
+            self.logger.setLevel(level)
             Loggable.all_loggables.append(self)
             self.addHandlers(Loggable.default_handlers)
+            self.use_parent = use_parent  #TODO
             self.isLoggableInit = True
+
+    def addHandler(self, *args, **kwargs):
+        self.logger.addHandler(*args, **kwargs)
+
+    def _log(self, *args, **kwargs):
+        self.logger._log(*args, **kwargs)
+    
 
     def log(self, s:str, logtype=GAME_LOG):
         if logtype == "print":
