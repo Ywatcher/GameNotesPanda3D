@@ -24,6 +24,11 @@ class Loggable(Logger):
             self.use_parent = use_parent  #TODO
             self.isLoggableInit = True
 
+    def debug(self, *args, **kwargs):
+        # self.logger.debug(*args, **kwargs)
+        # FIXME
+        pass
+
     def addHandler(self, *args, **kwargs):
         self.logger.addHandler(*args, **kwargs)
 

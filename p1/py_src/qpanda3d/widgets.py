@@ -20,6 +20,8 @@ from QPanda3D.QPanda3D_Buttons_Translation import QPanda3D_Button_translation
 from QPanda3D.QPanda3D_Keys_Translation import QPanda3D_Key_translation
 from QPanda3D.QPanda3D_Modifiers_Translation import QPanda3D_Modifier_translation
 
+from qtutil.qobserver import *
+from qtutil.event import *
 
 __all__ = ["QPanda3DWidget", "Synchronizer"]
 
@@ -91,7 +93,7 @@ def get_panda_key_modifiers_prefix(evt):
         prefix += "-"
 
     return prefix
-class QPanda3DWidget(QWidget):
+class QPanda3DWidget(QWidget, QObserved):
     """
     An interactive panda3D QWidget
     Parent : Parent QT Widget
@@ -104,6 +106,7 @@ class QPanda3DWidget(QWidget):
         synchronizer=None
     ):
         QWidget.__init__(self, parent)
+        QObserved.__init__(self)
 
         # set fixed geometry
         self.panda3DWorld = panda3DWorld
@@ -184,6 +187,9 @@ class QPanda3DWidget(QWidget):
 
     def keyPressEvent(self, evt):
         key = evt.key()
+        if key==ord(':'):
+            evt_to_cmd = QEvent(FOCUS_CONSOLE)
+            self.send_qevent(evt_to_cmd)
         try:
             k = f"{get_panda_key_modifiers_prefix(evt)}{QPanda3D_Key_translation[key]}"
             if self.debug:
@@ -249,6 +255,13 @@ class QPanda3DWidget(QWidget):
 
     def hideCursor(self):
         self.setCursor(QCursor(Qt.BlankCursor))
+
+    def setFocus(self, cursor_in=True):
+        QWidget.setFocus(self)
+        if cursor_in:
+            self.panda3DWorld.cursor_in()
+
+    
 
     
     # def update_camera_tmp(self, task):
