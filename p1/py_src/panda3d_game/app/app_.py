@@ -77,9 +77,6 @@ class ContextShowBase(ShowBase, Loggable):
         )
         super().run()
 
-    def log(self, s:str, logtype:str="print"):
-        print(s)
-
     def __repr__(self):
         if hasattr(self, "name"):
             return self.name

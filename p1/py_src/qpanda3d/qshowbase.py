@@ -68,7 +68,7 @@ class QShowBase(ContextShowBase):
         # call base.graphicsEngine.renderFrame() in tick()
         # implement renderframe in qshowbase
         if not hasattr(self, "isQShowBaseInit"):
-            self.parent = None
+            self.parent_ = None
             ContextShowBase.__init__(self)
             self.screenTexture = Texture()
             self.buff = None
@@ -120,12 +120,12 @@ class QShowBase(ContextShowBase):
             self._isQtStart = True
 
     def set_parent(self, parent: QWidget):
-        self.parent = parent
+        self.parent_ = parent
         self.mouseWatcherNode = QMouseWatcherNode(parent)
 
     def getAspectRatio(self, win = None):
-        if win is None and self.parent is not None:
-            return float(self.parent.width()) / float(self.parent.height())
+        if win is None and self.parent_ is not None:
+            return float(self.parent_.width()) / float(self.parent_.height())
         else:
             return super().getAspectRatio(win)
 
@@ -137,7 +137,7 @@ class QShowBase(ContextShowBase):
                 WindowProperties(),FrameBufferProperties())
         ContextShowBase.run(self)
 
-    
+
 class QControl(ControlShowBase, QShowBase):
     def __init__(self):
         QShowBase.__init__(self)
@@ -185,31 +185,31 @@ class QControl(ControlShowBase, QShowBase):
 
     def movePointer_Q(self, device, x,y):
         # print("move")
-        self.parent.movePointer(device,x,y)
+        self.parent_.movePointer(device,x,y)
 
     def center_mouse_Q(self):
-        window_center_x = self.parent.width() // 2
-        window_center_y = self.parent.height() // 2
+        window_center_x = self.parent_.width() // 2
+        window_center_y = self.parent_.height() // 2
         self.movePointer(0, window_center_x, window_center_y)
         # rel_x = -1 + 2 * pos.x() / self.parent.width()
         # rel_y = -1 + 2 * pos.y() / self.parent.height()
-        rel_x = -1 + 2 * window_center_x / self.parent.width()
-        rel_y = -1 + 2 * window_center_y / self.parent.height()
+        rel_x = -1 + 2 * window_center_x / self.parent_.width()
+        rel_y = -1 + 2 * window_center_y / self.parent_.height()
         rel_y = -rel_y
         self.prev_mouse_x = (rel_x)
         self.prev_mouse_y = (rel_y)
 
     def cursor_in(self):
         ControlShowBase.cursor_in(self)
-        if self.parent is not None:
-            self.parent.hideCursor()
+        if self.parent_ is not None:
+            self.parent_.hideCursor()
 
     def cursor_out(self):
         ControlShowBase.cursor_out(self)
-        if self.parent is not None:
-            self.parent.showCursor()
+        if self.parent_ is not None:
+            self.parent_.showCursor()
 
     def set_parent(self,  parent: QWidget):
         QShowBase.set_parent(self, parent)
         if self.is_cursor_in_game:
-            self.parent.hideCursor()
+            self.parent_.hideCursor()

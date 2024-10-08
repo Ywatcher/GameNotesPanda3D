@@ -99,9 +99,11 @@ class CameraController:
 
 
 class PlayerCamController(CameraController, PlayerController):
-    def __init__(self, camera):  # TODO: input keymap dict
+    def __init__(self, camera, name="PlayerCamController"):  # TODO: input keymap dict
+        Loggable.__init__(self, name)
         CameraController.__init__(self, camera)  # TODO
         PlayerController.__init__(self)
+        self.name = name
         # from panda3d.core import KeyboardButton
         self.key_maps = {
             'w': self.call_move_forward,
