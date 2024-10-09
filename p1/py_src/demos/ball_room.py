@@ -217,9 +217,11 @@ class PhysicsRoomBalls(MultiRegionApp):
 
     def apply_gravitational_force(self, task):
         # N by N matrix, upper triaglar
+        node_poses = self.get_node_poses(self.gravitational_bodies)
+        node_dist = node_poses.unsqueeze(0) - node_poses.unsqueeze(1)
         gravity = self.cal_gravity(
             self.masses,
-            self.get_node_dist(self.gravitational_bodies),
+            node_dist,
             sumup=True
         )
         self.batch_apply_force(
