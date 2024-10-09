@@ -1,6 +1,0 @@
-# starfield generators
-
-
-# background
-
-# stars

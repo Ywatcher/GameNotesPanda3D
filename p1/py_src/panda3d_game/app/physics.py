@@ -91,6 +91,7 @@ class UniversalGravitySpace(PhysicsShowBase):
                     raise e
             self.G_game_tensor = torch.Tensor([self.G_game])
             if not hasattr(self, 'gravitational_bodies'):
+                # TODO: gravitation in groups
                 self.gravitational_bodies = []
 
     @property
