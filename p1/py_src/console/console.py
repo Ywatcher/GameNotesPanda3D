@@ -1,6 +1,6 @@
 from abc import ABC
 from typing import (
-    Callable, Dict, Iterable, 
+    Callable, Dict, Iterable,
     List, Optional, Union, Tuple
 )
 from queue import Queue as PyQueue
@@ -96,6 +96,9 @@ class Console(ABC, Loggable):
                 # raise
         except Exception as e:
             self.log(str(e))
+            import traceback
+            traceback.print_exc()
+
 
     def get_cmd_func(self, command):
         if command in self.command_dict:

@@ -6,13 +6,13 @@ from logging import Logger, Handler
 GAME_LOG = 51
 logging.addLevelName(GAME_LOG, "game log")
 
-class Loggable(Logger):
+class Loggable:
 
     all_loggables = []
     default_handlers = []
     def __init__(self, name=None, level=logging.DEBUG, use_parent=False):
         if not hasattr(self, "isLoggableInit"):
-            if name is None: 
+            if name is None:
                 if not hasattr(self, "name"):
                     name = "anon"
                 else:
@@ -34,7 +34,7 @@ class Loggable(Logger):
 
     def _log(self, *args, **kwargs):
         self.logger._log(*args, **kwargs)
-    
+
 
     def log(self, s:str, logtype=GAME_LOG):
         if logtype == "print":
@@ -51,11 +51,11 @@ class Loggable(Logger):
 
     @classmethod
     def add_handlers_for_all(cls, handlers:Union[Handler, List[Handler]], default=True):
-        
+
         if isinstance(handlers, Handler):
             handlers = [handlers]
         if default:
             cls.default_handlers += handlers
         for loggable in cls.all_loggables:
             loggable.addHandlers(handlers)
-            
+
