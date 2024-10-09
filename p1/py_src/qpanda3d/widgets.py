@@ -233,11 +233,13 @@ class QPanda3DWidget(QWidget, QObserved):
         if self.panda3DWorld.screenTexture.mightHaveRamImage():
             self.panda3DWorld.screenTexture.setFormat(Texture.FRgba32)
             data = self.panda3DWorld.screenTexture.getRamImage().getData()
-            img = QImage(data, self.panda3DWorld.screenTexture.getXSize(), self.panda3DWorld.screenTexture.getYSize(),
-                         QImage.Format_ARGB32).mirrored()
+            img = QImage(
+                data, self.panda3DWorld.screenTexture.getXSize(), 
+                self.panda3DWorld.screenTexture.getYSize(),
+                QImage.Format_ARGB32
+            ).mirrored()
             self.paintSurface.begin(self)
             self.paintSurface.drawImage(0, 0, img)
-
             self.paintSurface.end()
 
     def movePointer(self, device, x, y):

@@ -33,18 +33,12 @@ from ui.qtui.qlogger import *
 #     def setOutFocusKeyPress(self, enable:bool=True):
 #         self.outFocusKeyPressEnabled = enable
 
-
-# class RawQtGUI(QtGUI):
-#     # triggers _manager_start_game when starts
-#     def __init__(self, FPS=60):
-#         self.FPS = FPS
-#         self.synchronizer = QPanda3DSynchronizer(FPS)
-
-
 # class AdvancedQtGUI(QtGUI):
 #     # create a menu, with buttons to start game
 #     # button "new window"
 #     pass
+
+# TODO: make compatible with abstract gui
 
 class FocusFilter(QObject):
     # TODO: move to qtutil
@@ -59,7 +53,7 @@ class FocusFilter(QObject):
         return super().eventFilter(obj, event)
 
 class RawQtGUI(QMainWindow):
-    def __init__(self, FPS=60, stylesheet=styleSheet):
+    def __init__(self, FPS=60, stylesheet=styleSheet, window_title="Three Dock Layout"):
         super().__init__()
         self.FPS = FPS
         # Create three dock widgets
@@ -73,7 +67,7 @@ class RawQtGUI(QMainWindow):
         # Split the left dock area vertically (top and bottom)
         self.splitDockWidget(self.dock_top_left, self.dock_bottom_left, Qt.Vertical)
         self.resizeDocks([self.dock_top_left, self.dock_bottom_left], [200, 200], Qt.Vertical)
-        self.setWindowTitle("Three Dock Layout")
+        self.setWindowTitle(window_title)
         self.resize(1600, 1200)
         self.panda3d = None
         self.synchronizer = Synchronizer(self.FPS)
@@ -111,10 +105,8 @@ class RawQtGUI(QMainWindow):
         self.synchronizer.addWidget(self.pandaWidget)
         self.dock_top_left.setWidget(self.pandaWidget)
         self.synchronizer.start()
-        self.panda_mouse_watcher = self.panda3d.mouseWatcherNode # FIXME: let a widget watch this
+        self.panda_mouse_watcher = self.panda3d.mouseWatcherNode 
         self.pandaWidget.setFocus()
-        
-        # self.panda3d.cam_sensitivity = 0.01
 
     # todo: remove a widget
 
