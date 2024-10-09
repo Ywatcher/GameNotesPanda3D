@@ -67,7 +67,10 @@ class PhysicsShowBase(ContextShowBase):
 
 class UniversalGravitySpace(PhysicsShowBase):
     def setGGame(self, G_game:float):
-        pass
+        self.G_game = float(G_game)
+
+    def set_G_game(self, G_game):
+        self.setGGame(G_game)
 
     def __init__(
         self,
@@ -101,9 +104,11 @@ class UniversalGravitySpace(PhysicsShowBase):
 
     def apply_gravitational_force(self, task):
         # N by N matrix, upper triaglar
+        node_poses = self.get_node_poses(self.gravitational_bodies)
+        node_dist = node_poses.unsqueeze(0) - node_poses.unsqueeze(1)
         gravity = self.cal_gravity(
             self.masses,
-            self.get_node_dist(self.gravitational_bodies),
+            node_dist,
             sumup=True
         )
         self.batch_apply_force(
@@ -114,6 +119,11 @@ class UniversalGravitySpace(PhysicsShowBase):
 
     @staticmethod
     def get_node_poses(node_paths:List[NodePath]) -> Tensor:
+        """
+        :return: n by d tensor,
+            n be number of nodepaths,
+            d be 3
+        """
         pos = torch.Tensor([
             n.getPos()
             for n in node_paths
@@ -122,6 +132,14 @@ class UniversalGravitySpace(PhysicsShowBase):
 
     @staticmethod
     def get_node_dist(node_paths:List[NodePath]) -> Tensor:
+        """
+        get vector distance between each two nodes in the lists
+        be aware, this gives the pos of each i in
+            the COOORDINATE of each j,
+            if j is rotated then the axes are rotated
+        :node_paths: n nodes
+        :return: nxnx3 tensor for vector distance
+        """
         nr_nodes = len(node_paths)
         # FIXME: use vector distance
         # dist ij
