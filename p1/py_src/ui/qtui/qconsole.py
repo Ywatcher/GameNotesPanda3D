@@ -1,8 +1,9 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, QEvent
 from PyQt5.QtWidgets import QPlainTextEdit
 from console import Console
 from util.log import Loggable
 from qtutil.qobserver import QObserved
+from qtutil.event import *
 
 class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
     def __init__(self, title, console:Console=None):
@@ -13,7 +14,7 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
         self.console = console
         self.setPlaceholderText(self.prompt)
         self.prev_cursor = self.cursor_pos
-        
+
 
     @property
     def prompt(self):
@@ -30,11 +31,11 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
         pos_bfore_click = self.cursor_pos  # get current cursor
         super().mousePressEvent(event)
         pos_after_click = self.cursor_pos
-        if pos_after_click < self.prev_cursor:  
+        if pos_after_click < self.prev_cursor:
             cursor = self.textCursor()
-            cursor.setPosition(pos_bfore_click)  
-            self.setTextCursor(cursor)  
-        
+            cursor.setPosition(pos_bfore_click)
+            self.setTextCursor(cursor)
+
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
@@ -51,10 +52,10 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
             pos_bfore_click = self.cursor_pos
             super().keyPressEvent(event)
             pos_after_click = self.cursor_pos
-            if pos_after_click < self.prev_cursor:  
+            if pos_after_click < self.prev_cursor:
                 cursor = self.textCursor()
-                cursor.setPosition(pos_bfore_click)  
-                self.setTextCursor(cursor)  
+                cursor.setPosition(pos_bfore_click)
+                self.setTextCursor(cursor)
 
     def handle_command(self):
         command = self.toPlainText().strip()[self.prev_cursor:]
@@ -72,8 +73,8 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
             self.put(o)
 
     def put(
-        self, s, 
-        linebreak=True, 
+        self, s,
+        linebreak=True,
         refresh_cursor=True,
         prompt=True
     ):
@@ -92,4 +93,4 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
     def clear(self):
         super().clear(self)
         self.prev_cursor = self.cursor_pos
-        
+
