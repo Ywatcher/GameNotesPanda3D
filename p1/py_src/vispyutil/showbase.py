@@ -49,6 +49,7 @@ class CanvasBackgroundShowBase(ContextShowBase):
         self.bg_plane_pth.setBin("background", SORT_BG)
         self.bg_plane_pth.setDepthTest(False)
         self.bg_plane_pth.setDepthWrite(False)
+        self.bg_plane_pth.setLightOff()
 
         self.taskMgr.add(self.updateBGTask)
 
