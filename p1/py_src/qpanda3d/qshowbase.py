@@ -124,7 +124,8 @@ class QShowBase(ContextShowBase):
         self.mouseWatcherNode = QMouseWatcherNode(parent)
 
     def getAspectRatio(self, win = None):
-        if win is None and self.parent is not None:
+        
+        if win is None and hasattr(self, 'parent') and self.parent is not None:
             return float(self.parent.width()) / float(self.parent.height())
         else:
             return super().getAspectRatio(win)

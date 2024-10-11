@@ -35,11 +35,11 @@ class StarScene(CanvasBackgroundShowBase):
         CanvasBackgroundShowBase.__init__(self,self.stars_canvas)
 
 class PlanetStarScene(
-    # StarScene,
+    StarScene,
     UniversalGravitySpace):
 
     def __init__(self):
-        # StarScene.__init__(self)
+        StarScene.__init__(self)
         unit = {
             "mass" : tonne,
             "length" : 100*meter,
