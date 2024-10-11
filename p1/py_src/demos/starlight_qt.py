@@ -1,109 +1,145 @@
-import sys
-import threading
-from PyQt5 import sip
-import threading
-from PyQt5 import QtWidgets, QtGui
-from queue import Queue as PyQueue
+from typing import Tuple
+from typing import List,Set, List, Dict,Callable
+from panda3d_game.app import ControlShowBase, ContextShowBase, PhysicsShowBase,UniversalGravitySpace
+from vispyutil.canvas import SynchronizedCanvas
+from vispyutil.showbase import CanvasBackgroundShowBase
 
-from direct.task import Task
-from demos.physics_room import RoomScene
-from panda3d_game.app import (
-    ControlShowBase, UniversalGravitySpace,
-    ContextShowBase
+import numpy as np
+from sympy.physics.units import (
+    kilometer, meter,centimeter,
+    gram, kilogram, tonne,
+    newton, second
 )
-from qpanda3d import QShowBase
+from panda3d.core import (
+    NodePath,
+    WindowProperties,
+    Vec3,
+    TextNode,
+    PNMImage, Texture,
+    CardMaker,Point2,
+    NodePath, Camera, PerspectiveLens,
+    Point3, LVector3f
+)
+from util.physics import autocomplete_units, G_val, getG
+from demos.ball_room import MassedBall,tmoon
+from util.log import *
+from config.style import styleSheet
+import yaml
+from util.physics import autocomplete_units, G_val, getG
+from art.assets.starfield import StarCanvas
 
 
-
-class QtInterface:
-    # panda3d window
-    # # TODO panel : start game/end game - start menu
-    # console window
-    #   start console after start game
-    #   TODO manual load subconsoles
-    # log window
-
-    pass
-class StarScene(ContextShowBase):
-    pass
-
-class StarSceneApp(ControlShowBase, UniversalGravitySpace, QShowBase):
+class StarScene(CanvasBackgroundShowBase):
     def __init__(self):
-        ControlShowBase.__init__(self)
-        UniversalGravitySpace.__init__(self)
-        QShowBase.__init__(self)
-        self.log_buffer = PyQueue()
-        self.out_buffer = PyQueue()
-        self.startQt()
-    pass
+        self.stars_canvas = StarCanvas(60000)
+        CanvasBackgroundShowBase.__init__(self,self.stars_canvas)
 
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from panda3d.core import WindowProperties, GraphicsPipe
-from direct.showbase.ShowBase import ShowBase
+class PlanetStarScene(
+    # StarScene,
+    UniversalGravitySpace):
 
-
-class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Panda3D in PyQt")
-        self.setGeometry(100, 100, 800, 600)
-
-        # 嵌入 Panda3D
-        # panda_app = PandaApp(int(self.winId()))
-        self.layout = QtWidgets.QVBoxLayout()
-        self.central_widget = QtWidgets.QWidget()
-        self.setCentralWidget(self.central_widget)
-        self.central_widget.setLayout(self.layout)
-
-    def add_widget(self, widget):
-        self.layout.addWidget(widget)
-
-    def add_panda3d_widget(self, window_handle):
-        self.panda_widget = QtWidgets.QWidget.createWindowContainer(
-            QtGui.QWindow.fromWinId(window_handle)
+        # StarScene.__init__(self)
+        unit = {
+            "mass" : tonne,
+            "length" : 100*meter,
+            "time": 1 * second,
+            # "force" : sp.Number(1e3) * newton
+        }
+        G_game = 0.001
+        UniversalGravitySpace.__init__(
+            self, unit=unit, G_val=G_game)
+        self.planet1 = MassedBall(
+            name="planet1",
+            radius=100*meter,
+            mass=1e6*tonne,
+            units=self.unit
         )
-        self.setCentralWidget(self.panda_widget)
-        # self.add_widget(self.panda_widget)
+        self.planet1.reparentTo(self.render)
+        self.planet2 = MassedBall(
+            name="planet2",
+            radius=100*meter,
+            mass=1e6*tonne,
+            units=self.unit
+        )
+        self.planet2.reparentTo(self.render)
+        self.planet1.set_texture(tmoon)
+        self.planet2.set_texture(tmoon)
+        self.planet1.setScale(1)
+        self.planet1.setPos(0,5,0)
+        self.planet2.setScale(1)
+        self.planet2.setPos(0,-5,0)
+        self.planet1.toBulletWorld(self.bullet_world)
+        self.planet2.toBulletWorld(self.bullet_world)
+        self.gravitational_bodies = [self.planet1, self.planet2]
+        self.objects.update({
+            "planet1":self.planet1,
+            "planet2":self.planet2
+        })
+        self.accept('p', self.pause_switch)
+        self.planet1.set_linear_velocity(Vec3(0,0,2))
+        self.planet2.set_linear_velocity(Vec3(0,0,-2))
+        # set velocity
+    # todo; set initial state; back to initial state
+
+    def potential(self):
+        pass
+
+# from
+class PlanetStarScene_(StarScene,PhysicsShowBase):
+    def __init__(self):
+        StarScene.__init__(self)
+        PhysicsShowBase.__init__(self)
+        self.bullet_world.setGravity((0,0,0))
+        self.unit = {
+            "mass" : tonne,
+            "length" : 100*meter,
+            "time": 1 * second,
+            # "force" : sp.Number(1e3) * newton
+        }
+        autocomplete_units(self.unit)
+        # self.planet1 = MassedBall(
+        #     name="planet1",
+        #     radius=1000*meter,
+        #     mass=1e6*tonne,
+        #     units=self.unit
+        # )
+        from art.basic import create_cylinder_node, create_sphere_node
+        self.cld = create_sphere_node(
+            "cld",lat_res=12,lon_res=12,
+            interior=True
+        )
+        self.cld_npth = self.rdr_scene.attachNewNode(self.cld)
+        self.cld_npth.set_texture(tmoon)
+        # self.planet1.reparentTo(self.render)
+        # self.planet1.set_texture(tmoon)
+        # self.planet1.setScale(10)
+        # self.planet1.setPos(0,10,0)
 
 
+from qpanda3d import QShowBase, QPanda3DWidget, QControl, Synchronizer
+class PlanetStarSpace(PlanetStarScene, QControl):
+    def __init__(self, isQt = True):
+        import pdb
+        QControl.__init__(self)
+        PlanetStarScene.__init__(self)
+        self.isQt = isQt
+        if self.isQt:
+            self.startQt()
+from demos.physics_room import PhyscRoomConsole
+from ui.qtui import *
 
+class SpaceGame(RawQtGUI):
+    def get_game(self):
+        return PlanetStarSpace()
 
-if __name__ == "__main__":
-    import builtins
-    import traceback
+    def get_console(self):
+        return PhyscRoomConsole(showbase=self.panda3d)
 
-    qapp = QApplication(sys.argv)
-    window = MainWindow()
-    # window.show()
+if __name__ == '__main__':
+    # torch.set_printoptions(precision=16, sci_mode=False)
+    import sys
+    app = QApplication(sys.argv)
+    window = SpaceGame()
     window.show()
-    try:
-        # with PhyscRoom(25, 25, 25) as app:
-        with PandaApp(window.winId()) as app:
-            # console = PhyscRoomConsole(showbase=app)
-            # interface = CMDInterface(console=console)
-            # interface.start()
-            # start a thread of app
-            # window.add_panda3d_widget(app.window_handle)
-            app.run()
-
-
-    except Exception as e:
-        print(e)
-        print(traceback.format_exc())
-    finally:
-        if hasattr(builtins, 'base'):
-            builtins.base.destroy()
-
-    sys.exit(qapp.exec_())
-
-
-# TODO: create a pure scene
-# then let a new class inherit it with control and physics
-
-
-# while not empty
-# self.log_display.append(self.console.log_buffer.get())
-# use queue so that is save between threads
-#
-
+    sys.exit(app.exec_())

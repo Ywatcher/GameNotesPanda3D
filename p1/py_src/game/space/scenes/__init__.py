@@ -1,0 +1,1 @@
+from game.space.scenes.star import *

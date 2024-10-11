@@ -1,3 +1,4 @@
+from typing import Callable
 import torch
 from numpy import cos, pi, sin
 import numpy as np
@@ -19,7 +20,37 @@ from util.indexing import loop_bound_idx, tup2cnt
 format_ = GeomVertexFormat.getV3c4()
 format_uv = GeomVertexFormat.getV3t2()
 format_ = GeomVertexFormat.registerFormat(format_)
+def uv_curve_surface_lambda(
+    name:str,
+    u:torch.Tensor,
+    v:torch.Tensor,
+    is_u_loop:bool, is_v_loop:bool,
+    x_uv:Callable,
+    y_uv:Callable,
+    z_uv:Callable,
+    geom_type: GeomEnums = Geom.UH_static, vformat=format_uv,
+    interior:bool=False
+) -> Geom:
+    u_broadcast, v_broadcast = torch.meshgrid(u,v,indexing=ij)
+    vertex_coord_x = x_uv(u_broadcast,v_broadcast)
+    vertex_coord_y = y_uv(u_broadcast,v_broadcast)
+    vertex_coord_z = z_uv(u_broadcast,v_broadcast)
+    vertex_coord_xyz = torch.concat([
+        vertex_coord_x.unsqueeze(-1),
+        vertex_coord_y.unsqueeze(-1),
+        vertex_coord_z.unsqueeze(-1)
+    ], dim=-1)
 
+    geom = uv_curve_surface(
+        name=name,
+        coord_mat=vertex_coord_xyz,
+        is_u_loop=is_u_loop,
+        is_v_loop=is_v_loop, 
+        geom_type = geom_type,
+        interior=interior
+    )
+    return geom
+    
 
 def uv_curve_surface(
     name:str, 
@@ -273,6 +304,7 @@ def create_cylinder(
     # vertex: n_lat * n_lon * 3
     axis_coord_theta = torch.arange(0,1,step=1/lon_res) * 2 * np.pi
     # axis_coord_phi = torch.arange(0,1,step=1/lat_res) * 2 * np.pi
+    # fixme: set lat res to 1
     axis_coord_z = torch.arange(0,1,step=1/lat_res)
     vertex_coord_theta, vertex_coord_z = torch.meshgrid(
         axis_coord_theta,axis_coord_z,
