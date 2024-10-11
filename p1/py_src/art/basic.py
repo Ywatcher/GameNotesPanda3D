@@ -31,7 +31,7 @@ def uv_curve_surface_lambda(
     geom_type: GeomEnums = Geom.UH_static, vformat=format_uv,
     interior:bool=False
 ) -> Geom:
-    u_broadcast, v_broadcast = torch.meshgrid(u,v,indexing=ij)
+    u_broadcast, v_broadcast = torch.meshgrid(u,v,indexing='ij')
     vertex_coord_x = x_uv(u_broadcast,v_broadcast)
     vertex_coord_y = y_uv(u_broadcast,v_broadcast)
     vertex_coord_z = z_uv(u_broadcast,v_broadcast)
@@ -75,7 +75,6 @@ def uv_curve_surface(
             u_step = 1 / (u_size-1+is_u_loop)
             v_step = 1 / (v_size-1+is_v_loop)
             u,v = torch.meshgrid(
-                
                 torch.arange(0,1+u_step,step=u_step), #FIXME:[0,1+step)
                 torch.arange(0,1+v_step,step=v_step)
             )
