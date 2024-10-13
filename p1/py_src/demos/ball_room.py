@@ -86,19 +86,19 @@ class MassedBall(PhysicsGameObject): # not yet inherent GameObject
         # print(self.game_radius)
         self.geom_np.setScale(self.game_radius)
         # create rigid body
-        self.rigid_body_node = BulletRigidBodyNode("SphrRg."+str(name))
+        self.rigid_node = BulletRigidBodyNode("SphrRg."+str(name))
         sphere_shape = BulletSphereShape(self.game_radius)
-        self.rigid_body_node.add_shape(sphere_shape)
-        self.rigid_body_node.set_mass(self.game_mass)
-        self.rigid_body_np = NodePath(self.rigid_body_node)
+        self.rigid_node.add_shape(sphere_shape)
+        self.rigid_node.set_mass(self.game_mass)
+        self.rigid_np = NodePath(self.rigid_node)
         # bind geom to rigid body
-        # self.rigid_body_np.attachNewNode(self.geom_node)
-        self.geom_np.reparent_to(self.rigid_body_np)
+        # self.rigid_np.attachNewNode(self.geom_node)
+        self.geom_np.reparent_to(self.rigid_np)
         # todo: add collison
 
     def toBulletWorld(self, world:BulletWorld):
         self.worlds.append(world)
-        world.attach_rigid_body(self.rigid_body_node)
+        world.attach_rigid_body(self.rigid_node)
         # if there is contraint, attach constraint
 
     def set_texture(self, t):

@@ -75,30 +75,39 @@ class GameObject(Loggable):
 
 
 class PhysicsGameObject(GameObject):
-    rigid_body_node: BulletRigidBodyNode
-    rigid_body_np: NodePath
+    rigid_node: BulletRigidBodyNode
+    rigid_np: NodePath
     game_mass:float
+    constraints:list
 
+    def __init__(self):
+        GameObject.__init__(self)
+        if not hasattr(self, "isPhysicsGameObjInit"):
+            self.constraints = []
+            self.isPhysicsGameObjInit = True
+            
 
-    def toBulletWorld(self, world:BulletWorld):
-        raise NotImplementedError
+    def toBulletWorld(self, bullet_world:BulletWorld):
+        bullet_world.attachRigidBody(self.rigid_node)
+        for constraint in self.constraints:
+            bullet_world.attachConstraint(constraint)
 
     @property
     def mainPath(self) -> NodePath:
-        return self.rigid_body_np
+        return self.rigid_np
 
     def apply_force(self, force, pos):
-        self.rigid_body_node.apply_force(LVector3f(*force), LVector3f(*pos))
+        self.rigid_node.apply_force(LVector3f(*force), LVector3f(*pos))
 
     def set_linear_velocity(self,v:Vec3):
-        self.rigid_body_node.set_linear_velocity(v)
+        self.rigid_node.set_linear_velocity(v)
 
     def setZ(self,*args):
-        self.rigid_body_np.setZ(*args)
+        self.rigid_np.setZ(*args)
 
     def setPos(self, *args):
         # super().setPos(self,*args)
-        self.rigid_body_np.setPos(*args)
+        self.rigid_np.setPos(*args)
 
 
 

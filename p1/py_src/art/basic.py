@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 import torch
 from numpy import cos, pi, sin
 import numpy as np
@@ -17,9 +17,25 @@ from util.indexing import loop_bound_idx, tup2cnt
 # (what and how data will be stored in the vertex buffer)
 # https://docs.panda3d.org/1.10/python/programming/internal-structures/procedural-generation/custom-vertex-format
 # https://docs.panda3d.org/1.10/python/programming/internal-structures/procedural-generation/predefined-vertex-formats
-format_ = GeomVertexFormat.getV3c4()
-format_uv = GeomVertexFormat.getV3t2()
-format_ = GeomVertexFormat.registerFormat(format_)
+from util.geometry import *
+# TODO: close prim
+
+def geom_frm_faces(
+    name:str,
+    faces: List[torch.Tensor],
+    geom_type: GeomEnums=Geom.UH_static,
+    vformat=format_uv
+) -> Geom:
+    prim = GeomTriangles(geom_type)
+    vdata, vert_idx = add_faces(
+        prim=prim, faces=faces, vformat=vformat,
+        start_idx=0, name=name
+    )
+    geom = Geom(vdata)
+    geom.addPrimitive(prim)
+    return geom
+
+# FIXME: import
 def uv_curve_surface_lambda(
     name:str,
     u:torch.Tensor,
@@ -120,6 +136,8 @@ def uv_curve_surface(
     geom = Geom(vdata)
     geom.addPrimitive(prim)  
     return geom
+
+
 
 # def uv_curve_table(
 #     name:str, 
@@ -267,19 +285,26 @@ def create_colored_cube(
 
 def create_cylinder_node(
     name:str,
-    lat_res:int,
+    # lat_res:int,
     lon_res:int,
     # scale:float=1,
+    radius=1,
+    height=1,
     geom_type: GeomEnums = Geom.UH_static,
-    interior:bool=False
+    interior:bool=False,
+    with_top=True,
+    with_bot=True
     
 ) -> GeomNode:
     node = GeomNode("CldrNd."+name)
     geom = create_cylinder(
-        name, lat_res, lon_res,
+        name, lon_res,
         # scale, 
+        radius, height,
         geom_type,
-        interior
+        interior,
+        with_top,
+        with_bot
     )
     node.addGeom(geom)
     return node
@@ -288,15 +313,18 @@ def create_cylinder_node(
 
 def create_cylinder(
     name:str,
-    lat_res:int,
+    # lat_res:int,
     lon_res:int,
-    scale:float=1,
+    radius=1,
+    height=1,
     geom_type: GeomEnums = Geom.UH_static,
-    interior:bool=False
+    interior:bool=False,
+    with_top=True,
+    with_bot=True
 ) -> Geom:
-    assert isinstance(lat_res, int) \
-        and lat_res > 0, \
-        "lat_res should be postive int, got {}".format(lat_res)
+    # assert isinstance(lat_res, int) \
+    #     and lat_res > 0, \
+    #     "lat_res should be postive int, got {}".format(lat_res)
     name_cylinder = "Cldr.{}".format(name)
     # vertex_size = (lon_res, lat_res)
     # color = GeomVertexWriter(vdata, "color")
@@ -304,23 +332,37 @@ def create_cylinder(
     axis_coord_theta = torch.arange(0,1,step=1/lon_res) * 2 * np.pi
     # axis_coord_phi = torch.arange(0,1,step=1/lat_res) * 2 * np.pi
     # fixme: set lat res to 1
-    axis_coord_z = torch.arange(0,1,step=1/lat_res)
-    vertex_coord_theta, vertex_coord_z = torch.meshgrid(
-        axis_coord_theta,axis_coord_z,
+    # axis_coord_z = torch.arange(0,1,step=1/lat_res)
+    axis_coord_y = torch.Tensor([height,0])
+    vertex_coord_theta, vertex_coord_y = torch.meshgrid(
+        axis_coord_theta,axis_coord_y,
         indexing='ij'
     )
     # vertex_coord_r = torch.cos(vertex_coord_phi)
-    vertex_coord_r = 1
+    vertex_coord_r = radius
     # vertex_coord_z = torch.sin(vertex_coord_phi)
     # vertex_coord_z = 
     vertex_coord_x = torch.cos(vertex_coord_theta) * vertex_coord_r
-    vertex_coord_y = torch.sin(vertex_coord_theta) * vertex_coord_r
+    vertex_coord_z = torch.sin(vertex_coord_theta) * vertex_coord_r
+    
     vertex_coord_xyz = torch.concat([
         vertex_coord_x.unsqueeze(-1),
         vertex_coord_y.unsqueeze(-1),
         vertex_coord_z.unsqueeze(-1)
     ], dim=-1)
-
+    if with_top:
+        top = torch.ones([lon_res,1,3]) * torch.Tensor([0,height,0])
+        vertex_coord_xyz = torch.concat([
+            top,
+            vertex_coord_xyz,
+        ], axis=1)
+    if with_bot:
+        bot = torch.ones([lon_res,1,3]) * torch.Tensor([0,0,0])
+        vertex_coord_xyz = torch.concat([
+            vertex_coord_xyz,
+            bot,
+        ], axis=1)
+                                       
     geom = uv_curve_surface(
         name=name_cylinder,
         coord_mat=vertex_coord_xyz,
