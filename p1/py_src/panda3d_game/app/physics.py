@@ -193,7 +193,7 @@ class UniversalGravitySpace(PhysicsShowBase):
             )
 
     def update(self, task):
-        if not self.paused:
+        if not self.paused and len(self.gravitational_bodies)>0:
             self.apply_gravitational_force(task)
         return super().update(task)
 
