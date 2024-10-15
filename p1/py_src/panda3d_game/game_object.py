@@ -72,13 +72,27 @@ class GameObject(Loggable):
         else:
             return self.mainPath.getPos(other.mainPath)
 
-
+def sync_pos(nodepath):
+    transform = nodepath.getTransform()
+    nodepath.node().setTransform(transform)
 
 class PhysicsGameObject(GameObject):
     rigid_node: BulletRigidBodyNode
     rigid_np: NodePath
     game_mass:float
     constraints:list
+
+    def findAllRigidNp(self):
+        rigid_bodies = self.mainPath.findAllMatches('**/+BulletRigidBodyNode')
+        return rigid_bodies
+
+    
+
+    def sync_pos(self):
+        sync_pos(self.mainPath)
+        rigid_bodies = self.findAllRigidNp()
+        for path in rigid_bodies:
+            sync_pos(path)
 
     def __init__(self):
         GameObject.__init__(self)
