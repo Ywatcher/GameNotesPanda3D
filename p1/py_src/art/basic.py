@@ -290,6 +290,7 @@ def create_cylinder_node(
     # scale:float=1,
     radius=1,
     height=1,
+    height_bot=0,
     geom_type: GeomEnums = Geom.UH_static,
     interior:bool=False,
     with_top=True,
@@ -300,7 +301,7 @@ def create_cylinder_node(
     geom = create_cylinder(
         name, lon_res,
         # scale, 
-        radius, height,
+        radius, height, height_bot,
         geom_type,
         interior,
         with_top,
@@ -317,6 +318,7 @@ def create_cylinder(
     lon_res:int,
     radius=1,
     height=1,
+    height_bot=0,
     geom_type: GeomEnums = Geom.UH_static,
     interior:bool=False,
     with_top=True,
@@ -333,7 +335,7 @@ def create_cylinder(
     # axis_coord_phi = torch.arange(0,1,step=1/lat_res) * 2 * np.pi
     # fixme: set lat res to 1
     # axis_coord_z = torch.arange(0,1,step=1/lat_res)
-    axis_coord_y = torch.Tensor([height,0])
+    axis_coord_y = torch.Tensor([height,height_bot])
     vertex_coord_theta, vertex_coord_y = torch.meshgrid(
         axis_coord_theta,axis_coord_y,
         indexing='ij'
@@ -357,7 +359,7 @@ def create_cylinder(
             vertex_coord_xyz,
         ], axis=1)
     if with_bot:
-        bot = torch.ones([lon_res,1,3]) * torch.Tensor([0,0,0])
+        bot = torch.ones([lon_res,1,3]) * torch.Tensor([0,height_bot,0])
         vertex_coord_xyz = torch.concat([
             vertex_coord_xyz,
             bot,
