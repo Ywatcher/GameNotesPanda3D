@@ -375,3 +375,33 @@ def create_cylinder(
     )
     
     return geom
+
+def getCylinderShape(radius, height, lon_res):
+    axis_coord_theta = torch.arange(0,1,step=1/lon_res) * 2 * np.pi
+    # axis_coord_phi = torch.arange(0,1,step=1/lat_res) * 2 * np.pi
+    # fixme: set lat res to 1
+    # axis_coord_z = torch.arange(0,1,step=1/lat_res)
+    convex_shape = BulletConvexHullShape()
+    axis_coord_y = torch.Tensor([height,0])
+    vertex_coord_theta, vertex_coord_y = torch.meshgrid(
+        axis_coord_theta,axis_coord_y,
+        indexing='ij'
+    )
+    # vertex_coord_r = torch.cos(vertex_coord_phi)
+    vertex_coord_r = radius
+    # vertex_coord_z = torch.sin(vertex_coord_phi)
+    # vertex_coord_z = 
+    vertex_coord_x = torch.cos(vertex_coord_theta) * vertex_coord_r
+    vertex_coord_z = torch.sin(vertex_coord_theta) * vertex_coord_r
+    
+    vertex_coord_xyz = torch.concat([
+        vertex_coord_x.unsqueeze(-1),
+        vertex_coord_y.unsqueeze(-1),
+        vertex_coord_z.unsqueeze(-1)
+    ], dim=-1)
+    for col in range(2):
+        for row in range(lon_res):
+            vertex = tuple(vertex_coord_xyz[row,col].numpy())
+            
+            convex_shape.addPoint(Point3(vertex))
+    return convex_shape

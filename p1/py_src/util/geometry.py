@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Tuple
 from torch import Tensor, vstack, equal
 from panda3d.core import GeomPrimitive
 
@@ -9,7 +9,8 @@ from panda3d.core import (
     GeomVertexData,
     GeomVertexFormat,
     GeomVertexWriter,
-    GeomEnums
+    GeomEnums,
+    NodePath
 )
 format_ = GeomVertexFormat.getV3c4()
 format_uv = GeomVertexFormat.getV3t2()
@@ -80,3 +81,15 @@ def add_faces(
     return vdata, start_idx + len(verts)
 
 
+def createPosIndicatorNPth(
+    parent:NodePath, nodes:Dict["str", Tuple[float,float,float]], node_name_prefix=""
+) -> Dict["str", NodePath]:
+    # FIXME: move this
+    # a single node path specifying a position
+    ret = {}
+    for key in nodes:
+        node_path = parent.attachNewNode("{}{}".format(node_name_prefix, key))
+        pos = nodes[key]
+        node_path.setPos(*pos)
+        ret[key] = node_path
+    return ret
