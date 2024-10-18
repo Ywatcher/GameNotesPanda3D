@@ -1,7 +1,8 @@
 from panda3d_game.game_object import  PhysicsGameObject
 
 from panda3d.core import (
-    LPoint3f, VBase3
+    LPoint3f, VBase3,
+    TransformState
 )
 from panda3d.bullet import (
     BulletHingeConstraint
@@ -114,6 +115,7 @@ class FlyWheel(PhysicsGameObject):
             for c in self.constraints:
                 c.setDebugDrawSize(40.0)
         self.rigid_node = self.frame.rigid_node
+        self.attachPoint = TransformState.makePos((0,0,0))
         # self._torque = torch.Tensor([0,0,0])
 
  

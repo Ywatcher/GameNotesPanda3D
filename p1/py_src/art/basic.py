@@ -71,7 +71,7 @@ def uv_curve_surface_lambda(
 def uv_curve_surface(
     name:str, 
     coord_mat:torch.Tensor, is_u_loop:bool, is_v_loop:bool,
-    uv_mat:torch.Tensor=None, 
+    uv_mat:torch.Tensor=None,  #uv mapping
     geom_type: GeomEnums = Geom.UH_static, vformat=format_uv,
     interior:bool=False
 ) -> Geom:

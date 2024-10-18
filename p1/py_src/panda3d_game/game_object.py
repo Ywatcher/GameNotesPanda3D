@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Callable
 from panda3d.core import NodePath, LODNode,Vec3
 from panda3d.core import Point3, LVector3f, Vec3
 
@@ -12,6 +12,8 @@ class GameObject(Loggable):
     geomNodePath: NodePath # FIXME: different NodePath for different resolution
     childrenObjects: List["GameObject"]
     parent: Union["GameObject", NodePath]
+    
+    tasks: List[Callable]
 
     def add_child(self, other: Union["GameObject", NodePath]):
         pass
@@ -82,17 +84,17 @@ class PhysicsGameObject(GameObject):
     game_mass:float
     constraints:list
 
-    def findAllRigidNp(self):
-        rigid_bodies = self.mainPath.findAllMatches('**/+BulletRigidBodyNode')
-        return rigid_bodies
+    # def findAllRigidNp(self):
+    #     rigid_bodies = self.mainPath.findAllMatches('**/+BulletRigidBodyNode')
+    #     return rigid_bodies
 
-    
+    # def sync_pos(self):
+    #     sync_pos(self.mainPath)
+    #     rigid_bodies = self.findAllRigidNp()
+    #     for path in rigid_bodies:
+    #         sync_pos(path)
 
-    def sync_pos(self):
-        sync_pos(self.mainPath)
-        rigid_bodies = self.findAllRigidNp()
-        for path in rigid_bodies:
-            sync_pos(path)
+    #  TODO: set pos for all physics objects children
 
     def __init__(self):
         GameObject.__init__(self)
