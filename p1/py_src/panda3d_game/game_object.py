@@ -1,6 +1,9 @@
 from typing import List, Union, Callable
-from panda3d.core import NodePath, LODNode,Vec3
-from panda3d.core import Point3, LVector3f, Vec3
+from panda3d.core import (
+    NodePath, LODNode,Vec3,
+    Point3, LVector3f, 
+    TransformState
+)
 
 from util.log import Loggable
 from panda3d.bullet import (
@@ -10,10 +13,45 @@ from panda3d.bullet import (
 
 class GameObject(Loggable):
     geomNodePath: NodePath # FIXME: different NodePath for different resolution
-    childrenObjects: List["GameObject"]
+    # childrenObjects: List["GameObject"]
     parent: Union["GameObject", NodePath]
     
     tasks: List[Callable]
+    def xform(self, xform):
+        def xform_recur(*args, **kwargs):
+            children_rel_trans = {
+                c: c.mainPath.getMat(self.mainPath)
+                for c in self.children
+            }
+            ret = xform(*args,**kwargs)
+            for c in self.children:
+                rel_trans = TransformState.makeMat(children_rel_trans[c])
+                c.setTransform(self.mainPath, rel_trans)
+            return ret
+        return xform_recur
+
+    def __init__(self):
+        Loggable.__init__(self)
+        if not hasattr(self, "children"):
+            self.children = []
+    
+    def setTransform(self, *args, **kwargs):
+        # TODO: decorator
+        @self.xform
+        def inner():
+            self.mainPath.setTransform(*args, **kwargs)
+        inner()
+    
+    def setPos(self,*args, **kwargs):
+        @self.xform
+        def inner():
+            self.mainPath.setPos(*args,**kwargs)
+        inner()
+
+    #TODO: set Mat
+            
+    def __hash__(self):
+        return id(self)
 
     def add_child(self, other: Union["GameObject", NodePath]):
         pass
@@ -39,9 +77,8 @@ class GameObject(Loggable):
     def mainPath(self) -> NodePath:
         pass
 
-
-    def setPos(self, pos):
-        pass
+   
+    
 
     def setX(self, *args):
         pass
@@ -120,13 +157,7 @@ class PhysicsGameObject(GameObject):
 
     def setZ(self,*args):
         self.rigid_np.setZ(*args)
-
-    def setPos(self, *args):
-        # super().setPos(self,*args)
-        self.rigid_np.setPos(*args)
-
-
-
+       
 
 
 
