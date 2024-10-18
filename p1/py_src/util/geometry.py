@@ -10,7 +10,9 @@ from panda3d.core import (
     GeomVertexFormat,
     GeomVertexWriter,
     GeomEnums,
-    NodePath
+    NodePath,
+    TransformState,
+    Mat4
 )
 format_ = GeomVertexFormat.getV3c4()
 format_uv = GeomVertexFormat.getV3t2()
@@ -26,6 +28,24 @@ def batch_transform(
         for face in faces 
         for transformation in transformations
     ]
+
+def makeLookAt(vec):
+    # m = Mat4()
+    # # TODO: convert to Vec3
+    # m.lookAt(vec)
+    # tr = TransformState.makeMat(m)
+    # return tr
+    temp_np = NodePath('temp_np')
+    temp_np.set_pos(0, 0, 0)  # The starting position of the rigid body
+
+    # Make it look at the target
+    temp_np.lookAt(vec)
+
+    # Extract the transformation 
+    # from the temporary NodePath
+    tr = temp_np.get_transform()
+    return tr
+    
 def addQuadrilateral(prim, points_idx):
     a,b,c,d = tuple(points_idx)
     prim.addVertices(a,b,c)

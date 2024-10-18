@@ -144,6 +144,11 @@ class PhysicsGameObject(GameObject):
         bullet_world.attachRigidBody(self.rigid_node)
         for constraint in self.constraints:
             bullet_world.attachConstraint(constraint)
+        for c in self.children:
+            try:
+                c.toBulletWorld(bullet_world)
+            except Exception as e:
+                self.log(e)
 
     @property
     def mainPath(self) -> NodePath:
