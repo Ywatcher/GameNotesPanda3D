@@ -43,19 +43,33 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
             if self.console is not None:
                 self.debug("handle command, cursor at",self.cursor_pos)
                 self.handle_command()
+            return
         elif event.key() == Qt.Key_Escape:
             # FIXME: use this only when it is jumped from game to here
             # back to the game
             evt_back_to_game = QEvent(FOCUS_GAME)
             self.send_qevent(evt_back_to_game) # send to all listeners
-        else:
-            pos_bfore_click = self.cursor_pos
-            super().keyPressEvent(event)
-            pos_after_click = self.cursor_pos
-            if pos_after_click < self.prev_cursor:
-                cursor = self.textCursor()
-                cursor.setPosition(pos_bfore_click)
-                self.setTextCursor(cursor)
+            return
+        elif event.key() in (Qt.Key_Backspace, Qt.Key_Delete):
+            # prevent from deleting prompt and history
+            cursor = self.textCursor()
+            selection_start = cursor.selectionStart()
+            selection_end = cursor.selectionEnd()
+            if selection_start < self.prev_cursor:
+                return
+            if event.key() == Qt.Key_Backspace:
+                if self.cursor_pos <= self.prev_cursor: #FIXME
+                    return
+            elif event.key() == Qt.Key_Delete:
+                if cursor.position() < self.prev_cursor:
+                    return
+        pos_bfore_click = self.cursor_pos
+        super().keyPressEvent(event)
+        pos_after_click = self.cursor_pos
+        if pos_after_click < self.prev_cursor:
+            cursor = self.textCursor()
+            cursor.setPosition(pos_bfore_click)
+            self.setTextCursor(cursor)
 
     def handle_command(self):
         command = self.toPlainText().strip()[self.prev_cursor:]
