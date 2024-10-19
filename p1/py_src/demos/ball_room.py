@@ -72,6 +72,7 @@ class MassedBall(PhysicsGameObject): # not yet inherent GameObject
         # geom_type
         # TODO: texture
     ):
+        PhysicsGameObject.__init__(self)
         # super().__init__(name)
         self.worlds = []
         self.radius = radius

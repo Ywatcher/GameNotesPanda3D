@@ -29,7 +29,8 @@ class CanvasBackgroundShowBase(ContextShowBase):
         ContextShowBase.__init__(self)
         # ControlShowBase.__init__(self)
         self.bg_canvas = canvas
-        self.bg_canvas.app.run()
+        # self.bg_canvas.app.run()
+        self.bg_canvas.app.process_events()
         self.bg_texture = Texture()
         self.bg_texture.set_wrap_u(Texture.WM_clamp)
         self.bg_texture.set_wrap_v(Texture.WM_clamp)
@@ -54,13 +55,15 @@ class CanvasBackgroundShowBase(ContextShowBase):
         self.taskMgr.add(self.updateBGTask)
 
     def updateBGTask(self, task):
-        top, right = self.bg_fit_lens()
+        top, right = self.bg_fit_lens() # set canvas size fit the game screen
         self.stars_canvas.update_camera_hpr(
             self.display_camera.getH(),
             -self.display_camera.getP(),
             self.display_camera.getR(),
         )
+        self.bg_canvas.app.process_events()
         stars = self.bg_canvas.render()
+        # load rendered numpy array image into background texture
         texture_load_np(self.bg_texture, stars, format_=Texture.F_rgba)
         return task.cont
 
