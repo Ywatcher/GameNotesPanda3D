@@ -46,6 +46,26 @@ season where everything become rusty, and a season where everything
 including, non-living creatures, becomes somewhat active and 
 eeriely ecstasy.<br> 
 
+# dependencies 
+sorry for not able to provide a consistent dependency list, since 
+this is a still infant project and there are many package I havnt
+decide whether to use. Current required packages include:
+```
+numpy 
+sympy
+pytorch  
+pyyaml 
+panda3d 
+pyqt5 
+qpanda3d 
+vispy
+glfw # serves as vispy backend, can be replaced 
+	# by any other offscreen backend that works
+```
+
+see `dependencies.yaml` for the environment setting I am 
+currently using. However there are many packages that I
+planed to use before, but no longer required now. 
 
 #  document for space game
 TODO<br>
