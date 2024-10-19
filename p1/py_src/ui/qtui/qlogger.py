@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import logging
 from PyQt5.QtWidgets import QPlainTextEdit
 

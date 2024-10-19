@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import sympy as sp
 
 from sympy.physics.units import (

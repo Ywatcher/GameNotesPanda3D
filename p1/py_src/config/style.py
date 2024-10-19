@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from util.color import *
 # c_violet_frame = hex2pal('#97739e')
 # c_violet_bg = hex2pal('#472c4d')

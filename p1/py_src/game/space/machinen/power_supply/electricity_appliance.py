@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from abc import ABC
 import sympy as sp
 class ElectricityAppliance(ABC):
@@ -19,17 +21,17 @@ class ElectricityAppliance(ABC):
     def get_voltage(self) -> sp.Expr:
         """
         Abstract method to obtain the current voltage across this electrical device.
-    
-        This method should be implemented by subclasses to return the symbolic 
-        expression representing the voltage across the two terminals of the device. 
-        The voltage is typically used in game simulations to model electrical behavior 
-        and interactions within circuits, providing real-time voltage data for different 
+
+        This method should be implemented by subclasses to return the symbolic
+        expression representing the voltage across the two terminals of the device.
+        The voltage is typically used in game simulations to model electrical behavior
+        and interactions within circuits, providing real-time voltage data for different
         components.
-    
+
         Returns:
             sp.Expr: A SymPy expression representing the voltage across the device.
         """
-        
+
         pass
 
     def get_current(self) -> sp.Expr:
@@ -42,7 +44,7 @@ class ElectricityAppliance(ABC):
         It calls self.get_voltage() and serves as a property
         """
         return self.get_voltage()
-        
+
     @property
     def current(self) -> sp.Expr:
         """

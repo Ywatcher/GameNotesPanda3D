@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import torch
 import sympy as sp
 def safe_reciprocal(x):

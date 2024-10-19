@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from typing import Tuple
 from typing import List,Set, List, Dict,Callable
 from panda3d_game.app import ControlShowBase, ContextShowBase, PhysicsShowBase,UniversalGravitySpace

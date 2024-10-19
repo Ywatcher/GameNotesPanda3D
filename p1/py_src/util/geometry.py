@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from typing import List, Dict, Tuple
 from torch import Tensor, vstack, equal
 from panda3d.core import GeomPrimitive
@@ -24,8 +26,8 @@ def batch_transform(
     faces: List[Tensor], transformations: List[Tensor]
 ) -> List[Tensor]:
     return [
-        face @ transformation 
-        for face in faces 
+        face @ transformation
+        for face in faces
         for transformation in transformations
     ]
 
@@ -41,11 +43,11 @@ def makeLookAt(vec):
     # Make it look at the target
     temp_np.lookAt(vec)
 
-    # Extract the transformation 
+    # Extract the transformation
     # from the temporary NodePath
     tr = temp_np.get_transform()
     return tr
-    
+
 def addQuadrilateral(prim, points_idx):
     a,b,c,d = tuple(points_idx)
     prim.addVertices(a,b,c)
@@ -71,7 +73,7 @@ def add_faces(
     uh = prim.getUsageHint()
     verts = list(
         set(
-            tuple(row.numpy()) 
+            tuple(row.numpy())
             # row
             for row in vstack(faces)
         )
@@ -79,7 +81,7 @@ def add_faces(
     verts = [
         Tensor(v) for v in verts
     ]
-    
+
     # create vertex writer
     vdata = GeomVertexData(name, vformat, uh)
     vertex_writer = GeomVertexWriter(vdata, "vertex")

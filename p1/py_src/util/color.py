@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from typing import Tuple
 def hex2rgb(hexstr:str) -> Tuple:
     hexstr = hexstr.lstrip('#')

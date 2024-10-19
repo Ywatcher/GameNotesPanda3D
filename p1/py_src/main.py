@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from direct.showbase.ShowBase import ShowBase
 from util.app import ContextShowBase
 from direct.task import Task

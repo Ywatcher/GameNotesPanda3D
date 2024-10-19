@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from panda3d.bullet import (
        BulletGenericConstraint,
 )
@@ -14,4 +16,4 @@ class FixedConstraint(BulletGenericConstraint):
         angular_limit = 0,0
         self.setAngularLimit(0, *angular_limit)  # rotation around x
         self.setAngularLimit(1, *angular_limit)  # rotation around y
-        self.setAngularLimit(2, *angular_limit) 
+        self.setAngularLimit(2, *angular_limit)

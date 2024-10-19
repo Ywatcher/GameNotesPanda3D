@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import numpy as np
 from vispy import app, scene, visuals
 from vispyutil.canvas import SynchronizedCanvas

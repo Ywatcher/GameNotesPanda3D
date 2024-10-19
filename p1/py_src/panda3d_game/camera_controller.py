@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 # a camera that can fly
 # from panda3d.core import PointLight, DirectionalLight
 # import random

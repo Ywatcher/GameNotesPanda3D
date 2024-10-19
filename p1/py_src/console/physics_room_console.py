@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from queue import Queue as PyQueue
 from typing import Callable
 from panda3d.core import Vec3

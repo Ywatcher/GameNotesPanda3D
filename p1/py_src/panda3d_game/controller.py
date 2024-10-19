@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 # from panda3d.core import PointLight, DirectionalLight
 
 import traceback
@@ -16,14 +18,14 @@ from panda3d.core import (
     GeomVertexWriter,
     GeomEnums,
     NodePath,
-    
+
     PointLight,
     DirectionalLight,
     CardMaker,
      WindowProperties
 )
 from direct.showbase import DirectObject
-# TODO: 
+# TODO:
 # implement a PlayerController with InputState
 from direct.showbase.InputStateGlobal import inputState
 
@@ -41,11 +43,11 @@ class PlayerController(DirectObject.DirectObject, Loggable):
         self.accept("button", self.key_down)
         self.accept("button-up", self.key_up)
         # FIXME: dict[str, list[str], call] to avoid splitting during game
-        
+
     def is_valid_pattern(self, pattern:str) -> bool:
         # TODO: implement
         return True
-        
+
     def register_key(self, pattern:Union[List[str],str], func:Callable[[Task],object]):
         if isinstance(pattern, list):
             pattern = self.key_str_sep.join(pattern)
@@ -64,35 +66,35 @@ class PlayerController(DirectObject.DirectObject, Loggable):
         else:
             # TODO: confirm to overwrite
             self.key_maps.update({pattern: func})
-        
+
     @property
     def held_keys_list(self) -> list:
         return list(self.held_keys)
-    
+
     def key_down(self, button:str):
         # print(button,"down") # FIXME: verbose log
         self.held_keys.add(button)
         # print("down_", self.held_keys)
-        
+
     def key_up(self, button:str):
         # TODO: remove combined keys
         if button in self.held_keys:
             # print(
-            self.held_keys.remove(button)        
-        
+            self.held_keys.remove(button)
+
     def has_key(self, button:str) -> bool:
         return button in self.held_keys
-    
+
     def has_keys(self, buttons:List[str]) -> bool:
         return all([
-            button in self.held_keys 
+            button in self.held_keys
             for button in buttons
         ])
-    
+
     def update(self, task:Task):
         for pattern, func in self.key_maps.items():
             if self.has_keys(pattern.split(self.key_str_sep)):
-                
+
                 try:
                     func(task)
                 except Exception as e:

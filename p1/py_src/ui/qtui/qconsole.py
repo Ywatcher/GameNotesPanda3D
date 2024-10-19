@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from PyQt5.QtCore import Qt, QObject, QEvent
 from PyQt5.QtWidgets import QPlainTextEdit
 from console import Console

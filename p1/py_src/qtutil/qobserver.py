@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from PyQt5.QtWidgets import QWidget, QApplication
 class QObserved:
     def __init__(self):

@@ -1,7 +1,9 @@
+# -*- coding: utf-8-*-
+
 from typing import List, Union, Callable
 from panda3d.core import (
     NodePath, LODNode,Vec3,
-    Point3, LVector3f, 
+    Point3, LVector3f,
     TransformState
 )
 
@@ -15,7 +17,7 @@ class GameObject(Loggable):
     geomNodePath: NodePath # FIXME: different NodePath for different resolution
     # childrenObjects: List["GameObject"]
     parent: Union["GameObject", NodePath]
-    
+
     tasks: List[Callable]
     def xform(self, xform):
         def xform_recur(*args, **kwargs):
@@ -34,14 +36,14 @@ class GameObject(Loggable):
         Loggable.__init__(self)
         if not hasattr(self, "children"):
             self.children = []
-    
+
     def setTransform(self, *args, **kwargs):
         # TODO: decorator
         @self.xform
         def inner():
             self.mainPath.setTransform(*args, **kwargs)
         inner()
-    
+
     def setPos(self,*args, **kwargs):
         @self.xform
         def inner():
@@ -49,7 +51,7 @@ class GameObject(Loggable):
         inner()
 
     #TODO: set Mat
-            
+
     def __hash__(self):
         return id(self)
 
@@ -77,8 +79,8 @@ class GameObject(Loggable):
     def mainPath(self) -> NodePath:
         pass
 
-   
-    
+
+
 
     def setX(self, *args):
         pass
@@ -138,7 +140,7 @@ class PhysicsGameObject(GameObject):
         if not hasattr(self, "isPhysicsGameObjInit"):
             self.constraints = []
             self.isPhysicsGameObjInit = True
-            
+
 
     def toBulletWorld(self, bullet_world:BulletWorld):
         bullet_world.attachRigidBody(self.rigid_node)
@@ -162,7 +164,7 @@ class PhysicsGameObject(GameObject):
 
     def setZ(self,*args):
         self.rigid_np.setZ(*args)
-       
+
 
 
 

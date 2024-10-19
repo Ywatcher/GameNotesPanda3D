@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import torch
 from panda3d.core import (
     Geom,Point3,
@@ -36,4 +38,4 @@ def create_convex_hull_shape_tr(geoms, transforms):
     return convex_shape
 
 def create_chain_shape(points:torch.Tensor) -> BulletShape:
-    pass 
+    pass

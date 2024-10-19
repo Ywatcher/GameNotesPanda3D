@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import numpy as np
 import torch
 
@@ -16,7 +18,7 @@ from panda3d.core import (
     WindowProperties
 
     PNMImage, Texture, PTAUchar,
-    CardMaker, Point2, NodePath, 
+    CardMaker, Point2, NodePath,
     Camera, PerspectiveLens
 )
 from art.basic import (

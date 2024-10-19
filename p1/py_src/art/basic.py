@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from typing import Callable, List
 import torch
 from numpy import cos, pi, sin
@@ -61,15 +63,15 @@ def uv_curve_surface_lambda(
         name=name,
         coord_mat=vertex_coord_xyz,
         is_u_loop=is_u_loop,
-        is_v_loop=is_v_loop, 
+        is_v_loop=is_v_loop,
         geom_type = geom_type,
         interior=interior
     )
     return geom
-    
+
 
 def uv_curve_surface(
-    name:str, 
+    name:str,
     coord_mat:torch.Tensor, is_u_loop:bool, is_v_loop:bool,
     uv_mat:torch.Tensor=None,  #uv mapping
     geom_type: GeomEnums = Geom.UH_static, vformat=format_uv,
@@ -82,7 +84,7 @@ def uv_curve_surface(
     v_size = coord_mat.shape[1]
     vertex_size = (u_size+is_u_loop, v_size+is_v_loop)
     has_uv = (vformat == format_uv) # FIXME
-    
+
     vdata = GeomVertexData(name, vformat, geom_type)
     vertex_writer = GeomVertexWriter(vdata, "vertex")
     if has_uv:
@@ -116,7 +118,7 @@ def uv_curve_surface(
             # prim.addVertices(
             #     tup2cnt(vertex_size, row, col),
             #     tup2cnt(vertex_size, row+1, col),
-            #     tup2cnt(vertex_size, row, col+1)               
+            #     tup2cnt(vertex_size, row, col+1)
             # )
             prim.addVertices(
                 tup2cnt(vertex_size, row+1, col),
@@ -126,7 +128,7 @@ def uv_curve_surface(
             prim.addVertices(
                 tup2cnt(vertex_size, row+1, col),
                 tup2cnt(vertex_size, row, col),
-                tup2cnt(vertex_size, row, col+1)               
+                tup2cnt(vertex_size, row, col+1)
             )
             # prim.addVertices(
             #     tup2cnt(vertex_size, row, col+1),
@@ -134,17 +136,17 @@ def uv_curve_surface(
             #     tup2cnt(vertex_size, row+1, col+1)
             # )
     geom = Geom(vdata)
-    geom.addPrimitive(prim)  
+    geom.addPrimitive(prim)
     return geom
 
 
 
 # def uv_curve_table(
-#     name:str, 
+#     name:str,
 #     coord_mat:torch.Tensor, top:bool, bot:bool,
 #     geom_type: GeomEnums = Geom.UH_static, vformat=format_
 # ) -> Geom:
-#     side_geom = 
+#     side_geom =
 
 def create_sphere_node(
     name:str,
@@ -157,7 +159,7 @@ def create_sphere_node(
     node = GeomNode("SphNd."+name)
     geom = create_sphere(
         name, lat_res, lon_res,
-        # scale, 
+        # scale,
         geom_type,
         interior
     )
@@ -199,11 +201,11 @@ def create_sphere(
         name=name_sphere,
         coord_mat=vertex_coord_xyz,
         is_u_loop=True,
-        is_v_loop=False, 
+        is_v_loop=False,
         geom_type = geom_type,
         interior=interior
     )
-    
+
     return geom
 
 def create_cube_node():
@@ -295,12 +297,12 @@ def create_cylinder_node(
     interior:bool=False,
     with_top=True,
     with_bot=True
-    
+
 ) -> GeomNode:
     node = GeomNode("CldrNd."+name)
     geom = create_cylinder(
         name, lon_res,
-        # scale, 
+        # scale,
         radius, height, height_bot,
         geom_type,
         interior,
@@ -310,7 +312,7 @@ def create_cylinder_node(
     node.addGeom(geom)
     return node
 
-# TODO: fix 
+# TODO: fix
 
 def create_cylinder(
     name:str,
@@ -343,10 +345,10 @@ def create_cylinder(
     # vertex_coord_r = torch.cos(vertex_coord_phi)
     vertex_coord_r = radius
     # vertex_coord_z = torch.sin(vertex_coord_phi)
-    # vertex_coord_z = 
+    # vertex_coord_z =
     vertex_coord_x = torch.cos(vertex_coord_theta) * vertex_coord_r
     vertex_coord_z = torch.sin(vertex_coord_theta) * vertex_coord_r
-    
+
     vertex_coord_xyz = torch.concat([
         vertex_coord_x.unsqueeze(-1),
         vertex_coord_y.unsqueeze(-1),
@@ -364,16 +366,16 @@ def create_cylinder(
             vertex_coord_xyz,
             bot,
         ], axis=1)
-                                       
+
     geom = uv_curve_surface(
         name=name_cylinder,
         coord_mat=vertex_coord_xyz,
         is_u_loop=True,
-        is_v_loop=False, 
+        is_v_loop=False,
         geom_type = geom_type,
         interior=interior
     )
-    
+
     return geom
 
 def getCylinderShape(radius, height, lon_res):
@@ -390,10 +392,10 @@ def getCylinderShape(radius, height, lon_res):
     # vertex_coord_r = torch.cos(vertex_coord_phi)
     vertex_coord_r = radius
     # vertex_coord_z = torch.sin(vertex_coord_phi)
-    # vertex_coord_z = 
+    # vertex_coord_z =
     vertex_coord_x = torch.cos(vertex_coord_theta) * vertex_coord_r
     vertex_coord_z = torch.sin(vertex_coord_theta) * vertex_coord_r
-    
+
     vertex_coord_xyz = torch.concat([
         vertex_coord_x.unsqueeze(-1),
         vertex_coord_y.unsqueeze(-1),
@@ -402,6 +404,6 @@ def getCylinderShape(radius, height, lon_res):
     for col in range(2):
         for row in range(lon_res):
             vertex = tuple(vertex_coord_xyz[row,col].numpy())
-            
+
             convex_shape.addPoint(Point3(vertex))
     return convex_shape

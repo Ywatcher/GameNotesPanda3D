@@ -1,6 +1,8 @@
+# -*- coding: utf-8-*-
+
 from typing import Dict
 from PyQt5.QtWidgets import (
-    QWidget, QApplication, QMainWindow, 
+    QWidget, QApplication, QMainWindow,
     QDockWidget, QTextEdit, QPlainTextEdit
 )
 from PyQt5.QtCore import QObject, QEvent,Qt
@@ -8,7 +10,7 @@ from panda3d.core import (
     loadPrcFileData
 )
 from qpanda3d import (
-    QShowBase, QPanda3DWidget, QControl, 
+    QShowBase, QPanda3DWidget, QControl,
     Synchronizer
 )
 
@@ -60,7 +62,7 @@ class RawQtGUI(QMainWindow):
         self.dock_top_left = QDockWidget("Game Camera", self)
         self.dock_bottom_left = QDockWidget("Console", self)
         self.dock_right = QDockWidget("Logger", self)
-        
+
         # Add the docks to the main window
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_top_left)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_right)
@@ -77,7 +79,7 @@ class RawQtGUI(QMainWindow):
         self.log_widget = LoggerWidget("Game Logs")
         self.dock_right.setWidget(self.log_widget)
         self.log_widget.add_level(GAME_LOG)
-        Loggable.add_handlers_for_all(self.log_widget.handlers[GAME_LOG]) 
+        Loggable.add_handlers_for_all(self.log_widget.handlers[GAME_LOG])
         self.startGame()
         self.panda3d.log("game start")
         self.console = self.get_console()
@@ -99,13 +101,13 @@ class RawQtGUI(QMainWindow):
         self.panda3d.log("create world")
         self.synchronizer.setShowBase(self.panda3d)
         self.pandaWidget = QPanda3DWidget(
-            self.panda3d, 
+            self.panda3d,
             synchronizer=self.synchronizer
         )
         self.synchronizer.addWidget(self.pandaWidget)
         self.dock_top_left.setWidget(self.pandaWidget)
         self.synchronizer.start()
-        self.panda_mouse_watcher = self.panda3d.mouseWatcherNode 
+        self.panda_mouse_watcher = self.panda3d.mouseWatcherNode
         self.pandaWidget.setFocus()
 
     # todo: remove a widget
@@ -117,7 +119,7 @@ class RawQtGUI(QMainWindow):
         raise NotImplementedError
 
 
-        
+
 # class BufferWidget:
 #     # each item has its type
 #     # for example, input history or output history

@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from panda3d_game.app.app_ import (
     ContextShowBase, ControlShowBase,
 )

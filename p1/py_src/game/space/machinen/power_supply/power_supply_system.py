@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from abc import ABC
 from typing import List
 from panda3d_game.game_object import *
@@ -8,7 +10,7 @@ class PowerSupplySystem(ABC,GameObject):
     This is the abstract class of power supply system,
     which should mange power generators and electricity appliances
     and control their behaviours on power production and usage ;
-    the system should also include battery so that redundant power 
+    the system should also include battery so that redundant power
     can be properly restored after production;
     This doesnt need to be a closed-loop control system.
     """
@@ -38,6 +40,6 @@ class PowerSupplySystem(ABC,GameObject):
         """
         # TODO: power(out) = sum u*i
         # power in = sum p
-        # delta E = (power in - power out)dt 
+        # delta E = (power in - power out)dt
         return super().update(task)
     pass

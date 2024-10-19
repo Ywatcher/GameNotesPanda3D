@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 # TODO: a room with walls
 from threading import Thread, Lock
 from typing import Set, List, Dict, Callable, Union

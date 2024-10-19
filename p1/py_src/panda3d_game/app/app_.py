@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from datetime import datetime
 from queue import Queue as PyQueue
 from typing import Tuple
@@ -51,7 +53,7 @@ class ContextShowBase(ShowBase, Loggable):
         # if self.to_exit:
             # self.userExit()
         # return Task.cont
-        
+
     def close(self):
         self.remove_all_task()
         self.log(
@@ -173,7 +175,7 @@ class ControlShowBase(ContextShowBase):
         # print("center mouse")
         window_center_x = self.win.getXSize() // 2
         window_center_y = self.win.getYSize() // 2
-        
+
         self.movePointer(0, window_center_x, window_center_y)
         self.prev_mouse_x = window_center_x
         self.prev_mouse_y = window_center_y

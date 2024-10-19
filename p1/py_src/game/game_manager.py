@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from py_src.ui.abstract_ui import AbstractGUI
 from py_src.ui.gui_factory import GUIFactory
 

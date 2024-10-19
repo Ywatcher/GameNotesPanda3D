@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 
 # a camera that can fly
 # from panda3d.core import PointLight, DirectionalLight
@@ -58,6 +60,7 @@ tmoon = Texture()
 tmoon.read(os.path.join(res_root, "moon.jpeg"))
 tmoon.setWrapU(Texture.WM_repeat)
 tmoon.setWrapV(Texture.WM_repeat)
+
 
 
 class MassedBall(PhysicsGameObject): # not yet inherent GameObject

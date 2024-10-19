@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import numpy as np
 from PIL import Image
 from typing import Tuple
@@ -88,7 +90,7 @@ def np2texture(
     return tex
 
 def texture_load_np(
-    texture: Texture, 
+    texture: Texture,
     arr: np.ndarray,
     component_type:int = Texture.T_unsigned_byte, # for 0-255
     format_:int=None,
