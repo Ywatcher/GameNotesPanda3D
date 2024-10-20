@@ -116,6 +116,7 @@ class FlyWheel(PhysicsGameObject):
                 c.setDebugDrawSize(40.0)
         self.rigid_node = self.frame.rigid_node
         self.attachPoint = TransformState.makePos((0,0,0))
+        self.max_impulse = 10000
         # self._torque = torch.Tensor([0,0,0])
 
  
@@ -135,4 +136,11 @@ class FlyWheel(PhysicsGameObject):
         self.bearing_y.rigid_node.applyTorque(VBase3(0,-torque_y,0))
         self.bearing_z.rigid_node.applyTorque(VBase3(0,0,-torque_z))
         self.frame.rigid_node.applyTorque(VBase3(torque_x,torque_y,torque_z))
-        
+
+    def toAngV(self, v):
+        vx = v[0]
+        vy = v[1]
+        vz = v[2]
+        self.hinge_x.enableAngularMotor(True, vx, self.max_impulse)
+        self.hinge_y.enableAngularMotor(True, vy, self.max_impulse)
+        self.hinge_z.enableAngularMotor(True, vz, self.max_impulse)

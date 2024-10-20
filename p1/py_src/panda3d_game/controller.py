@@ -42,11 +42,20 @@ class PlayerController(DirectObject.DirectObject, Loggable):
         self.key_maps: Dict[str, Callable] = {}
         self.accept("button", self.key_down)
         self.accept("button-up", self.key_up)
+        self._active = True
+        self.enactive()
         # FIXME: dict[str, list[str], call] to avoid splitting during game
 
     def is_valid_pattern(self, pattern:str) -> bool:
         # TODO: implement
         return True
+
+    def enactive(self):
+        self._active = True
+
+    def deactive(self):
+        self._active = False
+        self.held_keys.clear()
 
     def register_key(self, pattern:Union[List[str],str], func:Callable[[Task],object]):
         if isinstance(pattern, list):

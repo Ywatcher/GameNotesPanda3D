@@ -1,4 +1,5 @@
 # -*- coding: utf-8-*-
+# TODO: save and load object with json
 
 from typing import List, Union, Callable
 from panda3d.core import (

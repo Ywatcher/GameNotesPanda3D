@@ -40,7 +40,9 @@ class PhysicsShowBase(ContextShowBase):
             "length" : 100*meter,
             "time": 1 * second,
             # "force" : sp.Number(1e3) * newton
-        }
+        },
+        max_sub_steps=1,
+        time_step=1.0/60.0
     ):
         if not hasattr(self, "isPhysicsShowBaseInit"):
             ContextShowBase.__init__(self)
@@ -54,6 +56,8 @@ class PhysicsShowBase(ContextShowBase):
             self.objects: Dict[str, Union[GameObject, NodePath]] = {}
             # update physisc world
             self.taskMgr.add(self.update, 'updateWorld')
+            self.maxSubSteps =max_sub_steps
+            self.timeStep = time_step
 
     def pause_switch(self):
         self.paused = not self.paused
@@ -63,7 +67,7 @@ class PhysicsShowBase(ContextShowBase):
     def update(self, task):  # FIXME: decorator
         if not self.paused:
             dt = globalClock.get_dt()
-            self.bullet_world.do_physics(dt)
+            self.bullet_world.doPhysics(dt, self.maxSubSteps, self.timeStep)
         return task.cont
 
 
@@ -77,10 +81,12 @@ class UniversalGravitySpace(PhysicsShowBase):
     def __init__(
         self,
         unit:dict,
-        G_val: Union[float, sp.Expr]
+        G_val: Union[float, sp.Expr],
+        max_sub_steps=1,
+        time_step = 1.0/60.0
     ):
         if not hasattr(self, "isUniversalGravitySpaceInit"):
-            PhysicsShowBase.__init__(self,unit)
+            PhysicsShowBase.__init__(self,unit,max_sub_steps,time_step)
             self.isUniversalGravitySpaceInit = True
             self.bullet_world.setGravity((0,0,0))
             if isinstance(G_val, sp.Expr):
