@@ -3,7 +3,7 @@ import torch
 import sympy as sp
 import networkx
 import numpy as np
-from util import *
+from util_ import *
 
 class VertInfo:
     pass
@@ -13,11 +13,12 @@ class HyperEdge:
         self.x = x
         self.y = y
         self.z = z
-        self._sorted = sorted([x,y,z])
+        # FIXME
+        self._sorted = sorted([x,y,z], key=lambda arg:hash(arg))
         self.resolution = None
 
     def __hash__(self):
-        return self._sorted.__hash__()
+        return hash(self._sorted)
 
     def edges(self):
         return [
@@ -25,6 +26,9 @@ class HyperEdge:
             (self.y,self.z),
             (self.z,self.x)
         ]
+
+    def __repr__(self):
+        return "【{}, {}, {}】".format(self.x,self.y,self.z)
 
 
 
@@ -55,16 +59,22 @@ class SphericalVertInfo(VertInfo):
             phi2=float(phi),
             theta1=float(self.theta),
             theta2=float(theta)
-        )
+    )
 
-    def __list__(self):
-        return list(self.tup)
+    def __iter__(self):
+        return iter(self.tup)
 
-    def __tuple__(self):
-        return self.tup
+    def __len__(self):
+        return len(self.tup)
 
     def __eq__(self, other):
         return self.tup == tuple(other)
+
+    def __ge__(self, other):
+        return self.tup >= tuple(other)
+
+    def __gt__(self, other):
+        return self.tup > tuple(other)
 
     def float(self):
         return (float(self.theta),float(self.phi))
@@ -80,12 +90,18 @@ class SphericalVertInfo(VertInfo):
         return "SphericalVertInfo({},{})".format(self.theta, self.phi)
 
 
-from icosahedron import icosahedron_coords
+from icosahedron import icosahedron_coords, icosahedron_faces
 icosahedron_verts = [
     SphericalVertInfo(theta, phi)
     for (theta, phi) in icosahedron_coords
 ]
-
+icosahedron_hyper_edges = [
+    HyperEdge(
+        icosahedron_verts[i],
+        icosahedron_verts[j],
+        icosahedron_verts[k]
+    ) for (i,j,k) in icosahedron_faces
+]
 # split phi and theta
 
 # vert coordinate from Icosahedron
