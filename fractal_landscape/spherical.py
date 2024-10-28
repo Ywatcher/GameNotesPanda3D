@@ -95,7 +95,6 @@ icosahedron_verts = [
 class SphereMesh:
     def __init__(self):
         self.verts = []
-
         # verts:
         # a list for all vert id
         #  - node unique identifier
