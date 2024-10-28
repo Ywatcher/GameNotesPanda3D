@@ -112,8 +112,10 @@ class SphericalVertInfo(VertInfo):
         return "SphericalVertInfo({},{})".format(self.theta, self.phi)
 
 
-from icosahedron import icosahedron_coords, icosahedron_faces
 def getIcosahedronVerts(symbolic) -> List[SphericalVertInfo]:
+    from icosahedron import (
+        icosahedron_coords, alpha, alpha_val, gamma, gamma_val
+    )
     if symbolic:
         icosahedron_verts = [
             SphericalVertInfo(theta, phi)
@@ -122,14 +124,17 @@ def getIcosahedronVerts(symbolic) -> List[SphericalVertInfo]:
     else:
         icosahedron_verts = [
             SphericalVertInfo(
-                float(theta.subs(alpha, alpha_val).subs(gamma, gamma_val)),
+                float(theta.subs(alpha, alpha_val).subs(gamma, gamma_val))
+                if isinstance(theta, sp.Expr) else float(theta),
                 float(phi.subs(alpha, alpha_val).subs(gamma, gamma_val))
+                if isinstance(phi, sp.Expr) else float(phi)
             )
             for (theta, phi) in icosahedron_coords
         ]
     return icosahedron_verts
 
 def getIcosahedronFaces(verts:None) -> List[HyperEdge]:
+    from icosahedron import  icosahedron_faces
     if verts is None:
         verts = getIcosahedronVerts()
     icosahedron_hyper_edges = [
@@ -171,12 +176,18 @@ class SphereMesh:
         # a dictionary for edges and their midpoints
         # hyperEdges: all triangles
         self.hyperEdges = getIcosahedronFaces(self.verts)
+        self.hyperEdgeLevelDict = {
+            0:self.hyperEdges
+        }
         # containship graph
         # hyperEdges <-> verts inside (bipartite)
         # splitship graph
         # hyperEdge - child hyperEdges
         # lists for batch split
         # a list for hyperEdges each batch of split
+    @property
+    def maxLevel(self):
+        return max(self.hyperEdgeLevelDict.keys())
 
     def midPoint(self,a,b) -> VertInfo:
         return self._midpoints[(a,b)]
@@ -194,7 +205,7 @@ class SphereMesh:
         # single step
         new_verts = []
         new_triangles = []
-        for triangle in self.hyperEdges:
+        for triangle in self.hyperEdgeLevelDict[self.maxLevel]:
             # create midpoints
             for edge in triangle.edges:
                 if edge not in self._midpoints:
@@ -204,35 +215,77 @@ class SphereMesh:
                     self._midpoints[(point2,point1)] = midpoint
                     new_verts.append(midpoint)
             # add new triangles
-            a,b,c = tuple(triangle)
-            mab, mbc, mca = (
-                self.midPoint(a,b), self.midPoint(b,c), self.midPoint(c,a)
-            )
-            children_triangles = [
-                HyperEdge(a, mab, mca),
-                HyperEdge(b, mab, mbc),
-                HyperEdge(c, mca, mbc),
-                HyperEdge(mab, mbc, mca)
-            ]
+            children_triangles = self.splitTriangle(triangle)
             new_triangles += children_triangles
         for (i,vert) in enumerate(new_verts):
             vert.idx = i + len(self.verts)
         self.verts += new_verts
         self.hyperEdges += new_triangles
+        self.hyperEdgeLevelDict[self.maxLevel + 1] = new_triangles
 
     def _batchUniformSplitStep(self):
-        self.batchSplitStep(self.hyperEdges)
+        new_triangles = self.batchSplitStep(
+            self.hyperEdgeLevelDict[self.maxLevel])
+        self.hyperEdges += new_triangles
+        self.hyperEdgeLevelDict[self.maxLevel + 1] = new_triangles
 
     def batchSplitStep(self, triangles:List[HyperEdge]):
-        edges = set(sum(triangle.edges for triangle in triangles))
-        edges = [
-            edge for edge in list(edges) if edge not in self._midpoints
-        ]
-        # TODO: make it tensor
+        # TODO: max batch size
+        edges = list(set(
+            edge for triangle in triangles for edge in triangle.edges
+            if edge not in self._midpoints
+        ))
+        # edges = [
+            # edge for edge in list(edges) if edge not in self._midpoints
+        # ]
+        n_edge = len(edges)
+        # [n_edge, 4]
         edges_coord = torch.Tensor([
-            [p1.theta,p1.phi,p2.theta,p2.phi]
+            [p1.theta,p1.phi, p2.theta,p2.phi]
             for p1,p2 in edges
         ])
+        theta_new, phi_new = spherical_midpoint_pt(
+            edges_coord[:,0], edges_coord[:,2],
+            edges_coord[:,1], edges_coord[:,3]
+        )
+        midpoints = [
+            SphericalVertInfo(
+                theta=theta_new[i], phi=phi_new[i],
+                parent_mesh=self
+            ) for i in range(n_edge)
+        ]
+        for (i,vert) in enumerate(midpoints):
+            vert.idx = i + len(self.verts)
+        self.verts += midpoints
+        self._midpoints.update({
+            edges[i]: midpoints[i] for i in range(n_edge)
+        })
+        self._midpoints.update({
+            (edges[i][1],edges[i][0]): midpoints[i] for i in range(n_edge)
+        })
+        new_triangles = []
+        for triangle in triangles:
+            # add triangles
+            children_triangles = self.splitTriangle(triangle)
+            new_triangles += children_triangles
+        return new_triangles
+
+    def splitTriangle(self, triangle: HyperEdge) -> List[HyperEdge]:
+        a,b,c = tuple(triangle)
+        mab, mbc, mca = (
+            self.midPoint(a,b), self.midPoint(b,c), self.midPoint(c,a)
+        )
+        children_triangles = [
+            HyperEdge(a, mab, mca),
+            HyperEdge(b, mab, mbc),
+            HyperEdge(c, mca, mbc),
+            HyperEdge(mab, mbc, mca)
+        ]
+        return children_triangles
+
+
+
+
 
 
 

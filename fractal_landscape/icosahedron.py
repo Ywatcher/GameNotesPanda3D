@@ -2,7 +2,7 @@ import sympy as sp
 
 alpha, beta, gamma = sp.symbols('alpha beta gamma')
 alpha_val = 2 * sp.pi / 5
-x = (1/sp.sin(alpha/2))
+x = 1/(2*sp.sin(alpha/2))
 beta_in_alpha = (sp.pi-2*sp.asin(x)).simplify()
 gamma_in_alpha = (sp.pi - beta_in_alpha).simplify()
 gamma_in_beta = sp.pi - beta
