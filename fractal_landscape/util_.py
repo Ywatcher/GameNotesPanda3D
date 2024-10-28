@@ -1,3 +1,4 @@
+from typing import Union, Dict, Tuple, List
 import torch
 import sympy as sp
 # spherial coordinate conversion
@@ -27,7 +28,9 @@ def angular_spherical_distance(
         + torch.cos(phi1) * torch.cos(phi2) * torch.cos(delta_theta)
     )
     return ret
-def cart2sphr_sp(x,y,z):
+def cart2sphr_sp(x,y,z,rho=None):
+    if rho is None:
+        rho = sp.sqrt(x**2+y**2+z**2)
     theta=sp.atan(y/x).simplify()
     phi=sp.acos(z/rho).simplify()
     return theta, phi
@@ -61,7 +64,7 @@ def spherical_midpoint_sp(
     theta2: sp.Expr,
     phi1: sp.Expr,
     phi2: sp.Expr,
-) -> sp.Expr:
+) -> Tuple[sp.Expr, sp.Expr]:
     """
     spherical midpoints
     input:
