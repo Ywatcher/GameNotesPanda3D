@@ -6,15 +6,33 @@ import numpy as np
 from util_ import *
 
 class VertInfo:
-    pass
+    tup:tuple
+
+    def __hash__(self):
+        # unique identifier
+        return self.tup.__hash__()
+
+    def __iter__(self):
+        return iter(self.tup)
+
+    def __len__(self):
+        return len(self.tup)
+
+    def __eq__(self, other):
+        return self.tup == tuple(other)
+
+    def __ge__(self, other):
+        return self.tup >= tuple(other)
+
+    def __gt__(self, other):
+        return self.tup > tuple(other)
 
 class HyperEdge:
     def __init__(self, x:VertInfo, y:VertInfo, z:VertInfo):
         self.x = x
         self.y = y
         self.z = z
-        # FIXME
-        self._sorted = sorted([x,y,z], key=lambda arg:hash(arg))
+        self._sorted = sorted([x,y,z], key=lambda arg: hash(arg))
         self.resolution = None
 
     def __hash__(self):
@@ -35,7 +53,6 @@ class HyperEdge:
         return "【{}, {}, {}】".format(self.x,self.y,self.z)
 
 
-
 class SphericalVertInfo(VertInfo):
     def __init__(
         self,
@@ -53,11 +70,7 @@ class SphericalVertInfo(VertInfo):
         self.parentMesh = parent_mesh
         # TODO: register different idx for different list
 
-    def __hash__(self):
-        # unique identifier
-        return self.tup.__hash__()
-
-    # def height_column(self) -> torch.Tensor:
+        # def height_column(self) -> torch.Tensor:
         # return torch.Tensor(self.height_components.values())
 
     # def height(self):
@@ -74,21 +87,6 @@ class SphericalVertInfo(VertInfo):
             theta1=float(self.theta),
             theta2=float(theta)
     )
-
-    def __iter__(self):
-        return iter(self.tup)
-
-    def __len__(self):
-        return len(self.tup)
-
-    def __eq__(self, other):
-        return self.tup == tuple(other)
-
-    def __ge__(self, other):
-        return self.tup >= tuple(other)
-
-    def __gt__(self, other):
-        return self.tup > tuple(other)
 
     def float(self):
         return (float(self.theta),float(self.phi))
@@ -113,6 +111,7 @@ class SphericalVertInfo(VertInfo):
 
 
 def getIcosahedronVerts(symbolic) -> List[SphericalVertInfo]:
+    # TODO: set precision
     from icosahedron import (
         icosahedron_coords, alpha, alpha_val, gamma, gamma_val
     )
@@ -138,11 +137,8 @@ def getIcosahedronFaces(verts:None) -> List[HyperEdge]:
     if verts is None:
         verts = getIcosahedronVerts()
     icosahedron_hyper_edges = [
-        HyperEdge(
-            verts[i],
-            verts[j],
-            verts[k]
-        ) for (i,j,k) in icosahedron_faces
+        HyperEdge(verts[i], verts[j], verts[k])
+        for (i, j, k) in icosahedron_faces
     ]
     return icosahedron_hyper_edges
 # split phi and theta
@@ -201,6 +197,12 @@ class SphereMesh:
             print("iter", i)
             self.uniformSplitStep()
 
+    def uniformSplitToLevel(self, level:int):
+        level = int(level)
+        if level > self.maxLevel:
+            iterations = level - self.maxLevel
+            self.uniformSplit(iterations)
+
     def _uniformSplitStep(self):
         # single step
         new_verts = []
@@ -224,12 +226,14 @@ class SphereMesh:
         self.hyperEdgeLevelDict[self.maxLevel + 1] = new_triangles
 
     def _batchUniformSplitStep(self):
+        # vectorized numeric calculation using torch
+        # much faster than symbolic calculation using sympy
         new_triangles = self.batchSplitStep(
             self.hyperEdgeLevelDict[self.maxLevel])
         self.hyperEdges += new_triangles
         self.hyperEdgeLevelDict[self.maxLevel + 1] = new_triangles
 
-    def batchSplitStep(self, triangles:List[HyperEdge]):
+    def batchSplitStep(self, triangles:List[HyperEdge]) -> List[HyperEdge]:
         # TODO: max batch size
         edges = list(set(
             edge for triangle in triangles for edge in triangle.edges
@@ -250,8 +254,7 @@ class SphereMesh:
         )
         midpoints = [
             SphericalVertInfo(
-                theta=theta_new[i], phi=phi_new[i],
-                parent_mesh=self
+                theta=theta_new[i], phi=phi_new[i], parent_mesh=self
             ) for i in range(n_edge)
         ]
         for (i,vert) in enumerate(midpoints):
@@ -282,14 +285,6 @@ class SphereMesh:
             HyperEdge(mab, mbc, mca)
         ]
         return children_triangles
-
-
-
-
-
-
-
-
 
 
     # method: retrieve a tensor for all verts theta and phi
