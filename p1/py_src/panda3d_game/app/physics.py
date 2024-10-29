@@ -70,6 +70,8 @@ class PhysicsShowBase(ContextShowBase):
             self.bullet_world.doPhysics(dt, self.maxSubSteps, self.timeStep)
         return task.cont
 
+    # TODO: implement method: physics step
+
 
 class UniversalGravitySpace(PhysicsShowBase):
     def setGGame(self, G_game:float):

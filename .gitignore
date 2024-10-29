@@ -7,5 +7,9 @@
 *.png
 *.mypy_cache/*
 p1/py_src/demos/.mypy_cache/*
+.ropeproject/*
+.ropeproject/
+.virtual_documents/
+.virtual_documents/*
 *.data.json
 *.meta.json

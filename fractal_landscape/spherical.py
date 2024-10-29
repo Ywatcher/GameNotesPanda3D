@@ -47,6 +47,9 @@ class HyperEdge:
     def __iter__(self):
         return iter(self._sorted)
 
+    def vertIndexes(self) -> List[int]:
+        return [v.idx for v in self._sorted]
+
     @property
     def edges(self) -> List[Tuple[VertInfo, VertInfo]]:
         return [
@@ -165,7 +168,7 @@ class SphereMesh:
         #   use node property
         # map id to height
         self.R = R
-        self.verts = getIcosahedronVerts(symbolic)
+        self.verts: List[SphericalVertInfo] = getIcosahedronVerts(symbolic)
         self.isSymbolic = symbolic
         if symbolic:
             self.uniformSplitStep = self._uniformSplitStep
@@ -197,8 +200,11 @@ class SphereMesh:
     def midPoint(self, a, b) -> VertInfo:
         return self._midpoints[(a, b)]
 
-    def getHeight(self, idxs):
-        return torch.ones(len(idxs))*self.R  # FIXME
+    def getHeight(self, idxs=None):
+        if idxs is None:
+            return torch.ones(len(self.verts))*self.R
+        else:
+            return torch.ones(len(idxs))*self.R  # FIXME
 
     def uniformSplit(self, iterations: int):
         iterations = int(iterations)
@@ -295,6 +301,27 @@ class SphereMesh:
         ]
         return children_triangles
 
+    def getThetaPhi(self) -> torch.Tensor:
+        return torch.Tensor([
+            [p.theta, p.phi]
+            for p in self.verts
+        ])
+
+    def getRhoThetaPhi(self) -> torch.Tensor:
+        # TODO: concat
+        return torch.Tensor([
+            [self.getHeight(p.idx), p.theta, p.phi]
+            for p in self.verts
+        ])
+
+    def getXYZ(self) -> torch.Tensor:
+        theta_phi = self.getThetaPhi()
+        unit_xyz = sphr2cart_pt(theta_phi[:, 0], theta_phi[:, 1])
+        rho = self.getHeight()
+        return torch.einsum(
+            "nd, n -> nd",
+            unit_xyz, rho
+        )
     # method: retrieve a tensor for all verts theta and phi
     # mothod: retrieve a tensor for all verts heightmap (optional)
 

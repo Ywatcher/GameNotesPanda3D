@@ -65,5 +65,23 @@ todo:
 https://stackoverflow.com/questions/471928/way-to-have-compiled-python-files-in-a-separate-folder
 
 
+console:
+a console for the ship
+make union on ship console and room console
+
+how to integrate namespace and user group
+
+exec python in command
 
 
+shader
+texture setting and shader setting interface for each object
+
+make a tool for creating camouflage
+func: get avg normal vector for a curve surface
+func: project a pattern to curve uv
+
+animation
+animation for thruster, including chemiccal and ion
+
+a showbase for previewing texture and shading

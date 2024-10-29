@@ -1,14 +1,19 @@
 # -*- coding: utf-8-*-
 
+from panda3d.core import GeomVertexArrayFormat
+from typing import Dict, Literal, Tuple
 from typing import List, Dict, Tuple
 from torch import Tensor, vstack, equal
 from panda3d.core import GeomPrimitive
+import numpy as np
 
 from panda3d.core import (
     Geom,
     GeomNode,
     GeomTriangles,
     GeomVertexData,
+    GeomVertexArrayData,
+    GeomVertexArrayDataHandle,
     GeomVertexFormat,
     GeomVertexWriter,
     GeomEnums,
@@ -22,6 +27,7 @@ format_ = GeomVertexFormat.registerFormat(format_)
 
 # TODO: merge indexing and geometry
 
+
 def batch_transform(
     faces: List[Tensor], transformations: List[Tensor]
 ) -> List[Tensor]:
@@ -30,6 +36,7 @@ def batch_transform(
         for face in faces
         for transformation in transformations
     ]
+
 
 def makeLookAt(vec):
     # m = Mat4()
@@ -48,25 +55,28 @@ def makeLookAt(vec):
     tr = temp_np.get_transform()
     return tr
 
+
 def addQuadrilateral(prim, points_idx):
-    a,b,c,d = tuple(points_idx)
-    prim.addVertices(a,b,c)
-    prim.addVertices(a,c,d)
+    a, b, c, d = tuple(points_idx)
+    prim.addVertices(a, b, c)
+    prim.addVertices(a, c, d)
+
 
 def addFace(prim, points_idx):
     if len(points_idx) == 3:
-        a,b,c = tuple(points_idx)
-        prim.addVertices(a,b,c)
+        a, b, c = tuple(points_idx)
+        prim.addVertices(a, b, c)
     elif len(points_idx) == 4:
         addQuadrilateral(prim, points_idx)
     else:
         raise NotImplementedError
 
+
 def add_faces(
     prim: GeomPrimitive,
-    faces:List[Tensor],
+    faces: List[Tensor],
     vformat=format_uv,
-    start_idx = 0,
+    start_idx=0,
     name=""
 ):
     # indexing all vertices
@@ -90,6 +100,7 @@ def add_faces(
         vertex_writer.addData3f(
             vert[0], vert[1], vert[2]
         )
+
     def face_vertex_coord_2_index(face_, all_verts_, start_idx):
         face_with_index = []
         for row in face_:
@@ -103,9 +114,9 @@ def add_faces(
     return vdata, start_idx + len(verts)
 
 
-def createPosIndicatorNPth(
-    parent:NodePath, nodes:Dict["str", Tuple[float,float,float]], node_name_prefix=""
-) -> Dict["str", NodePath]:
+def createPosIndicatorNPth(parent: NodePath,
+                           nodes: Dict["str", Tuple[float, float, float]],
+                           node_name_prefix="") -> Dict["str", NodePath]:
     # FIXME: move this
     # a single node path specifying a position
     ret = {}
@@ -115,3 +126,51 @@ def createPosIndicatorNPth(
         node_path.setPos(*pos)
         ret[key] = node_path
     return ret
+
+
+def getFormatField(
+        vformat: GeomVertexArrayFormat) -> Dict[str, Tuple[int, int]]:
+    n_col = vformat.get_num_columns()
+    field_lengths = [v.get_num_values() for v in vformat.columns]
+    field_dict = {
+        str(vformat.columns[i].getName()):
+            (sum(field_lengths[:i]), sum(field_lengths[:i+1]))
+        for i in range(n_col)
+    }
+    return field_dict
+
+
+def getFormatLength(vformat: GeomVertexArrayFormat) -> int:
+    return sum([v.get_num_values() for v in vformat.columns])
+
+
+def vdataSetNumpy(
+    vdata: GeomVertexData, arr: np.ndarray,
+    field_code: str = 'vertex'
+):
+    """
+
+    field_code = 0 for position
+    codes for other fields depend on the format
+    for example for v3c4 color's code is 1
+    """
+    arr = arr.astype(np.float32)
+    n_rows = arr.shape[0]
+    arr_to_modify: GeomVertexArrayData = vdata.modifyArray(0)
+    vformat = arr_to_modify.array_format
+    field_dict = getFormatField(vformat)
+    field_len_total = getFormatLength(vformat)
+    startcol, endcol = field_dict[field_code]
+    # TODO
+    handle: GeomVertexArrayDataHandle = arr_to_modify.modifyHandle()
+    prev_data = handle.getData()
+    if len(prev_data) == 0:
+        prev_data_np = np.zeros(
+            shape=(n_rows, field_len_total),
+            dtype=np.float32)
+    else:
+        # TODO: select rows
+        prev_data_np = np.frombuffer(prev_data, np.float32)
+        prev_data_np.resize(n_rows, field_len_total)
+    prev_data_np[:, startcol:endcol] = arr
+    handle.setData(prev_data_np.tobytes())

@@ -15,6 +15,7 @@ from panda3d.bullet import (
 )
 
 class GameObject(Loggable):
+    # TODO: inherit panda3d.core.TypedReferenceCount
     geomNodePath: NodePath # FIXME: different NodePath for different resolution
     # childrenObjects: List["GameObject"]
     parent: Union["GameObject", NodePath]
