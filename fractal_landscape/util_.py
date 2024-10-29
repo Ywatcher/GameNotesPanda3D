@@ -28,19 +28,49 @@ def angular_spherical_distance(
         + torch.cos(phi1) * torch.cos(phi2) * torch.cos(delta_theta)
     )
     return ret
-def cart2sphr_sp(x,y,z,rho=None):
+
+
+def cart2sphr_sp(x, y, z, rho=None):
     if rho is None:
-        rho = sp.sqrt(x**2+y**2+z**2)
-    theta=sp.atan(y/x).simplify()
-    phi=sp.acos(z/rho).simplify()
+        rho = sp.sqrt(x**2 + y**2 + z**2)
+    phi = sp.atan(y / x).simplify()
+    theta = sp.acos(z / rho).simplify()
     return theta, phi
 
-def cart2sphr_pt(xyz,rho=None):
+
+def cart2sphr_pt(xyz, rho=None):
     if rho is None:
-        rho = torch.norm(xyz,p=2,dim=1)
-    theta = torch.atan2(xyz[:,1],xyz[:,0])
-    phi = torch.acos(xyz[:,2]/rho)
+        rho = torch.norm(xyz, p=2, dim=1)
+    phi = torch.atan2(xyz[:, 1], xyz[:, 0])
+    theta = torch.acos(xyz[:, 2] / rho)
+    # if any(torch.isnan(phi)) :
+    # nan = torch.isnan(phi)
+    # print("xyz",xyz[nan], "theta",theta[nan], "phi",phi[nan])
+    # if any(torch.isnan(theta)) :
+    # nan = torch.isnan(theta)
+    # print("xyz",xyz[nan], "theta",theta[nan], "phi",phi[nan])
     return theta, phi
+
+
+def sphr2cart_sp(
+    theta: sp.Expr, phi: sp.Expr
+) -> Tuple[sp.Expr, sp.Expr, sp.Expr]:
+    x = sp.sin(theta) * sp.cos(phi)
+    y = sp.sin(theta) * sp.sin(phi)
+    z = sp.cos(theta)
+    return x, y, z
+
+
+def sphr2cart_pt(
+    theta: torch.Tensor, phi: torch.Tensor
+) -> torch.Tensor:
+    x = (torch.sin(theta) * torch.cos(phi)).unsqueeze(-1)
+    y = (torch.sin(theta) * torch.sin(phi)).unsqueeze(-1)
+    z = (torch.cos(theta)).unsqueeze(-1)
+    return torch.concat([x, y, z], dim=-1)
+    # return x, y, z
+
+
 # crater heightmap
 
 
@@ -63,17 +93,18 @@ def spherical_midpoint_pt(
 
     output midpoint theta and phi
     """
-    def xyz(t,p):
+    def xyz(t, p):
         # t and p are of [N]; return [N, 3]
         x = (torch.sin(t) * torch.cos(p)).unsqueeze(-1)
-        y = (torch.sin(t) * torch.cos(p)).unsqueeze(-1)
+        y = (torch.sin(t) * torch.sin(p)).unsqueeze(-1)
         z = (torch.cos(t)).unsqueeze(-1)
-        return torch.concat([x,y,z], dim=-1)
-    xyz1 = xyz(theta1,phi1)
-    xyz2 = xyz(theta2,phi2)
+        return torch.concat([x, y, z], dim=-1)
+    xyz1 = xyz(theta1, phi1)
+    xyz2 = xyz(theta2, phi2)
     xyz_new = (xyz1 + xyz2) / 2
     t_, p_ = cart2sphr_pt(xyz_new)
     return t_, p_
+
 
 def spherical_midpoint_sp(
     theta1: sp.Expr,
@@ -91,13 +122,13 @@ def spherical_midpoint_sp(
 
     output midpoint theta and phi
     """
-    def xyz(t,p):
+    def xyz(t, p):
         x = sp.sin(t)*sp.cos(p)
         y = sp.sin(t)*sp.sin(p)
         z = sp.cos(t)
-        return x,y,z
-    x1, y1, z1 = xyz(theta1,phi1)
-    x2, y2, z2 = xyz(theta2,phi2)
-    x_,y_,z_ = (x1+x2)/2, (y1+y2)/2, (z1+z2)/2
-    t_, p_ = cart2sphr_sp(x_,y_,z_)
+        return x, y, z
+    x1, y1, z1 = xyz(theta1, phi1)
+    x2, y2, z2 = xyz(theta2, phi2)
+    x_, y_, z_ = (x1+x2)/2, (y1+y2)/2, (z1+z2)/2
+    t_, p_ = cart2sphr_sp(x_, y_, z_)
     return t_, p_
