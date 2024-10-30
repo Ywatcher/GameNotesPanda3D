@@ -3,7 +3,7 @@ import torch
 import sympy as sp
 import networkx
 import numpy as np
-from util_ import *
+from util.spherical_geometry import *
 
 
 class VertInfo:
@@ -119,9 +119,9 @@ class SphericalVertInfo(VertInfo):
         return "SphericalVertInfo({},{})".format(self.theta, self.phi)
 
 
-def getIcosahedronVerts(symbolic) -> List[SphericalVertInfo]:
+def getIcosahedronVerts(symbolic=False) -> List[SphericalVertInfo]:
     # TODO: set precision
-    from icosahedron import (
+    from art.procedural_art.fractal_landscape.icosahedron import (
         icosahedron_coords, alpha, alpha_val, gamma, gamma_val
     )
     if symbolic:
@@ -142,8 +142,9 @@ def getIcosahedronVerts(symbolic) -> List[SphericalVertInfo]:
     return icosahedron_verts
 
 
-def getIcosahedronFaces(verts: None) -> List[HyperEdge]:
-    from icosahedron import icosahedron_faces
+def getIcosahedronFaces(verts=None) -> List[HyperEdge]:
+    from art.procedural_art.fractal_landscape.icosahedron import (
+        icosahedron_faces)
     if verts is None:
         verts = getIcosahedronVerts()
     icosahedron_hyper_edges = [
@@ -346,4 +347,5 @@ class SphereMesh:
 
 if __name__ == "__main__":
     # TODO: include which node belongs to which hyperEdge
-    print(icosahedron_verts)
+    icosahedron_faces = getIcosahedronFaces()
+    print(icosahedron_faces)
