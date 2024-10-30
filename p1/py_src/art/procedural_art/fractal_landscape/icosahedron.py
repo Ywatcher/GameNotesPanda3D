@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 import sympy as sp
 
 alpha, beta, gamma = sp.symbols('alpha beta gamma')

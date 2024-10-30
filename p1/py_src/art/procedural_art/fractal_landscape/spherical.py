@@ -1,32 +1,12 @@
+# -*- coding: utf-8-*-
+
 from typing import Union, Dict, Tuple, List
 import torch
 import sympy as sp
-import networkx
+# import networkx
 import numpy as np
+from art.procedural_art.fractal_landscape.data_structures import VertInfo
 from util.spherical_geometry import *
-
-
-class VertInfo:
-    tup: tuple
-
-    def __hash__(self):
-        # unique identifier
-        return self.tup.__hash__()
-
-    def __iter__(self):
-        return iter(self.tup)
-
-    def __len__(self):
-        return len(self.tup)
-
-    def __eq__(self, other):
-        return self.tup == tuple(other)
-
-    def __ge__(self, other):
-        return self.tup >= tuple(other)
-
-    def __gt__(self, other):
-        return self.tup > tuple(other)
 
 
 class HyperEdge:
@@ -95,7 +75,7 @@ class SphericalVertInfo(VertInfo):
             phi2=float(phi),
             theta1=float(self.theta),
             theta2=float(theta)
-            )
+        )
 
     def float(self):
         return (float(self.theta), float(self.phi))
@@ -203,9 +183,9 @@ class SphereMesh:
 
     def getHeight(self, idxs=None):
         if idxs is None:
-            return torch.ones(len(self.verts))*self.R
+            return torch.ones(len(self.verts)) * self.R
         else:
-            return torch.ones(len(idxs))*self.R  # FIXME
+            return torch.ones(len(idxs)) * self.R  # FIXME
 
     def uniformSplit(self, iterations: int):
         iterations = int(iterations)
