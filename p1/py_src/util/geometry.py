@@ -130,8 +130,8 @@ def createPosIndicatorNPth(parent: NodePath,
 
 def getFormatField(
         vformat: GeomVertexArrayFormat) -> Dict[str, Tuple[int, int]]:
-    n_col = vformat.get_num_columns()
-    field_lengths = [v.get_num_values() for v in vformat.columns]
+    n_col = vformat.getNumColumns()
+    field_lengths = [c.getTotalBytes() for c in vformat.columns]
     field_dict = {
         str(vformat.columns[i].getName()):
             (sum(field_lengths[:i]), sum(field_lengths[:i+1]))
@@ -141,7 +141,7 @@ def getFormatField(
 
 
 def getFormatLength(vformat: GeomVertexArrayFormat) -> int:
-    return sum([v.get_num_values() for v in vformat.columns])
+    return sum([c.getTotalBytes() for c in vformat.columns])
 
 
 def vdataSetNumpy(
@@ -154,23 +154,35 @@ def vdataSetNumpy(
     codes for other fields depend on the format
     for example for v3c4 color's code is 1
     """
-    arr = arr.astype(np.float32)
+    encode = {
+        'vertex': np.float32,
+        'color': np.uint8,
+        # TODO: uv, norm
+    }
+    if field_code not in encode:
+        raise NotImplementedError
+    element_format = encode[field_code]
+    element_size = np.dtype(element_format).itemsize
+    # TODO: for color, convert float to int
+    # FIXME: please have color converted before calling this function
+    arr = arr.astype(element_format)
     n_rows = arr.shape[0]
     arr_to_modify: GeomVertexArrayData = vdata.modifyArray(0)
     vformat = arr_to_modify.array_format
     field_dict = getFormatField(vformat)
-    field_len_total = getFormatLength(vformat)
-    startcol, endcol = field_dict[field_code]
+    field_col_total = getFormatLength(vformat) // element_size
+    startbyte, endbyte = field_dict[field_code]
+    startcol, endcol = startbyte // element_size, endbyte // element_size
     # TODO
     handle: GeomVertexArrayDataHandle = arr_to_modify.modifyHandle()
     prev_data = handle.getData()
     if len(prev_data) == 0:
         prev_data_np = np.zeros(
-            shape=(n_rows, field_len_total),
-            dtype=np.float32)
+            shape=(n_rows, field_col_total),
+            dtype=element_format)
     else:
         # TODO: select rows
-        prev_data_np = np.frombuffer(prev_data, np.float32)
-        prev_data_np.resize(n_rows, field_len_total)
+        prev_data_np = np.frombuffer(prev_data, element_format)
+        prev_data_np.resize(n_rows, field_col_total)
     prev_data_np[:, startcol:endcol] = arr
     handle.setData(prev_data_np.tobytes())
