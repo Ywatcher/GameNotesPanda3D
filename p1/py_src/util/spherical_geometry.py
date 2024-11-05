@@ -132,3 +132,13 @@ def spherical_midpoint_sp(
     x_, y_, z_ = (x1+x2)/2, (y1+y2)/2, (z1+z2)/2
     t_, p_ = cart2sphr_sp(x_, y_, z_)
     return t_, p_
+
+
+def is_clockwise_on_sphr(
+    theta1, theta2, theta3,
+    phi1, phi2, phi3
+) -> bool:
+    # TODO: calc xyz
+    # TODO: cross product
+    # TODO: dot product
+    pass

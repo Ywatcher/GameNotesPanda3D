@@ -12,8 +12,10 @@ from panda3d.core import (
 from panda3d.bullet import (
     BulletRigidBodyNode, BulletTriangleMeshShape, BulletTriangleMesh
 )
-from art.procedural_art.fractal_landscape.spherical import *
+from .spherical import *
 from util.geometry import *
+
+__all__ = ["SphereMeshObject"]
 
 
 class SphereMeshObject(SphereMesh):

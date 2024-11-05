@@ -5,27 +5,25 @@ import torch
 import sympy as sp
 # import networkx
 import numpy as np
-from art.procedural_art.fractal_landscape.data_structures import VertInfo
+from .data_structures import (
+    VertInfo, HyperEdge
+)
 from util.spherical_geometry import *
 
+__all__ = [
+    "SphrHyperEdge", "SphericalVertInfo",
+    "SphereMesh"
+]
 
-class HyperEdge:
+
+class SphrHyperEdge(HyperEdge):
     def __init__(self, x: VertInfo, y: VertInfo, z: VertInfo):
         # TODO: set level info
         self.x = x
         self.y = y
         self.z = z
-        self._sorted = sorted([x, y, z], key=lambda arg: hash(arg))
+        HyperEdge.__init__(self, [x, y, z])
         self.resolution = None
-
-    def __len__(self):
-        return len(self._sorted)
-
-    def __hash__(self):
-        return hash(self._sorted)
-
-    def __iter__(self):
-        return iter(self._sorted)
 
     def vertIndexes(self) -> List[int]:
         return [v.idx for v in self._sorted]
@@ -122,13 +120,13 @@ def getIcosahedronVerts(symbolic=False) -> List[SphericalVertInfo]:
     return icosahedron_verts
 
 
-def getIcosahedronFaces(verts=None) -> List[HyperEdge]:
+def getIcosahedronFaces(verts=None) -> List[SphrHyperEdge]:
     from art.procedural_art.fractal_landscape.icosahedron import (
         icosahedron_faces)
     if verts is None:
         verts = getIcosahedronVerts()
     icosahedron_hyper_edges = [
-        HyperEdge(verts[i], verts[j], verts[k])
+        SphrHyperEdge(verts[i], verts[j], verts[k])
         for (i, j, k) in icosahedron_faces
     ]
     return icosahedron_hyper_edges
@@ -229,7 +227,8 @@ class SphereMesh:
         self.hyperEdges += new_triangles
         self.hyperEdgeLevelDict[self.maxLevel + 1] = new_triangles
 
-    def batchSplitStep(self, triangles: List[HyperEdge]) -> List[HyperEdge]:
+    def batchSplitStep(
+            self, triangles: List[SphrHyperEdge]) -> List[SphrHyperEdge]:
         # TODO: max batch size
         edges = list(set(
             edge for triangle in triangles for edge in triangle.edges
@@ -269,16 +268,16 @@ class SphereMesh:
             new_triangles += children_triangles
         return new_triangles
 
-    def splitTriangle(self, triangle: HyperEdge) -> List[HyperEdge]:
+    def splitTriangle(self, triangle: SphrHyperEdge) -> List[SphrHyperEdge]:
         a, b, c = tuple(triangle)
         mab, mbc, mca = (
             self.midPoint(a, b), self.midPoint(b, c), self.midPoint(c, a)
         )
         children_triangles = [
-            HyperEdge(a, mab, mca),
-            HyperEdge(b, mab, mbc),
-            HyperEdge(c, mca, mbc),
-            HyperEdge(mab, mbc, mca)
+            SphrHyperEdge(a, mab, mca),
+            SphrHyperEdge(b, mab, mbc),
+            SphrHyperEdge(c, mca, mbc),
+            SphrHyperEdge(mab, mbc, mca)
         ]
         return children_triangles
 
