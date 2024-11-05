@@ -12,7 +12,7 @@ from util.spherical_geometry import *
 
 __all__ = [
     "SphrHyperEdge", "SphericalVertInfo",
-    "SphereMesh"
+    "SphereMesh", "getIcosahedronVerts", "getIcosahedronFaces"
 ]
 
 
@@ -139,38 +139,40 @@ def getIcosahedronFaces(verts=None) -> List[SphrHyperEdge]:
 
 class SphereMesh:
     def __init__(self, R=1, symbolic=False):
-        # verts:
-        # a list for all vert id
-        #  - node unique identifier
-        #  - node index in list
-        # map id to coordinate theta and phi
-        #   use node property
-        # map id to height
-        self.R = R
-        self.verts: List[SphericalVertInfo] = getIcosahedronVerts(symbolic)
-        self.isSymbolic = symbolic
-        if symbolic:
-            self.uniformSplitStep = self._uniformSplitStep
-        else:
-            self.uniformSplitStep = self._batchUniformSplitStep
-        for i, vert in enumerate(self.verts):
-            vert.idx = i
-            vert.parentMesh = self
-        # edges: all connected verts # TODO
-        self._midpoints: Dict[Tuple[VertInfo, VertInfo], VertInfo] = {}
-        # FIXME: use hashed set
-        # a dictionary for edges and their midpoints
-        # hyperEdges: all triangles
-        self.hyperEdges = getIcosahedronFaces(self.verts)
-        self.hyperEdgeLevelDict = {
-            0: self.hyperEdges
-        }
-        # containship graph
-        # hyperEdges <-> verts inside (bipartite)
-        # splitship graph
-        # hyperEdge - child hyperEdges
-        # lists for batch split
-        # a list for hyperEdges each batch of split
+        if not hasattr(self, "isSphereMeshInit"):
+            # verts:
+            # a list for all vert id
+            #  - node unique identifier
+            #  - node index in list
+            # map id to coordinate theta and phi
+            #   use node property
+            # map id to height
+            self.isSphereMeshInit = True
+            self.R = R
+            self.verts: List[SphericalVertInfo] = getIcosahedronVerts(symbolic)
+            self.isSymbolic = symbolic
+            if symbolic:
+                self.uniformSplitStep = self._uniformSplitStep
+            else:
+                self.uniformSplitStep = self._batchUniformSplitStep
+            for i, vert in enumerate(self.verts):
+                vert.idx = i
+                vert.parentMesh = self
+            # edges: all connected verts # TODO
+            self._midpoints: Dict[Tuple[VertInfo, VertInfo], VertInfo] = {}
+            # FIXME: use hashed set
+            # a dictionary for edges and their midpoints
+            # hyperEdges: all triangles
+            self.hyperEdges = getIcosahedronFaces(self.verts)
+            self.hyperEdgeLevelDict = {
+                0: self.hyperEdges
+            }
+            # containship graph
+            # hyperEdges <-> verts inside (bipartite)
+            # splitship graph
+            # hyperEdge - child hyperEdges
+            # lists for batch split
+            # a list for hyperEdges each batch of split
 
     @property
     def maxLevel(self):
