@@ -3,31 +3,34 @@
 
 from typing import List, Union, Callable
 from panda3d.core import (
-    NodePath, LODNode,Vec3,
+    NodePath, LODNode, Vec3,
     Point3, LVector3f,
     TransformState
 )
 
 from util.log import Loggable
+from util.py_decorators import selfdecorate
 from panda3d.bullet import (
     BulletWorld,
     BulletRigidBodyNode,
 )
 
+
 class GameObject(Loggable):
     # TODO: inherit panda3d.core.TypedReferenceCount
-    geomNodePath: NodePath # FIXME: different NodePath for different resolution
+    geomNodePath: NodePath  # FIXME: different NodePath for different resolution
     # childrenObjects: List["GameObject"]
     parent: Union["GameObject", NodePath]
 
     tasks: List[Callable]
+
     def xform(self, xform):
         def xform_recur(*args, **kwargs):
             children_rel_trans = {
                 c: c.mainPath.getMat(self.mainPath)
                 for c in self.children
             }
-            ret = xform(*args,**kwargs)
+            ret = xform(*args, **kwargs)
             for c in self.children:
                 rel_trans = TransformState.makeMat(children_rel_trans[c])
                 c.setTransform(self.mainPath, rel_trans)
@@ -39,20 +42,15 @@ class GameObject(Loggable):
         if not hasattr(self, "children"):
             self.children = []
 
+    @selfdecorate('xform')
     def setTransform(self, *args, **kwargs):
-        # TODO: decorator
-        @self.xform
-        def inner():
-            self.mainPath.setTransform(*args, **kwargs)
-        inner()
+        self.mainPath.setTransform(*args, **kwargs)
 
-    def setPos(self,*args, **kwargs):
-        @self.xform
-        def inner():
-            self.mainPath.setPos(*args,**kwargs)
-        inner()
+    @selfdecorate('xform')
+    def setPos(self, *args, **kwargs):
+        self.mainPath.setPos(*args, **kwargs)
 
-    #TODO: set Mat
+    # TODO: set Mat
 
     def __hash__(self):
         return id(self)
@@ -60,12 +58,12 @@ class GameObject(Loggable):
     def add_child(self, other: Union["GameObject", NodePath]):
         pass
         # if isinstance(other, GameObject):
-            # self.childrenObjects.append(other)
-            # other.nodePath.reparentTo(self.nodePath)
+        # self.childrenObjects.append(other)
+        # other.nodePath.reparentTo(self.nodePath)
         # elif isinstance(other, NodePath):
-            # other.nodePath.reparentTo(self.nodePath)
+        # other.nodePath.reparentTo(self.nodePath)
         # else:
-            # raise NotImplementedError
+        # raise NotImplementedError
 
     def reparentTo(self, other: Union["GameObject", NodePath]):
         if isinstance(other, GameObject):
@@ -81,9 +79,6 @@ class GameObject(Loggable):
     def mainPath(self) -> NodePath:
         pass
 
-
-
-
     def setX(self, *args):
         pass
 
@@ -93,7 +88,7 @@ class GameObject(Loggable):
     def setZ(self, *args):
         pass
 
-    def set_linear_velocity(self,v:Vec3):
+    def set_linear_velocity(self, v: Vec3):
         # self.rigid_body_node.set_linear_velocity(v)
         pass
 
@@ -115,15 +110,17 @@ class GameObject(Loggable):
         else:
             return self.mainPath.getPos(other.mainPath)
 
+
 def sync_pos(nodepath):
     transform = nodepath.getTransform()
     nodepath.node().setTransform(transform)
 
+
 class PhysicsGameObject(GameObject):
     rigid_node: BulletRigidBodyNode
     rigid_np: NodePath
-    game_mass:float
-    constraints:list
+    game_mass: float
+    constraints: list
 
     # def findAllRigidNp(self):
     #     rigid_bodies = self.mainPath.findAllMatches('**/+BulletRigidBodyNode')
@@ -143,8 +140,7 @@ class PhysicsGameObject(GameObject):
             self.constraints = []
             self.isPhysicsGameObjInit = True
 
-
-    def toBulletWorld(self, bullet_world:BulletWorld):
+    def toBulletWorld(self, bullet_world: BulletWorld):
         bullet_world.attachRigidBody(self.rigid_node)
         for constraint in self.constraints:
             bullet_world.attachConstraint(constraint)
@@ -161,14 +157,11 @@ class PhysicsGameObject(GameObject):
     def apply_force(self, force, pos):
         self.rigid_node.apply_force(LVector3f(*force), LVector3f(*pos))
 
-    def set_linear_velocity(self,v:Vec3):
+    def set_linear_velocity(self, v: Vec3):
         self.rigid_node.set_linear_velocity(v)
 
-    def setZ(self,*args):
+    def setZ(self, *args):
         self.rigid_np.setZ(*args)
-
-
-
 
 
 class ControlledObject(GameObject):
@@ -176,5 +169,3 @@ class ControlledObject(GameObject):
         self.controller = controller
         # TODO: T typing
         pass
-
-
