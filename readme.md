@@ -85,6 +85,17 @@ use AI to control the ship.
 
 
 
-
-
+# useful stuffs in this repo 
+### vispy background for panda3d 
+`p1/py_src/vispyutil` provides a way to use vispy canvas to render image in real time 
+and use it as background in panda3d. The angle and ratio of camera keep synchronized 
+between panda3d showbase and vispy canvas.
+### spherical landscape
+`p1/py_src/art/procedural_art/fractal_landscape` is a framework to generate spherical landscape
+by spliting icosahedron to appoximate sphere. 
+### decorators
+`p1/py_src/util/py_decorators.py` implements several decorators for python class.  
+Including:\
+decorators to register decorated methods on a dictionary, and \
+way to use object method as decorator for other methods of it 
 # todo
