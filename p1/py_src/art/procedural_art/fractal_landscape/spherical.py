@@ -8,7 +8,7 @@ import numpy as np
 from .data_structures import (
     VertInfo, HyperEdge
 )
-from util.spherical_geometry import *
+from util.maths.spherical_geometry import *
 
 __all__ = [
     "SphrHyperEdge", "SphericalVertInfo",
@@ -283,17 +283,18 @@ class SphereMesh:
         ]
         return children_triangles
 
-    def getThetaPhi(self) -> torch.Tensor:
+    def getThetaPhi(self, idxs=None) -> torch.Tensor:
+        verts = self.verts if idxs is None else self.verts[idxs]
         return torch.Tensor([
-            [p.theta, p.phi]
-            for p in self.verts
+            [p.theta, p.phi] for p in verts
         ])
 
-    def getRhoThetaPhi(self) -> torch.Tensor:
+    def getRhoThetaPhi(self, idxs=None) -> torch.Tensor:
         # TODO: concat
+        verts = self.verts if idxs is None else self.verts[idxs]
         return torch.Tensor([
             [self.getHeight(p.idx), p.theta, p.phi]
-            for p in self.verts
+            for p in verts
         ])
 
     def getXYZ(self) -> torch.Tensor:

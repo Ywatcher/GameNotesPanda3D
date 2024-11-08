@@ -29,7 +29,7 @@ from panda3d_game.game_object import GameObject, PhysicsGameObject
 
 from game.events import Events
 from util.physics import autocomplete_units, getG
-from util.math import safe_reciprocal
+from util.maths import safe_reciprocal
 from util.log import Loggable
 
 class PhysicsShowBase(ContextShowBase):

@@ -53,7 +53,7 @@ from demos.physics_room import (
     PhyscRoom, PhyscRoomConsole, CMDInterface
 )
 
-from util.math import one,safe_reciprocal
+from util.maths import one,safe_reciprocal
 from util.physics import autocomplete_units, G_val, getG
 from util.repo import res_root
 tmoon = Texture()

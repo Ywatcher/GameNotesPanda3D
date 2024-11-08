@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 from typing import Union, Dict, Tuple, List
 import torch
 import sympy as sp

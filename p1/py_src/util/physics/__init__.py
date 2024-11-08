@@ -1,3 +1,3 @@
 # -*- coding: utf-8-*-
 
-from util.physics.physics import *
+from .physics import *
