@@ -6,6 +6,8 @@
 *.jpeg
 *.png
 *.mypy_cache/*
+*/.mypy_cache
+*plugins_snapshot.json
 p1/py_src/demos/.mypy_cache/*
 .ropeproject/*
 .ropeproject/
