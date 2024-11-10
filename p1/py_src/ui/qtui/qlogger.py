@@ -3,6 +3,7 @@
 import logging
 from PyQt5.QtWidgets import QPlainTextEdit
 
+
 class QLogHandler(logging.Handler):
     def __init__(self, text_edit: QPlainTextEdit):
         super().__init__()
@@ -16,12 +17,12 @@ class QLogHandler(logging.Handler):
 class LoggerWidget(QPlainTextEdit):
     def __init__(self, title):
         # TODO: set formatter
-        QPlainTextEdit.__init__(self,title)
+        QPlainTextEdit.__init__(self, title)
         self.setObjectName("logger")
         self.setReadOnly(True)
         self.handlers = {}
 
-    def add_level(self, level:int):
+    def add_level(self, level: int):
         if level not in self.handlers.keys():
             new_handler = QLogHandler(self)
             formatter = logging.Formatter(
