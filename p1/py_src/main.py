@@ -1,7 +1,6 @@
 # -*- coding: utf-8-*-
 
 from direct.showbase.ShowBase import ShowBase
-# from util.app import ContextShowBase
 from panda3d_game.app import ContextShowBase
 from direct.task import Task
 from panda3d.core import (
@@ -15,7 +14,6 @@ from panda3d.core import (
 )
 import numpy as np
 import torch
-# from geom.basic import create_cube_node, create_sphere_node, uv_curve_surface
 from art.basic import create_sphere_node, create_cube_node,uv_curve_surface
 import builtins
 
