@@ -21,12 +21,31 @@ from panda3d.core import (
     TransformState,
     Mat4
 )
-format_ = GeomVertexFormat.getV3c4()
+format_v3c4 = GeomVertexFormat.getV3c4()
 format_uv = GeomVertexFormat.getV3t2()
-format_ = GeomVertexFormat.registerFormat(format_)
+
+
+
+_array = GeomVertexArrayFormat()
+_array.addColumn("vertex", 3, Geom.NT_float32, Geom.C_point)      # 顶点
+_array.addColumn("color", 4, Geom.NT_float32, Geom.C_color)
+_array.addColumn("normal", 3, Geom.NT_float32, Geom.C_normal)     # 法线
+_array.addColumn("texcoord", 2, Geom.NT_float32, Geom.C_texcoord) # UV
+
+format_normal = GeomVertexFormat()
+format_normal.addArray(_array)
+
+format_ = GeomVertexFormat.registerFormat(format_normal)
 
 # TODO: merge indexing and geometry
 
+def format_has_column(vformat: GeomVertexFormat, name: str) -> bool:
+    for i in range(vformat.getNumArrays()):
+        arr = vformat.getArray(i)
+        for j in range(arr.getNumColumns()):
+            if arr.getColumn(j).getName() == name:
+                return True
+    return False
 
 def batch_transform(
     faces: List[Tensor], transformations: List[Tensor]

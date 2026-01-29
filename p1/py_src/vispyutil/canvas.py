@@ -7,6 +7,7 @@ from vispy.visuals.transforms.linear import MatrixTransform
 import traceback
 try:
     use('glfw')
+    # use("egl")
 except Exception as e:
     print(e)
     print(traceback.format_exc())

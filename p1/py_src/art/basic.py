@@ -75,18 +75,24 @@ def uv_curve_surface(
     coord_mat:torch.Tensor, is_u_loop:bool, is_v_loop:bool,
     uv_mat:torch.Tensor=None,  #uv mapping
     geom_type: GeomEnums = Geom.UH_static, vformat=format_uv,
-    interior:bool=False
+    interior:bool=False,
+    normal =True
 ) -> Geom:
+    # FIXME: add normal if there is a normal field in format 
+    # FIXME: if there is normal argument, but not normal field, then give warning
     # coord_mat: [u_size, v_size, format_size]
     if interior:
         uv_mat = uv_mat[:,:,::-1]
     u_size = coord_mat.shape[0]
     v_size = coord_mat.shape[1]
     vertex_size = (u_size+is_u_loop, v_size+is_v_loop)
-    has_uv = (vformat == format_uv) # FIXME
+    
+    has_uv = format_has_column(vformat, "texcoord")
+    has_normal = format_has_column(vformat, "normal")
 
     vdata = GeomVertexData(name, vformat, geom_type)
     vertex_writer = GeomVertexWriter(vdata, "vertex")
+    normal_writer = GeomVertexWriter(vdata, "normal") # FIXME: use if 
     if has_uv:
         uv_writer = GeomVertexWriter(vdata, 'texcoord')
         if uv_mat is None:
@@ -100,6 +106,7 @@ def uv_curve_surface(
                 [u.unsqueeze(-1), v.unsqueeze(-1)], dim=-1
             )
     # vertex_size = (lon_res, lat_res)
+    # TODO FIXME: matrix -> fields
     for row in range(u_size + is_u_loop):
         for col in range(v_size + is_v_loop):
             coord = coord_mat[row % u_size, col % v_size]
