@@ -21,23 +21,62 @@ from panda3d.core import (
     TransformState,
     Mat4
 )
+
+def p3dRegisterFormatFrmArray(array_format:GeomVertexArrayFormat, name=None):
+    # if array changes after it is used in a registed format,
+    # behaviour will be undefined
+    array_format = GeomVertexArrayFormat(array_format)  # copy in case array changes
+    new_format = GeomVertexFormat()
+    new_format.addArray(array_format)
+    new_format = GeomVertexFormat.registerFormat(new_format)
+    if name:
+        new_format.setName(name)
+    return new_format
+
+
+def formatHasColumn(vformat: GeomVertexFormat, name: str) -> bool:
+    """
+    whether vformat has column with name 
+    vformat: GeomVertexFormat 
+    name: str
+    return: bool
+    """
+    for i in range(vformat.getNumArrays()):
+        arr = vformat.getArray(i)
+        for j in range(arr.getNumColumns()):
+            if arr.getColumn(j).getName() == name:
+                return True
+    return False
+
+
 format_v3c4 = GeomVertexFormat.getV3c4()
 format_uv = GeomVertexFormat.getV3t2()
 
 
-
 _array = GeomVertexArrayFormat()
-_array.addColumn("vertex", 3, Geom.NT_float32, Geom.C_point)      # 顶点
-_array.addColumn("color", 4, Geom.NT_float32, Geom.C_color)
-_array.addColumn("normal", 3, Geom.NT_float32, Geom.C_normal)     # 法线
-_array.addColumn("texcoord", 2, Geom.NT_float32, Geom.C_texcoord) # UV
+_array.addColumn("vertex",   3, Geom.NT_float32, Geom.C_point)      
+_array.addColumn("color",    4, Geom.NT_float32, Geom.C_color)
+_array.addColumn("normal",   3, Geom.NT_float32, Geom.C_normal)   # normal vector  
+_array.addColumn("texcoord", 2, Geom.NT_float32, Geom.C_texcoord) # UV mapping
+format_normal = p3dRegisterFormatFrmArray(_array, "format_normal")
 
-format_normal = GeomVertexFormat()
-format_normal.addArray(_array)
-
-format_ = GeomVertexFormat.registerFormat(format_normal)
+format_default = format_normal
 
 # TODO: merge indexing and geometry
+
+class EmptyVertexWriter:
+    def __init__(self, *args, **kwargs):
+        pass 
+
+    def addData2f(self, *args, **kwargs):
+        pass
+
+    def addData3f(self, *args, **kwargs):
+        pass
+
+    def addData4f(self, *args, **kwargs):
+        pass
+
 
 def format_has_column(vformat: GeomVertexFormat, name: str) -> bool:
     for i in range(vformat.getNumArrays()):

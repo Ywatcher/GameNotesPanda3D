@@ -2,3 +2,4 @@
 
 from .arithmetic import *
 from .spherical_geometry import *
+from .differential import *
