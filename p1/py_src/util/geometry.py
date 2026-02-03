@@ -29,8 +29,9 @@ def p3dRegisterFormatFrmArray(array_format:GeomVertexArrayFormat, name=None):
     new_format = GeomVertexFormat()
     new_format.addArray(array_format)
     new_format = GeomVertexFormat.registerFormat(new_format)
-    if name:
-        new_format.setName(name)
+    # if name:
+    # FIXME: register name to global dict
+        # new_format.setName(name)
     return new_format
 
 

@@ -106,22 +106,22 @@ def uv_curve_surface(
     vertex_writer = GeomVertexWriter(vdata, "vertex")
     if has_normal:
         normal_writer = GeomVertexWriter(vdata, "normal") 
-        if normal_mat is None 
+        if normal_mat is None :
             normal_mat = compute_uv_normals(coord_mat, is_u_loop, is_v_loop)
         # if interior:
             # normal_mat = normal_mat * -1
     if has_uv:
         uv_writer = GeomVertexWriter(vdata, 'texcoord')
-        if uv_mat is None:
-            u_step = 1 / (u_size-1+is_u_loop)
-            v_step = 1 / (v_size-1+is_v_loop)
-            u,v = torch.meshgrid(
-                torch.arange(0,1+u_step,step=u_step), #FIXME:[0,1+step)
-                torch.arange(0,1+v_step,step=v_step)
-            )
-            uv_mat = torch.concat(
-                [u.unsqueeze(-1), v.unsqueeze(-1)], dim=-1
-            )
+    if uv_mat is None:
+        u_step = 1 / (u_size-1+is_u_loop)
+        v_step = 1 / (v_size-1+is_v_loop)
+        u,v = torch.meshgrid(
+            torch.arange(0,1+u_step,step=u_step), #FIXME:[0,1+step)
+            torch.arange(0,1+v_step,step=v_step)
+        )
+        uv_mat = torch.concat(
+            [u.unsqueeze(-1), v.unsqueeze(-1)], dim=-1
+        )
     # vertex_size = (lon_res, lat_res)
     for row in range(u_size + is_u_loop):
         for col in range(v_size + is_v_loop):
@@ -183,14 +183,16 @@ def create_sphere_node(
     lon_res:int,
     # scale:float=1,
     geom_type: GeomEnums = Geom.UH_static,
+    vformat=format_uv,
     interior:bool=False
 ) -> GeomNode:
     node = GeomNode("SphNd."+name)
     geom = create_sphere(
         name, lat_res, lon_res,
         # scale,
-        geom_type,
-        interior
+        geom_type=geom_type,
+        vformat=vformat,
+        interior=interior
     )
     node.addGeom(geom)
     return node
@@ -201,6 +203,7 @@ def create_sphere(
     lon_res:int,
     scale:float=1,
     geom_type: GeomEnums = Geom.UH_static,
+    vformat=format_uv,
     interior:bool=False
 ) -> Geom:
     assert isinstance(lat_res, int) \
@@ -225,7 +228,7 @@ def create_sphere(
         vertex_coord_y.unsqueeze(-1),
         vertex_coord_z.unsqueeze(-1)
     ], dim=-1)
-    vertex_norm = vertex_coord_xyz 
+    vertex_norm = vertex_coord_xyz.clone()
 
     geom = uv_curve_surface(
         name=name_sphere,
@@ -234,6 +237,7 @@ def create_sphere(
         is_u_loop=True,
         is_v_loop=False,
         geom_type = geom_type,
+        vformat=vformat,
         interior=interior
     )
 
