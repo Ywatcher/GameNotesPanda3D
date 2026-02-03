@@ -19,7 +19,8 @@ from panda3d.core import (
     GeomEnums,
     NodePath,
     TransformState,
-    Mat4
+    Mat4,
+    InternalName
 )
 
 def p3dRegisterFormatFrmArray(array_format:GeomVertexArrayFormat, name=None):
@@ -35,12 +36,14 @@ def p3dRegisterFormatFrmArray(array_format:GeomVertexArrayFormat, name=None):
     return new_format
 
 
-def formatHasColumn(vformat: GeomVertexFormat, name: str) -> bool:
+def formatHasColumn(vformat: GeomVertexFormat, name: InternalName) -> bool:
     """
     whether vformat has column with name 
     vformat: GeomVertexFormat 
-    name: str
+    name: InternalName, for example InternalName.getNormal() for normal, instead of str "normal"
     return: bool
+
+    if name is str, it will get false for comparison
     """
     for i in range(vformat.getNumArrays()):
         arr = vformat.getArray(i)

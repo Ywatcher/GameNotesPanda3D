@@ -12,7 +12,8 @@ from panda3d.core import (
     GeomVertexData,
     GeomVertexFormat,
     GeomVertexWriter,
-    GeomEnums
+    GeomEnums,
+    InternalName
 )
 from util.indexing import loop_bound_idx, tup2cnt
 # Declare the format of the vertex
@@ -70,6 +71,7 @@ def uv_curve_surface_lambda(
         is_u_loop=is_u_loop,
         is_v_loop=is_v_loop,
         geom_type = geom_type,
+        vformat=vformat,
         interior=interior
     )
     return geom
@@ -99,8 +101,8 @@ def uv_curve_surface(
     v_size = coord_mat.shape[1]
     vertex_size = (u_size+is_u_loop, v_size+is_v_loop)
     
-    has_uv = format_has_column(vformat, "texcoord")
-    has_normal = format_has_column(vformat, "normal") 
+    has_uv = format_has_column(vformat, InternalName.getTexcoord())
+    has_normal = format_has_column(vformat, InternalName.getNormal()) 
 
     vdata = GeomVertexData(name, vformat, geom_type)
     vertex_writer = GeomVertexWriter(vdata, "vertex")
