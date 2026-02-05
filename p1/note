@@ -88,3 +88,45 @@ a showbase for previewing texture and shading
 
 
 implement robotarm
+
+set a camera manager 
+that dynamically manage different cameras
+and their masks
+-> use garbage collection
+it also manages texture
+or, it cooperates with texture manager
+
+for each variable camera 
+it alters corresponding texture
+
+raw spectra texture: 
+{T = [n_pixels, N_materials]
+M = [N_materials, D_spectra]} stored for each texture
+L = [c_channels, D_spectra] # or [batch, c, D]
+
+# c << N << (n,D)
+ML -> [N,c]
+T(ML) -> [n,c]
+light:
+[D_spectra] # each light, may be sparse for single colour light
+```
+class Channel:
+   cmf: ...
+
+class Lens:
+   Channels: [...]
+# observed by texture
+
+
+class ManagedTexture(Texture):
+   spectra: ...
+   lens: ... # channels 
+   transform: ...
+   pass
+```
+
+todo: auto update obj
+GameObject(AutoUpdate):
+   def autoupdate(task, pause): # todo: a serise of flags
+      pass
+
