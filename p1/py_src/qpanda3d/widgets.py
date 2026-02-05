@@ -102,7 +102,8 @@ class QPanda3DWidget(QWidget, QObserved):
     """
 
     def __init__(
-        self, panda3DWorld, parent=None, FPS=60, debug=False,
+            # FIXME: add type hint for panda3DWorld: QControl or QShowBase
+            self, panda3DWorld, parent=None, FPS=60, debug=False,
         synchronizer=None
     ):
         QWidget.__init__(self, parent)
