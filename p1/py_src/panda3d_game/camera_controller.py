@@ -13,6 +13,9 @@ from panda3d.core import Camera, PerspectiveLens
 
 from util.log import Loggable
 from panda3d_game.controller import PlayerController
+from panda3d_game.render_view.render_view import RenderView
+
+from typing import Union
 
 class CameraController:
     from panda3d.core import (
@@ -20,7 +23,7 @@ class CameraController:
         LQuaternionf
     )
 
-    def __init__(self, camera: Camera):
+    def __init__(self, camera: Union[Camera, RenderView]):
         self.camera = camera
         self.move_step = .5
         self.turn_step = 5

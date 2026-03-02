@@ -11,6 +11,13 @@ from panda3d.core import (
     WindowProperties,
     KeyboardButton,
 )
+from panda3d.core import (
+    GraphicsOutput, Texture,
+    ConfigVariableManager, Vec4,
+    LVecBase4f, FrameBufferProperties,
+    GraphicsPipe
+)
+
 
 from game.events import Events
 from util.log import Loggable
@@ -19,6 +26,7 @@ from panda3d_game.camera_controller import (
 )
 from panda3d_game.controller import PlayerController
 
+# from panda3d_game.render_view.buffer_factory import OffScreenBufferFactory
 
 class ContextShowBase(ShowBase, Loggable):
     @property
@@ -84,6 +92,40 @@ class ContextShowBase(ShowBase, Loggable):
             return self.name
         else:
             return super().__repr__()
+
+
+    def makeOffScreenBuffer(self,name:str,width,height,clear_color:Vec4=None,sort=-100,resize_with_camera:bool=False):
+        """
+        create a buffer that you can render texture on 
+        clear_color: Vec4, when each new frame starts,
+            GPU clear buffer with specific color 
+        """
+        fb_props = FrameBufferProperties()
+        fb_props.set_rgb_color(True)
+        fb_props.set_depth_bits(1)
+
+        win_props = WindowProperties.size(width, height)
+
+        buf = self.graphicsEngine.make_output(
+            self.pipe,      
+            name,
+            sort,
+            fb_props,
+            win_props,
+            GraphicsPipe.BF_resizeable if resize_with_camera 
+                else GraphicsPipe.BF_refuse_window,
+            self.win.get_gsg(),  # default GSG
+            self.win      # default window     
+        )
+        from panda3d.core import Texture
+        tex = Texture(name + "_tex")
+        buf.add_render_texture(tex, GraphicsOutput.RTM_copy_ram)
+
+        if clear_color is not None:
+            buf.set_clear_color(clear_color)
+            buf.set_clear_active(GraphicsOutput.RTPColor, True)
+
+        return buf, tex
 
 
 class ControlShowBase(ContextShowBase):

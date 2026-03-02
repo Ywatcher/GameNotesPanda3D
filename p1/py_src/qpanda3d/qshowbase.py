@@ -49,6 +49,12 @@ from direct.showbase.InputStateGlobal import inputState
 __all__ = ["QShowBase", "QControl"]
 
 
+class QShowBaseMultiCam(ContextShowBase):
+    def __init__(
+        self, 
+            )
+
+
 class QShowBase(ContextShowBase):
     """
     edited from Panda3DWorld
@@ -62,6 +68,9 @@ class QShowBase(ContextShowBase):
         clear_color=LVecBase4f(0.1, 0.1, 0.1, 1),
         name="qpanda3D"
     ):
+        """
+        size: the resolution of self.buff; buffer size = window size * size
+        """
         # TODO: multi camera, multi buffer, multi window
 
         # TODO: two timers - use a singleton timer instead widget timer
@@ -138,6 +147,11 @@ class QShowBase(ContextShowBase):
                 WindowProperties(),FrameBufferProperties())
         ContextShowBase.run(self)
 
+    def makeOffScreenBuffer(self, name, width,height,clear_color = None,sort=-100,resize_with_camera:bool=False):
+        if clear_color is None:
+            clear_color = self.clear_color
+        super().makeOffScreenBuffer(name,width,height,clear_color,sort,resize_with_camera)
+
 
 class QControl(ControlShowBase, QShowBase):
     def __init__(self):
@@ -169,6 +183,10 @@ class QControl(ControlShowBase, QShowBase):
 
     @property
     def flip_y_coefficient(self) -> int:
+        """
+        1 for flipping 
+        -1 for not flipping
+        """
         return 2*int(self.flip_y) - 1
 
     def startQt(self):
