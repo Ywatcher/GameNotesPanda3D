@@ -25,123 +25,77 @@ from panda3d_game.camera_controller import (
     CameraController, PlayerCamController
 )
 from panda3d_game.controller import PlayerController
-
-# from panda3d_game.render_view.buffer_factory import OffScreenBufferFactory
-
-class ContextShowBase(ShowBase, Loggable):
-    @property
-    def display_camera(self):
-        return self.camera
+from .app_ import ContextShowBase
+from panda3d_game.render_view.render_view import RenderViewManager, RenderView
 
 
-
-    @property
-    def rdr_scene(self):
-        return self.render
-    # use context management to ensure the app
-    # terminates correctly
+class MultiViewShowBase(ContextShowBase):
+    """
+    camera is camera. 
+    view traces camera and renders
+    cameras are controlled by controllers
+    """
     def __init__(self):
-        if not hasattr(self, "isContextShowBaseInit"):
-            if not hasattr(self, "isShowBaseInit"):
-                ShowBase.__init__(self)
-                self.isShowBaseInit = True
-            Loggable.__init__(self)
-            self.log("init ContextShowBase", "log")
-            self.isContextShowBaseInit = True
-            self.to_exit = False
-            self.actionq = PyQueue()
-        # self.taskMgr.add(self.check_exit, "check_exit")
+        if not hasattr(self, "isMultiviewInit"):
+            ContextShowBase.__init__(self)
+            self.isMultiviewInit = True 
+            self.view_manager = RenderViewManager(self)
+            # self.cams = [] 
+            # self.views = [] 
+            # self.default_view = RenderView(self.camera, "view1", parent=self) # FIXME 
+            # self.add_view(default_view)
 
-    # @classmethod
-    def remove_all_task(self):
+    def render_cam(self, cam, name):
+        view = self.view_manager.createViewForCamera(camera, name)
+        view.start()
+        return view
+
+
+    def connectToView(self):
         pass
 
-    def __enter__(self):
-        return self
+    def render_default(self):
+        # FIXME: communicate with game ui to render proper ones
+        return self.render_cam(self.display_camera,"default")
 
-    # def check_exit(self, task):
-        # if self.to_exit:
-            # self.userExit()
-        # return Task.cont
-
-    def close(self):
-        self.remove_all_task()
-        self.log(
-            "---{} destroy at {}---".format(
-                self, datetime.now()
-            )
-        )
-        self.destroy()
-        self.log(
-            "---{} destroyed at {}, exit---".format(
-                self, datetime.now()
-            )
-        )
-
-    def __exit__(self, *args):
-        self.close()
-
-    def run(self):
-        self.log(
-            "---{} run(), at {}---".format(
-                self, datetime.now()
-            )
-        )
-        super().run()
-
-    def __repr__(self):
-        if hasattr(self, "name"):
-            return self.name
-        else:
-            return super().__repr__()
+    # TODO: remove view 
+    # TODO: create a view
 
 
-    def makeOffScreenBuffer(self,name:str,width,height,clear_color:Vec4=None,sort=-100,resize_with_camera:bool=False):
-        """
-        create a buffer that you can render texture on 
-        clear_color: Vec4, when each new frame starts,
-            GPU clear buffer with specific color 
-        """
-        fb_props = FrameBufferProperties()
-        fb_props.set_rgb_color(True)
-        fb_props.set_depth_bits(1)
+     
 
-        win_props = WindowProperties.size(width, height)
+class ControlShowBaseMultiView(MultiViewShowBase):
 
-        buf = self.graphicsEngine.make_output(
-            self.pipe,      
-            name,
-            sort,
-            fb_props,
-            win_props,
-            GraphicsPipe.BF_resizeable if resize_with_camera 
-                else GraphicsPipe.BF_refuse_window,
-            self.win.get_gsg(),  # default GSG
-            self.win      # default window     
-        )
-        from panda3d.core import Texture
-        tex = Texture(name + "_tex")
-        buf.add_render_texture(tex, GraphicsOutput.RTM_copy_ram)
+    # control: 
+    # do not control movement of view 
+    # control camera or other game assets as usual instead 
 
-        if clear_color is not None:
-            buf.set_clear_color(clear_color)
-            buf.set_clear_active(GraphicsOutput.RTPColor, True)
+    def register_controller(self, control_id, controller):
+        # controller should have a list of functions, and a list of events 
+        # accept prefix-event for controller.function 
+        # and for mouse watch 
+        # update_camera should be a part of controller 
+        # controller has mouse watcher (?)
 
-        return buf, tex
+        pass
 
 
-class ControlShowBase(ContextShowBase):
     def __init__(self, flip_x = False, flip_y=False):
         # if not hasattr(self, 'isContextShowBaseInit'):
             # print("init context showbase")
             # ContextShowBase.__init__(self)
         if not hasattr(self, "isControlShowBaseInit"):
-            ContextShowBase.__init__(self)
+            MultiViewShowBase.__init__(self)
             self.isControlShowBaseInit = True
+
+            self.controllers = {} # for each view
+            # a mapping, each view id -> a intermediate controller
+
             self.is_cursor_in_game: bool = True
             self.cursor_in()
-            self.default_cam_pos = (0, -10, 1)
-            self.display_camera.setPos(*self.default_cam_pos)
+            # self.default_cam_pos = (0, -10, 1)
+            # self.display_camera.setPos(*self.default_cam_pos)
+
             # self.game_controller = PlayerController()
             # self.game_controller.register_key(
             #     pattern=['control', 'w'],
@@ -216,21 +170,26 @@ class ControlShowBase(ContextShowBase):
 
     def center_mouse(self):
         """move cursor to the center of the window"""
+        pass
         # print("center mouse")
-        window_center_x = self.win.getXSize() // 2
-        window_center_y = self.win.getYSize() // 2
+        # window_center_x = self.win.getXSize() // 2
+        # window_center_y = self.win.getYSize() // 2
 
-        self.movePointer(0, window_center_x, window_center_y)
-        self.prev_mouse_x = window_center_x
-        self.prev_mouse_y = window_center_y
+        # self.movePointer(0, window_center_x, window_center_y)
+        # self.prev_mouse_x = window_center_x
+        # self.prev_mouse_y = window_center_y
+        # TODO: use a mouse pointer, which can be qt mouse pointer
 
-    def toggle_camera(self):
-        self.display_camera.setPos(*self.default_cam_pos)
-        self.display_camera.setHpr(0, 0, 0)
+    def toggle_camera(self, cam_id):
+        # FIXME: put into controller
+        pass
+        # self.views[cam_id].setPos(*self.default_cam_pos)
+        # self.views[cam_id].setHpr(0, 0, 0)
 
     def update_camera(self, task):
         """updata camera to follow mouse movement"""
         if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
+            focus = 
             # get mouse position (unified to range(-1,1))
             mouse_x, mouse_y = self.getMouseXY() #FIXME
             # calculate the shift of the mouse
@@ -284,6 +243,4 @@ class ControlShowBase(ContextShowBase):
 
     def getMouseXY(self) -> Tuple[int, int]:
         return self._getMouseX(), self._getMouseY()
-       
-
 

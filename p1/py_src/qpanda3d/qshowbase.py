@@ -28,8 +28,8 @@ from panda3d_game.app.app_ import ContextShowBase, ControlShowBase
 # Set up Panda environment
 
 import platform
-from QPanda3D.QMouseWatcherNode import QMouseWatcherNode
-from QPanda3D import Panda3DWorld
+from qpanda3D.mouse_watcher import QMouseWatcherNode
+# from QPanda3D import Panda3DWorld
 import builtins
 from datetime import datetime
 from direct.showbase.ShowBase import ShowBase
@@ -49,10 +49,49 @@ from direct.showbase.InputStateGlobal import inputState
 __all__ = ["QShowBase", "QControl"]
 
 
-class QShowBaseMultiCam(ContextShowBase):
+class QShowBaseMultiCam(MultiViewShowBase):
     def __init__(
         self, 
-            )
+        ):
+        if not hasattr(self, "isQShowBaseInit"):
+            self.focus = None # as previous "parent"
+            MultiViewShowBase.__init__(self)
+            # self.screenTexture = Texture()
+            # self.buff = None
+            self.clear_color = clear_color
+            self.name = name
+            self._isQtStart = False
+            self.isQShowBaseInit = True
+            self.size = size
+            # self.cams = []
+            # self.views = []
+            self.mouseWatcherNode = QMouseWatcherNode()
+            # self.pipe = GraphicsPipeSelection.get_global_ptr().make_pipe()
+
+    def setFocus(self, widget:QWidget):
+        self.MouseWatcherNode.setParent(widget)
+        self.focus = widget
+
+    
+    def run(self):
+        # FIXME
+        if not self._isQtStart:
+            self.win = self.make_window(
+                "",
+                WindowProperties(),FrameBufferProperties())
+        ContextShowBase.run(self)
+
+    def makeOffScreenBuffer(self, name, width,height,clear_color = None,sort=-100,resize_with_camera:bool=False):
+        if clear_color is None:
+            clear_color = self.clear_color
+        super().makeOffScreenBuffer(name,width,height,clear_color,sort,resize_with_camera)
+
+    def createRenderView(self):
+        new_view = RenderView(parent=self)
+        if 
+        new_view.startQt()
+
+    
 
 
 class QShowBase(ContextShowBase):
@@ -79,8 +118,8 @@ class QShowBase(ContextShowBase):
         if not hasattr(self, "isQShowBaseInit"):
             self.parent = None
             ContextShowBase.__init__(self)
-            self.screenTexture = Texture()
-            self.buff = None
+            # self.screenTexture = Texture()
+            # self.buff = None
             self.clear_color = clear_color
             self.name = name
             self._isQtStart = False
@@ -151,6 +190,67 @@ class QShowBase(ContextShowBase):
         if clear_color is None:
             clear_color = self.clear_color
         super().makeOffScreenBuffer(name,width,height,clear_color,sort,resize_with_camera)
+
+class QControlMultiCam(ControlShowBaseMultiCam, QShowBaseMultiCam):
+
+    
+
+    def __init__(self):
+        QShowBaseMultiCam.__init__(self)
+        if not hasattr(self, "isControlShowBaseInit"):
+            self.isControlShowBaseInit = True
+            self.is_cursor_in_game: bool = True
+            self.cursor_in()
+            self.default_cam_pos = (0, -10, 1)
+            self.display_camera.setPos(*self.default_cam_pos)
+            self.cam_controller = PlayerCamController(self.display_camera)
+            self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
+            # control ------------ FIXME
+            # self.buttonThrowers[0].node().setButtonDownEvent('button')
+            # self.buttonThrowers[0].node().setButtonUpEvent('button-up')
+            # self.accept("space", lambda: print(self.camera.get_pos()))
+            # self.accept('z', self.toggle_camera)
+            # self.accept("escape", self.cursor_out)
+            # self.accept("b", self.cursor_in)  # FIXME
+            # self.accept('control-w', self.userExit)
+            # self.accept(Events.GameEndEvent, self.userExit)
+            self.taskMgr.add(self.update_camera, "update_camera_task")
+            # self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
+            # self.taskMgr.add(self.handle_actions, "handle_actions")
+            self.delta_h = 0
+            self.delta_p = 0
+            self.delta_r = 0
+        ControlShowBase.__init__(self, False, False) # inits context showbase 
+    def startQt(self):
+        self.getMouseXY = self.getMouseXY_Q
+        self.movePointer = self.movePointer_Q
+        self.center_mouse = self.center_mouse_Q
+        self.cam_sensitivity = 10
+        QShowBase.startQt(self)
+
+    def getMouseXY_Q(self):
+        ret= tuple(
+            self.mouseWatcherNode.getMouse()
+        )
+        return ret
+
+    def movePointer_Q(self, device, x,y):
+        # print("move")
+        self.parent.movePointer(device,x,y)
+
+    def center_mouse_Q(self):
+        window_center_x = self.parent.width() // 2
+        window_center_y = self.parent.height() // 2
+        self.movePointer(0, window_center_x, window_center_y)
+        # rel_x = -1 + 2 * pos.x() / self.parent.width()
+        # rel_y = -1 + 2 * pos.y() / self.parent.height()
+        rel_x = -1 + 2 * window_center_x / self.parent.width()
+        rel_y = -1 + 2 * window_center_y / self.parent.height()
+        rel_y = -rel_y
+        self.prev_mouse_x = (rel_x)
+        self.prev_mouse_y = (rel_y)
+
+
 
 
 class QControl(ControlShowBase, QShowBase):

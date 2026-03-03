@@ -54,6 +54,119 @@ class FocusFilter(QObject):
             self.widgets_dict[evt_type].setFocus()
         return super().eventFilter(obj, event)
 
+
+
+
+
+
+class MultiViewQtGUI(QMainWindow):
+
+
+    def newPanda3DWidget(self, view, name, dock=None):
+        parent = self if dock is None else dock
+        new_widget = QPanda3DWidget(
+                view, parent=parent, FPS=self.FPS, 
+                synchronizer=self.synchronizer)
+        self.synchronizer.addDockWidget(new_widget)
+        if dock is not None:
+            dock.setWidget(new_widget)
+        self.panda3d_widgets[name] = new_widget
+        new_widget.register_qobs(self)
+        return new_widget
+
+    def setFocusWidget(self, widget):
+        widget.setFocus()
+        self.current_focus_widget = widget
+
+    def setFocusByName(self, name:str):
+        # handle by console, 
+        # and get the result to parse
+        widget = self.panda3d_widgets.get(name)
+        if widget is None:
+            return (-1, f"No widget named '{name}'")
+            # self.console_widget.log(f"No widget named '{name}'")
+
+        try:
+            self.setFocusWidget(widget)
+        except Exception as e: 
+            return (-1,e)
+        return 0
+        
+
+    def __init__(self, FPS=60, stylesheet=styleSheet, window_title="Three Dock Layout"):
+        super().__init__()
+        self.FPS = FPS
+        # Create three dock widgets
+        self.dock_top_left = QDockWidget("Game Camera", self)
+        self.dock_bottom_left = QDockWidget("Console", self)
+        self.dock_right = QDockWidget("Logger", self)
+
+        # Add the docks to the main window
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_top_left)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock_right)
+        # Split the left dock area vertically (top and bottom)
+        self.splitDockWidget(self.dock_top_left, self.dock_bottom_left, Qt.Vertical)
+        self.resizeDocks([self.dock_top_left, self.dock_bottom_left], [200, 200], Qt.Vertical)
+        self.setWindowTitle(window_title)
+        self.resize(1600, 1200)
+        self.panda3d = None
+        self.synchronizer = Synchronizer(self.FPS)
+        loadPrcFileData("", "window-type offscreen")
+        self.console_widget = ConsoleWidget("")
+        self.dock_bottom_left.setWidget(self.console_widget)
+        self.log_widget = LoggerWidget("Game Logs")
+        self.dock_right.setWidget(self.log_widget)
+        self.log_widget.add_level(GAME_LOG)
+        Loggable.add_handlers_for_all(self.log_widget.handlers[GAME_LOG])
+        self.panda3d_widgets = {}
+
+
+        self.startGame()
+        self.panda3d.log("game start")
+        self.console = self.get_console()
+        self.console_widget.console = self.console
+        self.setStyleSheet(styleSheet)
+        if stylesheet is not None:
+            self.dock_bottom_left.setStyleSheet(stylesheet)
+        self.focusFilter = FocusFilter({
+            FOCUS_CONSOLE:self.console_widget,
+            FOCUS_GAME:self.panda3d_widgets["default"]
+        })
+        # self.installEventFilter(self.focusFilter)
+        self.console_widget.register_qobs(self)
+
+
+    def startGame(self):
+        self.panda3d = self.get_game()
+        self.panda3d.log("create world")
+        self.synchronizer.setShowBase(self.panda3d)
+        # self.pandaWidget = QPanda3DWidget(
+            # self.panda3d,
+            # synchronizer=self.synchronizer
+        # )
+        # self.synchronizer.addWidget(self.pandaWidget)
+        # self.dock_top_left.setWidget(self.pandaWidget)
+        # TODO: manage widgets properly in future
+        self.newPanda3DWidget(
+                view=self.panda3D.render_default(),
+                name="default",
+                dock=self.dock_top_left)
+        self.synchronizer.start()
+        self.panda_mouse_watcher = self.panda3d.mouseWatcherNode
+        self.panda3d_widgets["default"].setFocus()
+
+    # todo: remove a widget
+
+    def get_game(self) -> "MultiViewShowBase":
+        raise NotImplementedError
+
+    def get_console(self):
+        raise NotImplementedError
+
+
+
+
+
 class RawQtGUI(QMainWindow):
     def __init__(self, FPS=60, stylesheet=styleSheet, window_title="Three Dock Layout"):
         super().__init__()
