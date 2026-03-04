@@ -98,9 +98,20 @@ def get_panda_key_modifiers_prefix(evt):
 from panda3d_game.render_view.render_view import RenderView
 
 
-    
+# =============================================================================
+# QPanda3DWidget definition
+# =============================================================================
+# tool class for name management
+_add_prefix = lambda x: f"qp3dwidget_{x}"
 
-class QPanda3DWidget(QWidget, QObserved):
+@managed_name(transform=_add_prefix, name_attr="widget_id", name_param="widget_id")
+class _ManagedName:
+    @classmethod
+    def _default_basename(cls):
+        return "w"
+# =============================================================================
+
+class QPanda3DWidget(QWidget, QObserved, _ManagedName):
     """
     An interactive panda3D QWidget
     Parent : Parent QT Widget
@@ -111,17 +122,19 @@ class QPanda3DWidget(QWidget, QObserved):
 
     def __init__(
             # FIXME: add type hint for panda3DWorld: QControl or QShowBase
-            self, panda3DView, parent=None, FPS=60, debug=False,
-        synchronizer=None
+            self, panda3DView:"RenderView", parent=None, FPS=60, debug=False,
+        synchronizer=None, widget_id=None
     ):
+        _ManagedName.__init__(self,widget_id=widget_id)
         QWidget.__init__(self, parent)
         QObserved.__init__(self)
+        self.setObjectName(self.widget_id)
 
         # set fixed geometry
         # self.panda3DWorld = panda3DWorld
         # self.panda3DWorld.set_parent(self)
         self.panda3DView = panda3DView
-        self.view_id = panda3DView.getID()  # FIXME 
+        self.view_id = panda3DView.name  # FIXME 
         
         # TODO: set self to be a focus? 
 
@@ -140,6 +153,12 @@ class QPanda3DWidget(QWidget, QObserved):
 
 
         self.debug = debug
+
+    def getID(self):
+        return self.widget_id
+
+    def getViewID(self):
+        return self.panda3DView.name
 
     def sendToMessenger(self,event_str,args):
         event_str_with_widget = f"{self.view_id};event_str"
