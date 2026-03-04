@@ -29,13 +29,18 @@ print(RenderView.query_objects("view"))
 
 import re
 from functools import wraps
+import weakref
 
 class NameManager:
+    @property
+    def _used_names(self) -> set:
+        return set(self._obj_map.keys())
+
     def __init__(self, tag=None):
         self.tag = tag
-        self._used_names: set[str] = set()
         self._counters: dict[str, int] = {}
-        self._obj_map: dict[str, object] = {}  # name -> obj
+        # delete unused objects autmatically
+        self._obj_map: dict[str, object]  = weakref.WeakValueDictionary()
 
     def __repr__(self):
         return f"NameManager[{self.tag}]"
@@ -62,12 +67,10 @@ class NameManager:
 
     def assign_name(self, obj, base_name: str, transform: callable = None) -> str:
         name = self.generate_name(base_name, transform)
-        self._used_names.add(name)
         self._obj_map[name] = obj
         return name
 
     def release_name(self, name: str):
-        self._used_names.discard(name)
         self._obj_map.pop(name, None)
 
     def get_object(self, name: str):
@@ -179,3 +182,6 @@ if __name__ == "__main__":
 
     print(RenderView.query_objects("renderview"))  
     print(SpecialView._name_manager)
+    print("now delete")
+    del r1 
+    print(RenderView.all_objects())
