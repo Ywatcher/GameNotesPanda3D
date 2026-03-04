@@ -24,7 +24,6 @@ from util.log import Loggable
 from panda3d_game.camera_controller import (
     CameraController, PlayerCamController
 )
-from panda3d_game.controller import PlayerController
 
 # from panda3d_game.render_view.buffer_factory import OffScreenBufferFactory
 
@@ -147,8 +146,16 @@ class ControlShowBase(ContextShowBase):
             #     pattern=['control', 'w'],
             #     func=lambda:print("ehy")
             # )
-            self.cam_controller = PlayerCamController(self.display_camera)
+            self.key_input = KeyboardInput()
+            self.mouse_watcher = MouseWatcher()
+            self.cam_controller = PlayerCamController(
+                    self.display_camera,
+                    sensitivity=.1,flip_x=False,flip_y=False
+            )
             self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
+            self.cam_controller.setKeyInput(self.key_input)
+            self.cam_controller.setMouseInput(self.mouse_watcher)
+
             # control ------------
             self.buttonThrowers[0].node().setButtonDownEvent('button')
             self.buttonThrowers[0].node().setButtonUpEvent('button-up')
@@ -158,26 +165,23 @@ class ControlShowBase(ContextShowBase):
             self.accept("b", self.cursor_in)  # FIXME
             self.accept('control-w', self.userExit)
             self.accept(Events.GameEndEvent, self.userExit)
+            self.sort_controller = 100 
+            self.sort_centering = 250 
+            
 
-            self.taskMgr.add(self.update_camera, "update_camera_task")
-            self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
-            self.taskMgr.add(self.handle_actions, "handle_actions")
+            self.taskMgr.add(self.cam_controller.update, "update_cam_controller",sort=self.sort_controller)
+            # FIXME: handle all controller update before moving pointer to center, for multi controller case
+            self.taskMgr.add(self.update_pointer, "update_pointer",sort=self.sort_centering)
+            self.taskMgr.add(self.handle_actions, "handle_actions",sort=300)
             # self.taskMgr.add(self.game_controller.update, "update_game_controller")
-            self.cam_sensitivity = .1
-            self.delta_h = 0
-            self.delta_p = 0
-            self.delta_r = 0
-        self.flip_x = flip_x
-        self.flip_y = flip_y
+            self.cam_controller.enactive() # FIXME: activate when run()?
+
+        # self.flip_x = flip_x
+        # self.flip_y = flip_y
         self.cursor_in()
 
-    @property
-    def flip_x_coefficient(self) -> int:
-        return -2*int(self.flip_x) + 1
 
-    @property
-    def flip_y_coefficient(self) -> int:
-        return -2*int(self.flip_y) + 1
+
 
     # def userExit(self):
         # self.log("exit")
@@ -228,27 +232,11 @@ class ControlShowBase(ContextShowBase):
         self.display_camera.setPos(*self.default_cam_pos)
         self.display_camera.setHpr(0, 0, 0)
 
-    def update_camera(self, task):
+    def update_pointer(self, task):
         """updata camera to follow mouse movement"""
-        if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
+        if  self.is_cursor_in_game:
             # get mouse position (unified to range(-1,1))
-            mouse_x, mouse_y = self.getMouseXY() #FIXME
-            # calculate the shift of the mouse
-            delta_x = mouse_x - self.prev_mouse_x
-            delta_y = mouse_y - self.prev_mouse_y
-
-            # 调整摄像机的水平旋转和俯仰角度
-            camera_h = self.display_camera.getH() - delta_x * self.cam_sensitivity * self.flip_x_coefficient
-            camera_p = self.display_camera.getP() - delta_y * self.cam_sensitivity * self.flip_y_coefficient
-
-            # 设置新的摄像机角度
-            self.display_camera.setH(camera_h)
-            self.display_camera.setP(camera_p)
-
-            # 将鼠标指针重置到窗口的中心
             self.center_mouse()
-            self.delta_h = delta_x * self.cam_sensitivity
-            self.delta_p = delta_y * self.cam_sensitivity
         return task.cont
 
     def toggle_fullscreen(self):

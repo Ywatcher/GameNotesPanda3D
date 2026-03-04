@@ -61,8 +61,8 @@ class FocusFilter(QObject):
 
 class MultiViewQtGUI(QMainWindow):
 
-
-    def newPanda3DWidget(self, view, name, dock=None):
+    def newPanda3DWidgetOnCam(self, cam, name, dock=None):
+        view = self.panda3d.render_cam(cam, name, new_view="auto")
         parent = self if dock is None else dock
         new_widget = QPanda3DWidget(
                 view, parent=parent, FPS=self.FPS, 
@@ -72,6 +72,13 @@ class MultiViewQtGUI(QMainWindow):
             dock.setWidget(new_widget)
         self.panda3d_widgets[name] = new_widget
         new_widget.register_qobs(self)
+        assert False, "need name"
+        control_id = None
+        controller = self.panda3d.create_controller_for_camera(
+            cam, control_id # TODO: sensitivity and other stuffs
+        )
+        self.panda3d.set_keyboard_input_for_controller(control_id)
+        self.panda3d.set_widget_inputs_for_controller(new_widget, control_id)
         return new_widget
 
     def setFocusWidget(self, widget):
@@ -134,6 +141,8 @@ class MultiViewQtGUI(QMainWindow):
         })
         # self.installEventFilter(self.focusFilter)
         self.console_widget.register_qobs(self)
+
+
 
 
     def startGame(self):

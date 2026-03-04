@@ -22,8 +22,8 @@ from sympy.physics.units import (
     gram, kilogram, tonne,
     newton, second
 )
-from panda3d_game.camera_controller import CameraController, PlayerCamController
-from panda3d_game.controller import PlayerController
+# from panda3d_game.camera_controller import CameraController, PlayerCamController
+# from panda3d_game.controller import PlayerController
 from panda3d_game.app.app_ import ContextShowBase
 from panda3d_game.game_object import GameObject, PhysicsGameObject
 
@@ -55,7 +55,7 @@ class PhysicsShowBase(ContextShowBase):
             # objects to access
             self.objects: Dict[str, Union[GameObject, NodePath]] = {}
             # update physisc world
-            self.taskMgr.add(self.update, 'updateWorld')
+            self.taskMgr.add(self.update, 'updateWorld') # TODO: add sort
             self.maxSubSteps =max_sub_steps
             self.timeStep = time_step
 

@@ -12,17 +12,18 @@ from panda3d.core import (
     GraphicsPipe
 )
 from util.py_decorators import forward_methods_to
-from .camera_attributes import forwarded_methods
+from panda3d_game.forwarded_attributes.camera_attributes import forwarded_camera_methods
 
-@forward_methods_to("main_camera", forwarded_methods)
+_add_prefix = lambda x: f"view_{x}"
+
+@forward_methods_to("main_camera", forwarded_camera_methods)
+@managed_name(transform=_add_prefix)
 class RenderView:
-    def __init__(self, mount_camera: Camera, view_manager:"ViewManager" = None, name=None,
-
+    def __init__(self, mount_camera: Camera, view_manager:"ViewManager" = None,
         size=1.0,
          clear_color=LVecBase4f(0.1, 0.1, 0.1, 1),
         # parent=None 
         ):
-        self.name = name 
         self.clear_color = clear_color 
         assert isinstance(mount_camera, Camera)
         self._mounted_camera = mount_camera
@@ -180,28 +181,62 @@ class RenderView:
         pass 
 
 
-
     def getCamera(self, name):
         if name in self.camera_list:
             return self.camera_list[name]
     
 
+GeneralCameraIdentifier = Union[int, Camera]
 
 class RenderViewManager:
     def __init__(self, showbase):
         self.showbase = showbase
+        self.name_manager = RenderView._name_manager
         # map id of camera to its view 
-        self.views:Dict[int, RenderView] = {}
+        self.camera_view_mapping: Dict[int, List[RenderView]] = {}
+        # TODO: use view identifier instead of view in mapping
 
-    def createViewForCamera(self, camera: Union[int, Camera],name=None):
+    def camera_to_id(self, camera: GeneralCameraIdentifier) -> int:
         if isinstance(camera, Camera):
             camera = id(camera)
         # FIXME:
         # if is string -> int 
         # and assert the obj with this id is a Camera
-        view = RenderView(mount_camera=camera, view_manager=self,name=name)
-        self.views[camera] = view 
+        return camera
+
+    def hasCamera(self, camera: GeneralCameraIdentifier) -> bool:
+        camera_id = camera_to_id(camera)
+        if camera_id in self.camera_view_mapping \
+                and len(self.camera_view_mapping[camera_id]) > 0:
+            return True
+        return False
+
+    def _appendViewToCamera(self, camera_id, view):
+        # TODO: use view id instead of view
+        if camera_id in self.camera_view_mapping \
+                and len(self.camera_view_mapping[camera_id]) > 0:
+            self.camera_view_mapping[camera_id].append(view)
+        else:
+            self.camera_view_mapping[camera_id] = [view]
+
+
+    def createViewForCamera(self, camera: Camera, name=None):
+        camera_id = camera_to_id(camera)
+        view = RenderView(mount_camera=camera, view_manager=self, name=name)
+        self._appendViewToCamera(camera_id, view)
         return view
+
+    def getViewForCamera(self, camera: Camera, name=None, new_view="auto"):
+        # FIXME: find view with such name
+        if new_view == "auto":
+            new_view = not self.hasCamera(Camera)
+        if new_view:
+            return self.createViewForCamera(camera, name)
+        else:
+            return self.camera_view_mapping[id(camera)][0]
+            
+        
+        
 
     # TODO: manage life span
         # TODO: a range of views 

@@ -45,8 +45,9 @@ class MultiViewShowBase(ContextShowBase):
             # self.default_view = RenderView(self.camera, "view1", parent=self) # FIXME 
             # self.add_view(default_view)
 
-    def render_cam(self, cam, name):
-        view = self.view_manager.createViewForCamera(camera, name)
+    def render_cam(self, cam, name, new_view="auto"):
+        # FIXME: if a view exists for the camera, then use the old one
+        view = self.view_manager.createViewForCamera(cam, name)
         view.start()
         return view
 
@@ -61,7 +62,7 @@ class MultiViewShowBase(ContextShowBase):
     # TODO: remove view 
     # TODO: create a view
 
-
+# TODO: a manager to assign control id's
      
 
 class ControlShowBaseMultiView(MultiViewShowBase):
@@ -76,9 +77,32 @@ class ControlShowBaseMultiView(MultiViewShowBase):
         # and for mouse watch 
         # update_camera should be a part of controller 
         # controller has mouse watcher (?)
+        self.controllers[control_id] = controller
+        self.taskMgr.add(
+                controller, f"update_controller_{control_id}",
+                sort=self.sort_controller)
 
-        pass
+    def create_controller_for_camera(self,cam, control_id, sensitivity=.1, flip_x=None, flip_y=None):
+        if flip_x is None:
+            flip_x = self.flip_x
+        if flip_y is None:
+            flip_y = self.flip_y
+        controller = PlayerCamController(cam, "...", sensitivity,flip_x,flip_y)
+        self.register_controller(control_id, controller)
+        controller.setRef(self.rdr_scene)  # FIXME: if there are multiple scenes
+        return controller
 
+    def enable_controller(self, control_id):
+        # FIXME: log if not found control_id
+        self.controllers[control_id].enactive()
+
+    def disable_controller(self, control_id):
+        self.controllers[control_id].deactive()
+
+    def remove_controller(self,control_id):
+        # controller = self.controllers[control_id]
+        self.taskMgr.remove(f"update_controller_{control_id}")
+        del self.controllers[control_id]
 
     def __init__(self, flip_x = False, flip_y=False):
         # if not hasattr(self, 'isContextShowBaseInit'):
@@ -91,18 +115,22 @@ class ControlShowBaseMultiView(MultiViewShowBase):
             self.controllers = {} # for each view
             # a mapping, each view id -> a intermediate controller
 
-            self.is_cursor_in_game: bool = True
-            self.cursor_in()
-            # self.default_cam_pos = (0, -10, 1)
-            # self.display_camera.setPos(*self.default_cam_pos)
+            self.is_cursor_in_game: bool = False 
+            # self.cursor_in()
+            self.default_cam_pos = (0, -10, 1)
+            self.display_camera.setPos(*self.default_cam_pos)
 
             # self.game_controller = PlayerController()
             # self.game_controller.register_key(
             #     pattern=['control', 'w'],
             #     func=lambda:print("ehy")
             # )
-            self.cam_controller = PlayerCamController(self.display_camera)
-            self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
+            self.key_input = KeyboardInput()
+
+            # self.cam_controller = PlayerCamController(self.display_camera)
+            # self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
+            # create a cam controller and a widget for the display_camera
+            # how to do it without qt?
             # control ------------
             self.buttonThrowers[0].node().setButtonDownEvent('button')
             self.buttonThrowers[0].node().setButtonUpEvent('button-up')
@@ -112,31 +140,21 @@ class ControlShowBaseMultiView(MultiViewShowBase):
             self.accept("b", self.cursor_in)  # FIXME
             self.accept('control-w', self.userExit)
             self.accept(Events.GameEndEvent, self.userExit)
+            self.sort_controller = 100 
+            self.sort_centering = 250 
 
-            self.taskMgr.add(self.update_camera, "update_camera_task")
-            self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
-            self.taskMgr.add(self.handle_actions, "handle_actions")
+            self.taskMgr.add(self.update_pointer, "update_camera_task", sort=self.sort_centering)
+            # self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
+            self.taskMgr.add(self.handle_actions, "handle_actions",sort=300)
             # self.taskMgr.add(self.game_controller.update, "update_game_controller")
-            self.cam_sensitivity = .1
-            self.delta_h = 0
-            self.delta_p = 0
-            self.delta_r = 0
+            # self.cam_sensitivity = .1
+            # self.delta_h = 0
+            # self.delta_p = 0
+            # self.delta_r = 0
         self.flip_x = flip_x
         self.flip_y = flip_y
-        self.cursor_in()
+        # self.cursor_in()
 
-    @property
-    def flip_x_coefficient(self) -> int:
-        return -2*int(self.flip_x) + 1
-
-    @property
-    def flip_y_coefficient(self) -> int:
-        return -2*int(self.flip_y) + 1
-
-    # def userExit(self):
-        # self.log("exit")
-        # super().userExit()
-        # self.log("exit finish") # FIXME
 
     def cursor_in(self):
         # center the mouse
@@ -170,46 +188,20 @@ class ControlShowBaseMultiView(MultiViewShowBase):
 
     def center_mouse(self):
         """move cursor to the center of the window"""
-        pass
-        # print("center mouse")
-        # window_center_x = self.win.getXSize() // 2
-        # window_center_y = self.win.getYSize() // 2
+        raise NotImplementedError
 
-        # self.movePointer(0, window_center_x, window_center_y)
-        # self.prev_mouse_x = window_center_x
-        # self.prev_mouse_y = window_center_y
-        # TODO: use a mouse pointer, which can be qt mouse pointer
+    def toggle_camera(self, control_id):
+        self.controllers[control_id].mounted_camera.setPos(*self.default_cam_pos)
+        self.controllers[control_id].mounted_camera.setHpr(0,0,0)
 
-    def toggle_camera(self, cam_id):
-        # FIXME: put into controller
-        pass
-        # self.views[cam_id].setPos(*self.default_cam_pos)
-        # self.views[cam_id].setHpr(0, 0, 0)
-
-    def update_camera(self, task):
-        """updata camera to follow mouse movement"""
-        if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
-            focus = 
+    def update_pointer(self, task):
+         """updata pointer to center of screen"""
+        if  self.is_cursor_in_game:
             # get mouse position (unified to range(-1,1))
-            mouse_x, mouse_y = self.getMouseXY() #FIXME
-            # calculate the shift of the mouse
-            delta_x = mouse_x - self.prev_mouse_x
-            delta_y = mouse_y - self.prev_mouse_y
-
-            # 调整摄像机的水平旋转和俯仰角度
-            camera_h = self.display_camera.getH() - delta_x * self.cam_sensitivity * self.flip_x_coefficient
-            camera_p = self.display_camera.getP() - delta_y * self.cam_sensitivity * self.flip_y_coefficient
-
-            # 设置新的摄像机角度
-            self.display_camera.setH(camera_h)
-            self.display_camera.setP(camera_p)
-
-            # 将鼠标指针重置到窗口的中心
             self.center_mouse()
-            self.delta_h = delta_x * self.cam_sensitivity
-            self.delta_p = delta_y * self.cam_sensitivity
         return task.cont
-
+        
+    
     def toggle_fullscreen(self):
         props = WindowProperties()
         props.setFullscreen(not self.win.isFullscreen())
@@ -232,8 +224,9 @@ class ControlShowBaseMultiView(MultiViewShowBase):
     def movePointer(self, device, x, y):
         try:
             self.win.movePointer(device,x,y)
-        except:
-            pass
+        except Exception as e:
+            print("movePointer")
+            print(e)
 
     def _getMouseX(self):
         return self.win.getPointer(0).getX()

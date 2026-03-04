@@ -1,4 +1,4 @@
-forwarded_methods = [
+forwarded_camera_methods = [
     "setPos",
     "setHpr",
     "setH",
