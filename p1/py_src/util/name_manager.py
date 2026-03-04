@@ -31,10 +31,14 @@ import re
 from functools import wraps
 
 class NameManager:
-    def __init__(self):
+    def __init__(self, tag=None):
+        self.tag = tag
         self._used_names: set[str] = set()
         self._counters: dict[str, int] = {}
         self._obj_map: dict[str, object] = {}  # name -> obj
+
+    def __repr__(self):
+        return f"NameManager[{self.tag}]"
 
     def generate_name(self, base_name: str="", transform: callable = None) -> str:
         if base_name is None:
@@ -78,12 +82,21 @@ class NameManager:
         return dict(self._obj_map)
 
 
-def managed_name(name_attr="name",transform=None, manager=None):
+def managed_name(name_attr="name",transform=None, manager=None, name_param="name"):
+    """
+    name_attr: the object attribute name for naming 
+    transform: the transform applied for name
+    manager: naming manager instance 
+    name_param: the parameter name at __init__ for naming
+    """
     if manager is None:
         manager = NameManager()
 
     def decorator(cls):
         original_init = cls.__init__
+        if manager.tag is None:
+            manager.tag = cls.__name__
+        cls._name_manager = manager
 
         if not hasattr(cls, "_default_basename"):
             @classmethod
@@ -92,35 +105,37 @@ def managed_name(name_attr="name",transform=None, manager=None):
             cls._default_basename = _default_basename
 
         @wraps(original_init)
-        def new_init(self, *args, name=None, **kwargs):
+        def new_init(self, *args,  **kwargs):
+            input_name = kwargs.pop(name_param, None)
             original_init(self, *args, **kwargs)
             # use class name if not specfied
-            base_name = name if name is not None else self.__class__._default_basename()
-            assigned_name = manager.assign_name(self, base_name, transform)
-            setattr(self, name_attr, assigned_name)
-            self._name_manager = manager
+            if not hasattr(self, name_attr):
+                base_name = input_name if input_name is not None else self.__class__._default_basename()
+                assigned_name = manager.assign_name(self, base_name, transform)
+                setattr(self, name_attr, assigned_name)
+                self._name_manager = manager
 
         cls.__init__ = new_init
 
-        # 实例方法释放名字
+        # release a name (when an object is not used any more)
         def release(self):
             if hasattr(self, name_attr):
                 manager.release_name(getattr(self, name_attr))
         cls.release_name = release
 
-        # 类方法，获取所有名字->对象映射
+        # get all names for the class and map to their objects 
         @classmethod
         def all_objects(cls_):
             return dict(manager._obj_map)
         cls.all_objects = all_objects
 
-        # 类方法，根据名字查单个对象
+        # get single object by its name 
         @classmethod
         def get_object(cls_, name: str):
             return manager.get_object(name)
         cls.get_object = get_object
 
-        # 类方法，根据 pattern 查对象
+        # query a list of objects with name pattern
         @classmethod
         def query_objects(cls_, pattern: str):
             return manager.query_objects(pattern)
@@ -163,3 +178,4 @@ if __name__ == "__main__":
     print(RenderView.get_object("view_renderview_1"))  # 返回 r2
 
     print(RenderView.query_objects("renderview"))  
+    print(SpecialView._name_manager)
