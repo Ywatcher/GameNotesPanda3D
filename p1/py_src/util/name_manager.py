@@ -85,11 +85,17 @@ def managed_name(name_attr="name",transform=None, manager=None):
     def decorator(cls):
         original_init = cls.__init__
 
+        if not hasattr(cls, "_default_basename"):
+            @classmethod
+            def _default_basename(cls_):
+                return cls_.__name__.lower()
+            cls._default_basename = _default_basename
+
         @wraps(original_init)
         def new_init(self, *args, name=None, **kwargs):
             original_init(self, *args, **kwargs)
             # use class name if not specfied
-            base_name = name if name is not None else cls.__name__.lower()
+            base_name = name if name is not None else self.__class__._default_basename()
             assigned_name = manager.assign_name(self, base_name, transform)
             setattr(self, name_attr, assigned_name)
             self._name_manager = manager
@@ -136,9 +142,20 @@ if __name__ == "__main__":
         def __init__(self, data):
             self.data = data
 
+    class SubClass(RenderView):
+        pass
+
     r1 = RenderView("data1")
     r2 = RenderView("data2")
     r3 = RenderView("data3", name="main")
+    r4 = SubClass("data4")
+    class SpecialView(RenderView):
+
+        @classmethod
+        def _default_basename(cls):
+            return "special"
+
+    r5 = SpecialView("data4")
 
     print(RenderView.all_objects())  
 # {'view': <RenderView object>, 'view_1': <RenderView object>, 'main': <RenderView object>}
