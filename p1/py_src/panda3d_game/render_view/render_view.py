@@ -11,10 +11,18 @@ from panda3d.core import (
     LVecBase4f, FrameBufferProperties,
     GraphicsPipe
 )
+import weakref
 from util.py_decorators import forward_methods_to
 from panda3d_game.forwarded_attributes.camera_attributes import forwarded_camera_methods
 
 _add_prefix = lambda x: f"view_{x}"
+
+
+__all__ = [
+    "RenderView",
+    "RenderViewManager"
+]
+
 
 @forward_methods_to("main_camera", forwarded_camera_methods)
 @managed_name(transform=_add_prefix)
@@ -161,7 +169,7 @@ class RenderView:
         pass
 
     def getID(self):
-        pass
+        return self.name
 
 
     def setActive(self):
@@ -193,7 +201,7 @@ class RenderViewManager:
         self.showbase = showbase
         self.name_manager = RenderView._name_manager
         # map id of camera to its view 
-        self.camera_view_mapping: Dict[int, List[RenderView]] = {}
+        self.camera_view_mapping: Dict[int, weakref.WeakSet] = {}
         # TODO: use view identifier instead of view in mapping
 
     def camera_to_id(self, camera: GeneralCameraIdentifier) -> int:
@@ -204,39 +212,72 @@ class RenderViewManager:
         # and assert the obj with this id is a Camera
         return camera
 
+    def getAnyViewForCamera(self, camera) -> Optional["RenderView"]:
+        camera_id = self.camera_to_id(camera)
+        refs = self.camera_view_mapping.get(camera_id)
+        return next(iter(refs), None) if refs else None
+
+    def getFirstViewByName(self, camera) -> Optional["RenderView"]:
+        """get first view for a camera, sorted by name"""
+        camera_id = self.camera_to_id(camera)
+        refs = self.camera_view_mapping.get(camera_id)
+        if not refs:
+            return None
+        views = list(refs)
+        views.sort(key=lambda v: v.name)
+        return views[0]
+
     def hasCamera(self, camera: GeneralCameraIdentifier) -> bool:
-        camera_id = camera_to_id(camera)
-        if camera_id in self.camera_view_mapping \
-                and len(self.camera_view_mapping[camera_id]) > 0:
-            return True
-        return False
+        """return false when there is no view for certain camera"""
+        camera_id = self.camera_to_id(camera)
+        refs = self.camera_view_mapping.get(camera_id) # false if None, or empty set
+        return bool(refs)
 
-    def _appendViewToCamera(self, camera_id, view):
+    def _appendViewToCamera(self, camera_id: int, view: RenderView):
+        if camera_id not in self.camera_view_mapping:
+            self.camera_view_mapping[camera_id] = weakref.WeakSet()
+        self.camera_view_mapping[camera_id].add(view)
         # TODO: use view id instead of view
-        if camera_id in self.camera_view_mapping \
-                and len(self.camera_view_mapping[camera_id]) > 0:
-            self.camera_view_mapping[camera_id].append(view)
-        else:
-            self.camera_view_mapping[camera_id] = [view]
+
+    def getViewsForCamera(self, camera) -> list[RenderView]:
+        "get all views for camera, sorted by name"
+        camera_id = self.camera_to_id(camera)
+        refs = self.camera_view_mapping.get(camera_id)
+        if not refs:
+            return []
+
+        views = list(refs)
+        views.sort(key=lambda v: getattr(v, "name", ""))
+        return views
 
 
-    def createViewForCamera(self, camera: Camera, name=None):
+    def createviewforcamera(self, camera: camera, name=None):
         camera_id = camera_to_id(camera)
-        view = RenderView(mount_camera=camera, view_manager=self, name=name)
-        self._appendViewToCamera(camera_id, view)
+        view = renderview(mount_camera=camera, view_manager=self, name=name)
+        self._appendviewtocamera(camera_id, view)
         return view
 
-    def getViewForCamera(self, camera: Camera, name=None, new_view="auto"):
-        # FIXME: find view with such name
-        if new_view == "auto":
-            new_view = not self.hasCamera(Camera)
-        if new_view:
-            return self.createViewForCamera(camera, name)
-        else:
-            return self.camera_view_mapping[id(camera)][0]
-            
-        
-        
+    def getOrCreateViewForCamera(self, camera: Camera, name_if_any: str = None) -> "RenderView":
+        """
+        if there is a view for camera then get it; 
+        if not then create one
+        """
+        camera_id = self.camera_to_id(camera)
+        refs = self.camera_view_mapping.get(camera_id)
+
+        if refs:
+            # weakref is not empty. get one view from it 
+            try:
+                return next(iter(refs))
+            except StopIteration:
+                # WeakSet is empty 
+                pass
+
+        # no view available. create new one 
+        view = RenderView(mount_camera=camera, view_manager=self, name=name_if_any)
+        self._appendViewToCamera(camera_id, view)
+        return view
+          
 
     # TODO: manage life span
         # TODO: a range of views 
