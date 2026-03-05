@@ -217,7 +217,6 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
     def keyPressEvent(self, evt):
         key = evt.key()
         if key==ord(':'):
-            print("got colon")
             evt_to_cmd = QEvent(FOCUS_CONSOLE)
             self.send_qevent(evt_to_cmd)
         try:
@@ -227,7 +226,6 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
             self.sendToMessenger(k)
             # FIXME: if k in the list that can be sent
             self.sendToMessenger('button', [k])
-            print("send","button",k,key)
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem",key)
             print(e)
@@ -242,7 +240,6 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
             self.sendToMessenger(k)
             # FIXME:
             self.sendToMessenger('button-up', [k.strip('-up')])
-            print("send","button-up",k,key)
         except Exception as e:
             print("Unimplemented key. Please send an issue on github to fix this problem", key)
             print(e)

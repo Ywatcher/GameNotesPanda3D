@@ -171,7 +171,6 @@ class ControlShowBaseMultiView(MultiViewShowBase):
 
 
     def cursor_in(self):
-        print("cin")
         # center the mouse
         self.center_mouse()
         # disable default mouse control
@@ -186,21 +185,25 @@ class ControlShowBaseMultiView(MultiViewShowBase):
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = True
+        if hasattr(self, "cursorInSignal"):
+            self.cursorInSignal.emit()
 
     def cursor_out(self):
         # enable default mouse control
-        print("cout")
         self.enable_mouse()
         # show mouse cursor
         try:
             props = WindowProperties()
             props.setCursorHidden(False)
             self.win.requestProperties(props)
-        except:
+        except Exception as e:
+            # raise e
             pass
         # set state of the mouse,
         # which controls whether camera updates
         self.is_cursor_in_game = False
+        if hasattr(self, "cursorOutSignal"):
+            self.cursorOutSignal.emit()
 
     def center_mouse(self):
         """move cursor to the center of the window"""

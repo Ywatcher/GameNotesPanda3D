@@ -58,14 +58,12 @@ class KeyboardInput(InputSource):
         return list(self.held_keys)
 
     def key_down(self, button:str):
-        print("key down",button)
         if self._active:
         # print(button,"down") # FIXME: verbose log
             self.held_keys.add(button)
         # print("down_", self.held_keys)
 
     def key_up(self, button:str):
-        print("key up",button)
         # TODO: remove combined keys
         if self._active:
             if button in self.held_keys:

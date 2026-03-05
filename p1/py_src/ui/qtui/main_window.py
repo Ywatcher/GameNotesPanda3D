@@ -60,11 +60,24 @@ class FocusFilter(QObject):
         return super().eventFilter(obj, event)
 
 
-
-
-
-
 class MultiViewQtGUI(QMainWindow):
+
+    def disableControllers(self):
+        # FIXME: only player controllers 
+        for control in Controller._name_manager.all_objects.values():
+            if control.isActive:
+                self.prev_active_controller = control
+            control.deactive()
+
+    def hideCursor(self):
+        self.setCursor(Qt.BlankCursor)
+
+    def enablePrevController(self):
+        if self.prev_active_controller is not None:
+            self.prev_active_controller.enactive()
+        
+    def showCursor(self):
+        self.setCursor(Qt.ArrowCursor)
 
     def getPanda3DWidget(self, name) -> QPanda3DWidget:
         return QPanda3DWidget._name_manager.get_object(name)
@@ -111,7 +124,8 @@ class MultiViewQtGUI(QMainWindow):
         # self.panda3d_widgets[name] = new_widget
         new_widget.register_qobs(self)
         controller = self.panda3d.create_controller_for_camera(
-            cam, control_id=name
+            cam, control_id=name,
+            sensitivity=10,flip_y=True
             # TODO: sensitivity and other stuffs (future)
         )
         control_id = controller.getID()
@@ -193,6 +207,7 @@ class MultiViewQtGUI(QMainWindow):
         Loggable.add_handlers_for_all(self.log_widget.handlers[GAME_LOG])
 
         self.current_focus_widget = self.focusWidget() 
+        self.prev_active_controller = None
 
         self.widget_control_mapping_df = pd.DataFrame(
                 columns=[
@@ -224,13 +239,11 @@ class MultiViewQtGUI(QMainWindow):
         self.panda3d = self.get_game()
         self.panda3d.log("create world")
         self.synchronizer.setShowBase(self.panda3d)
-        # self.pandaWidget = QPanda3DWidget(
-            # self.panda3d,
-            # synchronizer=self.synchronizer
-        # )
-        # self.synchronizer.addWidget(self.pandaWidget)
-        # self.dock_top_left.setWidget(self.pandaWidget)
-        # TODO: manage widgets properly in future
+        self.panda3d.cursorOutSignal.connect(self.disableControllers)
+        self.panda3d.cursorOutSignal.connect(lambda: self.setCursor(Qt.ArrowCursor))
+        # FIXME: go back to controller of widget that currently hovering
+        self.panda3d.cursorInSignal.connect(self.enablePrevController)
+        self.panda3d.cursorInSignal.connect(lambda: self.setCursor(Qt.BlankCursor))
     
         w,c = self.newPanda3DWidgetOnCam(
                 cam=self.panda3d.cam,
@@ -307,6 +320,7 @@ class RawQtGUI(QMainWindow):
             self.panda3d,
             synchronizer=self.synchronizer
         )
+        
         self.synchronizer.addWidget(self.pandaWidget)
         self.dock_top_left.setWidget(self.pandaWidget)
         self.synchronizer.start()

@@ -36,14 +36,18 @@ from direct.showbase.InputStateGlobal import inputState
 from panda3d_game.app import MultiViewShowBase, ControlShowBaseMultiView
 from panda3d_game.input_source import KeyboardInput, InputSource
 from qpanda3d.widget_screen_region import QWidgetScreenRegion
+from PyQt5.QtCore import QObject, pyqtSignal
 
-class QShowBaseMultiView(MultiViewShowBase):
+class QShowBaseMultiView(QObject, MultiViewShowBase):
     def __init__(
         self,name="showbase" 
         ):
+        super().__init__()
         if not hasattr(self, "isQShowBaseInit"):
             self.focus = None # as previous "parent"
-            MultiViewShowBase.__init__(self)
+            # QObject.__init__(self)
+            # MultiViewShowBase.__init__(self)
+           
             # self.screenTexture = Texture()
             # self.buff = None
             # self.clear_color = clear_color
@@ -80,7 +84,8 @@ class QShowBaseMultiView(MultiViewShowBase):
 
 class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
 
-
+    cursorOutSignal = pyqtSignal()
+    cursorInSignal = pyqtSignal()
 
     def __init__(self):
         QShowBaseMultiView.__init__(self)
@@ -136,6 +141,8 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
         self.controllers[control_id].setMouseInput(mouse_watcher)
         widget_region_input = QWidgetScreenRegion(widget)
         self.controllers[control_id].setScreenRegionInput(widget_region_input)
+
+        
 
 
 
