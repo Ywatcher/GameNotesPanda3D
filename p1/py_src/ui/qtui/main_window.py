@@ -214,7 +214,7 @@ class MultiViewQtGUI(QMainWindow):
             FOCUS_GAME:self.default_widget
         })
 
-        # self.installEventFilter(self.focusFilter)
+        self.installEventFilter(self.focusFilter)
         self.console_widget.register_qobs(self)
 
 

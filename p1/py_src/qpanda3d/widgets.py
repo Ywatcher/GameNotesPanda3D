@@ -217,6 +217,7 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
     def keyPressEvent(self, evt):
         key = evt.key()
         if key==ord(':'):
+            print("got colon")
             evt_to_cmd = QEvent(FOCUS_CONSOLE)
             self.send_qevent(evt_to_cmd)
         try:
