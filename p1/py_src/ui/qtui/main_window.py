@@ -25,27 +25,8 @@ from util.log import *
 from ui.abstract_ui import AbstractGUI
 from ui.qtui.qconsole import *
 from ui.qtui.qlogger import *
-
-# class QtGUI(AbstractGUI):
-#     def __init__(self) -> None:
-#         super().__init__()
-
-
-#         self.outFocusKeyPressEnabled = 0
-#         # TODO: what does it do
-#         self.keyPressEnabled = 1 # TODO: set it
-#         # use command or hotkey
-
-#     # TODO: use command to set it
-#     def setOutFocusKeyPress(self, enable:bool=True):
-#         self.outFocusKeyPressEnabled = enable
-
-# class AdvancedQtGUI(QtGUI):
-#     # create a menu, with buttons to start game
-#     # button "new window"
-#     pass
-
-# TODO: make compatible with abstract gui
+from ui.qtui.qdataframe import DataFrameModel
+from ui.qtui.managed_docks import ManagedDock, ManagedDockMainWindow
 
 class FocusFilter(QObject):
     # TODO: move to qtutil
@@ -60,7 +41,7 @@ class FocusFilter(QObject):
         return super().eventFilter(obj, event)
 
 
-class MultiViewQtGUI(QMainWindow):
+class MultiViewQtGUI(ManagedDockMainWindow):
 
     def disableControllers(self):
         # FIXME: only player controllers 
@@ -72,6 +53,8 @@ class MultiViewQtGUI(QMainWindow):
     def hideCursor(self):
         self.setCursor(Qt.BlankCursor)
 
+    # TODO:
+    # set cursor out behaviour as disable inputs, instead of disabling controls
     def enablePrevController(self):
         if self.prev_active_controller is not None:
             self.prev_active_controller.enactive()
@@ -143,7 +126,6 @@ class MultiViewQtGUI(QMainWindow):
         return new_widget, controller
 
 
-
     def setFocusWidget(self, widget:QPanda3DWidget):
         previous_widget = self.current_focus_widget
         if previous_widget != widget:
@@ -184,13 +166,17 @@ class MultiViewQtGUI(QMainWindow):
         super().__init__()
         self.FPS = FPS
         # Create three dock widgets
-        self.dock_top_left = QDockWidget("Game Camera", self)
-        self.dock_bottom_left = QDockWidget("Console", self)
-        self.dock_right = QDockWidget("Logger", self)
+        # self.dock_top_left = QDockWidget("Game Camera", self)
+        # self.dock_bottom_left = QDockWidget("Console", self)
+        # self.dock_right = QDockWidget("Logger", self)
+        self.dock_top_left = self.create_dock(name="top_left", title="Game Camera", area=Qt.LeftDockWidgetArea)
+        self.dock_bottom_left = self.create_dock(name="bottom_left", title="Console")
+        self.dock_right = self.create_dock(name="right", title="Logger", area=Qt.RightDockWidgetArea)
+
 
         # Add the docks to the main window
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_top_left)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dock_right)
+        # self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_top_left)
+        # self.addDockWidget(Qt.RightDockWidgetArea, self.dock_right)
         # Split the left dock area vertically (top and bottom)
         self.splitDockWidget(self.dock_top_left, self.dock_bottom_left, Qt.Vertical)
         self.resizeDocks([self.dock_top_left, self.dock_bottom_left], [200, 200], Qt.Vertical)
@@ -210,7 +196,7 @@ class MultiViewQtGUI(QMainWindow):
         self.prev_active_controller = None
 
         self.widget_control_mapping_df = pd.DataFrame(
-                columns=[
+                columns=# @managed_name 会生成 dock_name[
                     "widget_id", "controller_name", "active", 
                     # "minimized"
                 ])
