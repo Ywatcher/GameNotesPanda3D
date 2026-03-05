@@ -53,28 +53,64 @@ class CameraController(MouseController):
         self.delta_r = 0
         self.flip_x = flip_x
         self.flip_y = flip_y
+        self.use_centering = True # TODO
 
-    def update_camera(self, task:Task):
-        """updata camera to follow mouse movement"""
-        if self.mouse_watcher.hasMouse() and self._active:
-            # get mouse position (unified to range(-1,1))
-            mouse_x, mouse_y = self.getMouseXY() #FIXME
-            # calculate the shift of the mouse
+    # def update_camera(self, task:Task):
+        # """updata camera to follow mouse movement"""
+        # if self.mouseInput.hasMouse() and self._active:
+            # # get mouse position (unified to range(-1,1))
+            # mouse_x, mouse_y = self.getMouseXY() #FIXME
+            # # calculate the shift of the mouse
+            # delta_x = mouse_x - self.prev_mouse_x
+            # delta_y = mouse_y - self.prev_mouse_y
+
+            # # 调整摄像机的水平旋转和俯仰角度
+            # camera_h = self.camera.getH() - delta_x * self.cam_sensitivity * self.flip_x_coefficient
+            # camera_p = self.camera.getP() - delta_y * self.cam_sensitivity * self.flip_y_coefficient
+
+            # # 设置新的摄像机角度
+            # self.camera.setH(camera_h)
+            # self.camera.setP(camera_p)
+
+            # # 将鼠标指针重置到窗口的中心
+            # # self.center_mouse()
+            # self.delta_h = delta_x * self.cam_sensitivity
+            # self.delta_p = delta_y * self.cam_sensitivity
+        # return task.cont
+
+    def update_camera(self, task: Task):
+        """Update camera to follow mouse movement"""
+        if self.mouseInput.hasMouse() and self._active:
+            mouse_x, mouse_y = self.getMouseXY()
+
+            # 如果 use_centering 为 True，总是把 prev_mouse_x/y 当作中心
+            if self.use_centering and self.screenRegionInput is not None:
+                # center_x, center_y = self.screenRegionInput.getCenter()
+                center_x, center_y = 0,0
+                self.prev_mouse_x = center_x
+                self.prev_mouse_y = center_y
+            # 否则 prev_mouse_x/y 就是上一帧的鼠标位置
+            # 这假设在上一帧已经更新过了
+
+            # 计算鼠标偏移量
             delta_x = mouse_x - self.prev_mouse_x
             delta_y = mouse_y - self.prev_mouse_y
 
-            # 调整摄像机的水平旋转和俯仰角度
+            # 更新摄像机角度
             camera_h = self.camera.getH() - delta_x * self.cam_sensitivity * self.flip_x_coefficient
             camera_p = self.camera.getP() - delta_y * self.cam_sensitivity * self.flip_y_coefficient
-
-            # 设置新的摄像机角度
             self.camera.setH(camera_h)
             self.camera.setP(camera_p)
 
-            # 将鼠标指针重置到窗口的中心
-            # self.center_mouse()
+            # 保存本帧 delta
             self.delta_h = delta_x * self.cam_sensitivity
             self.delta_p = delta_y * self.cam_sensitivity
+
+            # 更新 prev_mouse 为下一帧使用
+            if not self.use_centering:
+                self.prev_mouse_x = mouse_x
+                self.prev_mouse_y = mouse_y
+
         return task.cont
     
     @property
@@ -90,6 +126,8 @@ class CameraController(MouseController):
     
 
 class KeyCamController(KeyboardController, CameraController):
+
+    
 
     @property
     def inputs(self):
@@ -151,15 +189,15 @@ class KeyCamController(KeyboardController, CameraController):
         pass
 
 
-class PlayerCamController(KeyCamController):
+class PlayerCamController(KeyCamController,Loggable):
     def __init__(
-            self, camera, name="PlayerCamController",
-            sensitivity=.1,flip_x=False,flip_y=False
+            self, camera,  sensitivity=.1,flip_x=False,flip_y=False,
+            *args, **kwargs
             ):  # TODO: input keymap dict
-
-        KeyCamController.__init__(self,camera,sensitivity,flip_x,flip_y,name=name)
+        KeyCamController.__init__(
+                self,camera,sensitivity,flip_x,flip_y,*args, **kwargs)
         Loggable.__init__(self)
-        print("controller name:", self.name)
+        # print("controller name:", self.name)
         # from panda3d.core import KeyboardButton
         self.key_maps = {
             'w': self.call_move_forward,

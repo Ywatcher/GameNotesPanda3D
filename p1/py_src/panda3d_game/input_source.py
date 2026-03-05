@@ -58,12 +58,14 @@ class KeyboardInput(InputSource):
         return list(self.held_keys)
 
     def key_down(self, button:str):
+        print("key down",button)
         if self._active:
         # print(button,"down") # FIXME: verbose log
             self.held_keys.add(button)
         # print("down_", self.held_keys)
 
     def key_up(self, button:str):
+        print("key up",button)
         # TODO: remove combined keys
         if self._active:
             if button in self.held_keys:
@@ -78,4 +80,42 @@ class KeyboardInput(InputSource):
             button in self.held_keys
             for button in buttons
         ])
+
+
+from abc import ABC, abstractmethod
+# from PyQt5.QtCore import QRect
+
+class ScreenRegionInput(ABC):
+    """Abstract interface to provide dynamic screen region info."""
+    
+    @abstractmethod
+    def getW(self) -> int:
+        """Return current width of the region."""
+        pass
+
+    @abstractmethod
+    def getH(self) -> int:
+        """Return current height of the region."""
+        pass
+
+    @abstractmethod
+    def getPos(self) -> tuple[int, int]:
+        """Return top-left position (x, y) in global coordinates."""
+        pass
+
+    def getCenter(self) -> tuple[float, float]:
+        """Return center coordinates."""
+        return (self.getPos()[0] + self.getW() / 2,
+                self.getPos()[1] + self.getH() / 2)
+
+    def getRectPoints(self) -> dict[str, tuple[int,int]]:
+        """Return four corner points with consistent naming."""
+        x, y = self.getPos()
+        w, h = self.getW(), self.getH()
+        return {
+            "top_left": (x, y),
+            "top_right": (x + w, y),
+            "bottom_left": (x, y + h),
+            "bottom_right": (x + w, y + h),
+        }
 

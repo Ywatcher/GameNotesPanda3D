@@ -8,11 +8,16 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QObject, QEvent,Qt
 from panda3d.core import (
     loadPrcFileData
-)
+    )
+import pandas as pd
 from qpanda3d import (
-    QShowBase, QPanda3DWidget, QControl,
+QPanda3DWidget, 
+    # QShowBase, QControl,
+    QShowBaseMultiView, QControlMultiView,
     Synchronizer
 )
+from panda3d_game.controller import Controller
+
 
 from config.style import styleSheet
 from qtutil.event import *
@@ -61,38 +66,99 @@ class FocusFilter(QObject):
 
 class MultiViewQtGUI(QMainWindow):
 
-    def newPanda3DWidgetOnCam(self, cam, name, dock=None):
-        view = self.panda3d.render_cam(cam, name, new_view="auto")
-        parent = self if dock is None else dock
+    def getPanda3DWidget(self, name) -> QPanda3DWidget:
+        return QPanda3DWidget._name_manager.get_object(name)
+
+    def getController(self, name) -> Controller:
+        return Controller._name_manager.get_object(name)
+
+    def activate_widget_controllers(self, widget: QPanda3DWidget):
+        # TODO: wrap this 
+        widget_id = widget.getID()
+        rows = self.widget_control_mapping_df.index[
+            self.widget_control_mapping_df["widget_id"] == widget_id
+        ]
+        for idx in rows:
+            controller_name = self.widget_control_mapping_df.at[idx, "controller_name"]
+            controller = self.getController(controller_name)
+            controller.enactive()
+            self.widget_control_mapping_df.at[idx, "active"] = True
+
+    def deactivate_widget_controllers(self, widget: QPanda3DWidget):
+        widget_id = widget.getID()
+        rows = self.widget_control_mapping_df.index[
+            self.widget_control_mapping_df["widget_id"] == widget_id
+        ]
+        for idx in rows:
+            controller_name = self.widget_control_mapping_df.at[idx, "controller_name"]
+            controller = self.getController(controller_name)
+            controller.deactive()
+            self.widget_control_mapping_df.at[idx, "active"] = False
+
+
+    def newPanda3DWidgetOnCam(self, cam, name=None, dock=None):
+        view = self.panda3d.render_cam(cam, name=name, new_view="auto")
+        view_id = view.getID()
+        parent_widget = self if dock is None else dock
         new_widget = QPanda3DWidget(
-                view, parent=parent, FPS=self.FPS, 
+                view, parent=parent_widget, FPS=self.FPS, 
+                widget_id=name,
                 synchronizer=self.synchronizer)
-        self.synchronizer.addDockWidget(new_widget)
+        widget_id = new_widget.getID()
+        self.synchronizer.addWidget(new_widget)
         if dock is not None:
             dock.setWidget(new_widget)
-        self.panda3d_widgets[name] = new_widget
+        # self.panda3d_widgets[name] = new_widget
         new_widget.register_qobs(self)
-        assert False, "need name"
-        control_id = None
         controller = self.panda3d.create_controller_for_camera(
-            cam, control_id # TODO: sensitivity and other stuffs
+            cam, control_id=name
+            # TODO: sensitivity and other stuffs (future)
         )
+        control_id = controller.getID()
         self.panda3d.set_keyboard_input_for_controller(control_id)
         self.panda3d.set_widget_inputs_for_controller(new_widget, control_id)
-        return new_widget
+        is_active = controller.isActive
+        # -----------------------------
+        # TODO put into a separate class 
+        self.widget_control_mapping_df.loc[len(self.widget_control_mapping_df)] = [
+            widget_id,
+            control_id,
+            is_active
+        ]
+        # -----------------------------
+        return new_widget, controller
 
-    def setFocusWidget(self, widget):
-        widget.setFocus()
-        self.current_focus_widget = widget
+
+
+    def setFocusWidget(self, widget:QPanda3DWidget):
+        previous_widget = self.current_focus_widget
+        if previous_widget != widget:
+            widget.setFocus()
+            self.current_focus_widget = widget
+            if isinstance(widget, QPanda3DWidget):
+                # view = widget.panda3DView
+                # self.panda3d.setFocus(view)
+                # FIXME: set view 
+                self.panda3d.setFocus(widget)
+                print(self.panda3d.focus)
+                self.panda3d.center_mouse()
+                self.panda3d.cursor_in() # disables mouse, centering mouse  
+                # TODO: set that row to be active
+                # TODO: deactivate previous row 
+                self.activate_widget_controllers(widget) 
+            else:
+                self.panda3d.cursor_out() # enables mouse
+            if isinstance(previous_widget, QPanda3DWidget):
+                self.deactivate_widget_controllers(widget)
+            
 
     def setFocusByName(self, name:str):
         # handle by console, 
         # and get the result to parse
-        widget = self.panda3d_widgets.get(name)
-        if widget is None:
+        widget = self.getPanda3DWidget(name)
+        if widget is None: # FIXME: other invalid values
             return (-1, f"No widget named '{name}'")
             # self.console_widget.log(f"No widget named '{name}'")
-
         try:
             self.setFocusWidget(widget)
         except Exception as e: 
@@ -125,7 +191,14 @@ class MultiViewQtGUI(QMainWindow):
         self.dock_right.setWidget(self.log_widget)
         self.log_widget.add_level(GAME_LOG)
         Loggable.add_handlers_for_all(self.log_widget.handlers[GAME_LOG])
-        self.panda3d_widgets = {}
+
+        self.current_focus_widget = self.focusWidget() 
+
+        self.widget_control_mapping_df = pd.DataFrame(
+                columns=[
+                    "widget_id", "controller_name", "active", 
+                    # "minimized"
+                ])
 
 
         self.startGame()
@@ -137,8 +210,10 @@ class MultiViewQtGUI(QMainWindow):
             self.dock_bottom_left.setStyleSheet(stylesheet)
         self.focusFilter = FocusFilter({
             FOCUS_CONSOLE:self.console_widget,
-            FOCUS_GAME:self.panda3d_widgets["default"]
+            # FOCUS_GAME:self.panda3d_widgets["default"]
+            FOCUS_GAME:self.default_widget
         })
+
         # self.installEventFilter(self.focusFilter)
         self.console_widget.register_qobs(self)
 
@@ -156,13 +231,19 @@ class MultiViewQtGUI(QMainWindow):
         # self.synchronizer.addWidget(self.pandaWidget)
         # self.dock_top_left.setWidget(self.pandaWidget)
         # TODO: manage widgets properly in future
-        self.newPanda3DWidget(
-                view=self.panda3D.render_default(),
+    
+        w,c = self.newPanda3DWidgetOnCam(
+                cam=self.panda3d.cam,
                 name="default",
                 dock=self.dock_top_left)
+
+      
+        self.setFocusWidget(w)
         self.synchronizer.start()
-        self.panda_mouse_watcher = self.panda3d.mouseWatcherNode
-        self.panda3d_widgets["default"].setFocus()
+        self.default_widget = w # FIXME
+        # self.panda_mouse_watcher = self.panda3d.mouseWatcherNode
+
+
 
     # todo: remove a widget
 

@@ -17,11 +17,12 @@ import builtins
 from panda3d.core import loadPrcFileData, Texture 
 
 from QPanda3D.QPanda3D_Buttons_Translation import QPanda3D_Button_translation
-from QPanda3D.QPanda3D_Keys_Translation import QPanda3D_Key_translation
+from .qpanda3d_keys_translation import QPanda3D_Key_translation
 from QPanda3D.QPanda3D_Modifiers_Translation import QPanda3D_Modifier_translation
 
 from qtutil.qobserver import *
 from qtutil.event import *
+from util.name_manager import managed_name
 
 __all__ = ["QPanda3DWidget", "Synchronizer"]
 
@@ -125,9 +126,10 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
             self, panda3DView:"RenderView", parent=None, FPS=60, debug=False,
         synchronizer=None, widget_id=None
     ):
-        _ManagedName.__init__(self,widget_id=widget_id)
         QWidget.__init__(self, parent)
         QObserved.__init__(self)
+        _ManagedName.__init__(self,widget_id=widget_id)
+
         self.setObjectName(self.widget_id)
 
         # set fixed geometry
@@ -160,9 +162,12 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
     def getViewID(self):
         return self.panda3DView.name
 
-    def sendToMessenger(self,event_str,args):
-        event_str_with_widget = f"{self.view_id};event_str"
-        messenger.send(event_str_with_widget, args)
+    def sendToMessenger(self,event_str,args=None):
+        # event_str_with_widget = f"{self.view_id};event_str"
+        # messenger.send(event_str_with_widget, args)
+        if args is None:
+            args = []
+        messenger.send(event_str,args)
         
 
     def mousePressEvent(self, evt):
@@ -221,8 +226,9 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
             self.sendToMessenger(k)
             # FIXME: if k in the list that can be sent
             self.sendToMessenger('button', [k])
+            print("send","button",k,key)
         except Exception as e:
-            print("Unimplemented key. Please send an issue on github to fix this problem")
+            print("Unimplemented key. Please send an issue on github to fix this problem",key)
             print(e)
 
     def keyReleaseEvent(self, evt):
@@ -235,8 +241,9 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
             self.sendToMessenger(k)
             # FIXME:
             self.sendToMessenger('button-up', [k.strip('-up')])
+            print("send","button-up",k,key)
         except Exception as e:
-            print("Unimplemented key. Please send an issue on github to fix this problem")
+            print("Unimplemented key. Please send an issue on github to fix this problem", key)
             print(e)
 
     def resizeEvent(self, evt):
@@ -285,8 +292,9 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
 
     def setFocus(self, cursor_in=True):
         QWidget.setFocus(self)
-        if cursor_in:
-            self.panda3DView.cursor_in()
+        # TODO: call manager for complex bebaviours
+        # if cursor_in:
+            # self.panda3DView.cursor_in()
 
     
 

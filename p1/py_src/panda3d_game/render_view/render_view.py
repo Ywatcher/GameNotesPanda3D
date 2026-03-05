@@ -1,4 +1,4 @@
-from typing import Dict,Union
+from typing import Dict,Union,Optional
 
 
 from panda3d.core import (
@@ -9,11 +9,12 @@ from panda3d.core import (
     GraphicsOutput, Texture,
     ConfigVariableManager, WindowProperties,
     LVecBase4f, FrameBufferProperties,
-    GraphicsPipe
+    GraphicsPipe,NodePath
 )
 import weakref
 from util.py_decorators import forward_methods_to
 from panda3d_game.forwarded_attributes.camera_attributes import forwarded_camera_methods
+from util.name_manager import managed_name
 
 _add_prefix = lambda x: f"view_{x}"
 
@@ -27,13 +28,21 @@ __all__ = [
 @forward_methods_to("main_camera", forwarded_camera_methods)
 @managed_name(transform=_add_prefix)
 class RenderView:
-    def __init__(self, mount_camera: Camera, view_manager:"ViewManager" = None,
+
+    def makeCamera(self,buf):
+        return self.view_manager.makeCamera(buf)
+
+    def __init__(self, mount_camera_np: NodePath, view_manager:"ViewManager" = None,
         size=1.0,
          clear_color=LVecBase4f(0.1, 0.1, 0.1, 1),
         # parent=None 
         ):
         self.clear_color = clear_color 
-        assert isinstance(mount_camera, Camera)
+        assert isinstance(mount_camera_np, NodePath), f"should get nodepath, got{type(mount_camera)}"
+        
+        mount_camera = mount_camera_np.node()
+        assert isinstance(mount_camera, Camera), f"{type(mount_camera)}"
+        self._mounted_camera_np = mount_camera_np
         self._mounted_camera = mount_camera
         self.camera_list = {"main":None} # TODO: use setter and getter
         self.buffer_list = {"main":None}
@@ -41,6 +50,9 @@ class RenderView:
         self.screenTexture = Texture()
         self._isStarted = False
         self._isActive = True  # FIXME
+
+        self.clear_color = clear_color
+        self.size = size
         # self.parent = parent # showbase, change it to a factory then TODO
 
     # ====
@@ -102,8 +114,8 @@ class RenderView:
             self.main_buffer.addRenderTexture(
                 self.screenTexture, GraphicsOutput.RTMCopyRam)
             self.main_buffer.set_sort(sort)
-            self.main_camera = self.makeCamera(self.buff)
-            self.reparentTo(self._mounted_camera)
+            self.main_camera = self.makeCamera(self.main_buffer)
+            self.reparentTo(self._mounted_camera_np)
             # self.camNode = self.cam.node()
             # self.camLens = self.camNode.get_lens()
             if clear_color is None:
@@ -113,6 +125,8 @@ class RenderView:
                 self.main_buffer.set_clear_active(GraphicsOutput.RTPColor, True)
             # self.movePointer = self.empty
             self._isQtStart = True
+
+    
 
 
 
@@ -135,10 +149,10 @@ class RenderView:
     def camLens(self):
         return self.camNode.get_lens()
 
-    def get_lens():
+    def get_lens(self):
         return self.main_camera.node().get_lens()
 
-    def mount_to(self,camera:Camera):
+    def mount_to(self,camera:NodePath):
         # FIXME: keep properties of camera updated
         self._mounted_camera = camera
         if self._isStarted:
@@ -160,13 +174,13 @@ class RenderView:
     def main_buffer(self):
         return self.buffer_list["main"]
 
-    @property 
+    @main_buffer.setter
     def main_buffer(self, buf):
         self.buffer_list["main"] = buf
 
-    @property
-    def screenTexture(self):
-        pass
+    # @property
+    # def screenTexture(self):
+        # pass
 
     def getID(self):
         return self.name
@@ -194,9 +208,13 @@ class RenderView:
             return self.camera_list[name]
     
 
-GeneralCameraIdentifier = Union[int, Camera]
+GeneralCameraIdentifier = Union[int, Camera, NodePath]
 
 class RenderViewManager:
+
+    def makeCamera(self, buf):
+        return self.showbase.makeCamera(buf) # TODO: Forward
+
     def __init__(self, showbase):
         self.showbase = showbase
         self.name_manager = RenderView._name_manager
@@ -205,6 +223,9 @@ class RenderViewManager:
         # TODO: use view identifier instead of view in mapping
 
     def camera_to_id(self, camera: GeneralCameraIdentifier) -> int:
+        if isinstance(camera, NodePath):
+            assert isinstance(camera.node(),Camera) , f"{type(camera.node())}"
+            return id(camera.node())
         if isinstance(camera, Camera):
             camera = id(camera)
         # FIXME:
@@ -217,7 +238,7 @@ class RenderViewManager:
         refs = self.camera_view_mapping.get(camera_id)
         return next(iter(refs), None) if refs else None
 
-    def getFirstViewByName(self, camera) -> Optional["RenderView"]:
+    def getFirstViewSorted(self, camera) -> Optional["RenderView"]:
         """get first view for a camera, sorted by name"""
         camera_id = self.camera_to_id(camera)
         refs = self.camera_view_mapping.get(camera_id)
@@ -251,13 +272,13 @@ class RenderViewManager:
         return views
 
 
-    def createviewforcamera(self, camera: camera, name=None):
+    def createViewForCamera(self, camera: NodePath, name=None):
         camera_id = camera_to_id(camera)
-        view = renderview(mount_camera=camera, view_manager=self, name=name)
+        view = renderview(mount_camera_np=camera, view_manager=self, name=name)
         self._appendviewtocamera(camera_id, view)
         return view
 
-    def getOrCreateViewForCamera(self, camera: Camera, name_if_any: str = None) -> "RenderView":
+    def getOrCreateViewForCamera(self, camera: NodePath, name_if_any: str = None) -> "RenderView":
         """
         if there is a view for camera then get it; 
         if not then create one
@@ -274,7 +295,7 @@ class RenderViewManager:
                 pass
 
         # no view available. create new one 
-        view = RenderView(mount_camera=camera, view_manager=self, name=name_if_any)
+        view = RenderView(mount_camera_np=camera, view_manager=self, name=name_if_any)
         self._appendViewToCamera(camera_id, view)
         return view
           

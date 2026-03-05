@@ -24,7 +24,7 @@ from util.log import Loggable
 from panda3d_game.camera_controller import (
     CameraController, PlayerCamController
 )
-from panda3d_game.controller import PlayerController
+from panda3d_game.controller import Controller 
 from .app_ import ContextShowBase
 from panda3d_game.render_view.render_view import RenderViewManager, RenderView
 
@@ -37,9 +37,11 @@ class MultiViewShowBase(ContextShowBase):
     """
     def __init__(self):
         if not hasattr(self, "isMultiviewInit"):
+            # print("init mutlview")
             ContextShowBase.__init__(self)
             self.isMultiviewInit = True 
             self.view_manager = RenderViewManager(self)
+
             # self.cams = [] 
             # self.views = [] 
             # self.default_view = RenderView(self.camera, "view1", parent=self) # FIXME 
@@ -47,7 +49,13 @@ class MultiViewShowBase(ContextShowBase):
 
     def render_cam(self, cam, name, new_view="auto"):
         # FIXME: if a view exists for the camera, then use the old one
-        view = self.view_manager.createViewForCamera(cam, name)
+        if new_view == True:
+            view = self.view_manager.createViewForCamera(cam, name)
+        elif new_view == False or new_view == "auto":
+            # TODO: implement False
+            view = self.view_manager.getOrCreateViewForCamera(cam, name)
+        else: 
+            raise ValueError("not implemented for new_view=",new_view)
         view.start()
         return view
 
@@ -71,6 +79,10 @@ class ControlShowBaseMultiView(MultiViewShowBase):
     # do not control movement of view 
     # control camera or other game assets as usual instead 
 
+    # def getController(self, control_id)
+    # def getController(self, name) -> Controller:
+        # return Controller._name_manager.get_object(name)
+
     def register_controller(self, control_id, controller):
         # controller should have a list of functions, and a list of events 
         # accept prefix-event for controller.function 
@@ -79,7 +91,7 @@ class ControlShowBaseMultiView(MultiViewShowBase):
         # controller has mouse watcher (?)
         self.controllers[control_id] = controller
         self.taskMgr.add(
-                controller, f"update_controller_{control_id}",
+                controller.update, f"update_controller_{control_id}",
                 sort=self.sort_controller)
 
     def create_controller_for_camera(self,cam, control_id, sensitivity=.1, flip_x=None, flip_y=None):
@@ -87,7 +99,8 @@ class ControlShowBaseMultiView(MultiViewShowBase):
             flip_x = self.flip_x
         if flip_y is None:
             flip_y = self.flip_y
-        controller = PlayerCamController(cam, "...", sensitivity,flip_x,flip_y)
+        controller = PlayerCamController(cam, sensitivity,flip_x,flip_y,name=control_id)
+        control_id = controller.getID()
         self.register_controller(control_id, controller)
         controller.setRef(self.rdr_scene)  # FIXME: if there are multiple scenes
         return controller
@@ -111,8 +124,9 @@ class ControlShowBaseMultiView(MultiViewShowBase):
         if not hasattr(self, "isControlShowBaseInit"):
             MultiViewShowBase.__init__(self)
             self.isControlShowBaseInit = True
-
             self.controllers = {} # for each view
+
+
             # a mapping, each view id -> a intermediate controller
 
             self.is_cursor_in_game: bool = False 
@@ -157,6 +171,7 @@ class ControlShowBaseMultiView(MultiViewShowBase):
 
 
     def cursor_in(self):
+        print("cin")
         # center the mouse
         self.center_mouse()
         # disable default mouse control
@@ -174,7 +189,8 @@ class ControlShowBaseMultiView(MultiViewShowBase):
 
     def cursor_out(self):
         # enable default mouse control
-        # self.enable_mouse()
+        print("cout")
+        self.enable_mouse()
         # show mouse cursor
         try:
             props = WindowProperties()
@@ -195,8 +211,8 @@ class ControlShowBaseMultiView(MultiViewShowBase):
         self.controllers[control_id].mounted_camera.setHpr(0,0,0)
 
     def update_pointer(self, task):
-         """updata pointer to center of screen"""
-        if  self.is_cursor_in_game:
+        """updata pointer to center of screen"""
+        if self.is_cursor_in_game:
             # get mouse position (unified to range(-1,1))
             self.center_mouse()
         return task.cont

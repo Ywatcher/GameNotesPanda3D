@@ -17,7 +17,7 @@ from panda3d_game.app.app_ import ContextShowBase, ControlShowBase
 # Set up Panda environment
 
 import platform
-from .mouse_watcher import QMouseWatcherNode
+from .mouse_watcher import QMouseWatcher
 # from QPanda3D import Panda3DWorld
 import builtins
 from datetime import datetime
@@ -34,10 +34,12 @@ from queue import Queue as PyQueue
 
 from direct.showbase.InputStateGlobal import inputState
 from panda3d_game.app import MultiViewShowBase, ControlShowBaseMultiView
+from panda3d_game.input_source import KeyboardInput, InputSource
+from qpanda3d.widget_screen_region import QWidgetScreenRegion
 
 class QShowBaseMultiView(MultiViewShowBase):
     def __init__(
-        self, 
+        self,name="showbase" 
         ):
         if not hasattr(self, "isQShowBaseInit"):
             self.focus = None # as previous "parent"
@@ -51,11 +53,13 @@ class QShowBaseMultiView(MultiViewShowBase):
             # self.size = size
             # self.cams = []
             # self.views = []
-            self.mouseWatcherNode = QMouseWatcherNode()
+            # self.mouseWatcherNode = QMouseWatcherNode()
             # self.pipe = GraphicsPipeSelection.get_global_ptr().make_pipe()
 
     def setFocus(self, widget:QWidget):
-        self.MouseWatcherNode.setParent(widget)
+        # print("set focus",type(widget))
+        assert isinstance(widget, QWidget),  f"{type(widget)}"
+        # self.MouseWatcherNode.setParent(widget)
         self.focus = widget
 
     
@@ -82,6 +86,7 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
         QShowBaseMultiView.__init__(self)
         if not hasattr(self, "isControlShowBaseInit"):
             self.isControlShowBaseInit = True
+            self.controllers = {}
             self.is_cursor_in_game: bool = False
             # self.cursor_in()
             self.default_cam_pos = (0, -10, 1)
@@ -90,17 +95,23 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
             # self.cam_controller = PlayerCamController(self.display_camera)
             # self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
             # control ------------ FIXME
-            self.buttonThrowers[0].node().setButtonDownEvent('button')
-            self.buttonThrowers[0].node().setButtonUpEvent('button-up')
+            # self.buttonThrowers[0].node().setButtonDownEvent('button')
+            # self.buttonThrowers[0].node().setButtonUpEvent('button-up')
             # self.accept("space", lambda: print(self.camera.get_pos()))
             
-
-            # self.accept('z', self.toggle_camera)
-            # self.accept("escape", self.cursor_out)
-            # self.accept("b", self.cursor_in)  # FIXME
-            # self.accept('control-w', self.userExit)
+            # TODO
+            self.accept('z', self.toggle_camera)
+            self.accept("escape", self.cursor_out)
+            self.accept("b", self.cursor_in)  # FIXME
+            self.accept('control-w', self.userExit)
             # self.accept(Events.GameEndEvent, self.userExit)
-            self.taskMgr.add(self.update_camera, "update_camera_task")
+            self.accept(Events.GameEndEvent, self.userExit)
+            self.sort_controller = 100 
+            self.sort_centering = 250 
+
+            self.taskMgr.add(self.update_pointer, "update_camera_task", sort=self.sort_centering)
+            # self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
+            self.taskMgr.add(self.handle_actions, "handle_actions",sort=300)
             # self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
             # self.taskMgr.add(self.handle_actions, "handle_actions")
             # self.delta_h = 0
@@ -109,6 +120,7 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
         ControlShowBaseMultiView.__init__(self, False, False) # inits context showbase 
 
     def startQt(self):
+        print("startQt") # not used 
         self.getMouseXY = self.getMouseXY_Q
         self.movePointer = self.movePointer_Q
         self.center_mouse = self.center_mouse_Q
@@ -122,6 +134,10 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
     def set_widget_inputs_for_controller(self, widget, control_id):
         mouse_watcher = QMouseWatcher(widget)
         self.controllers[control_id].setMouseInput(mouse_watcher)
+        widget_region_input = QWidgetScreenRegion(widget)
+        self.controllers[control_id].setScreenRegionInput(widget_region_input)
+
+
 
 
     # def render_cam_to_widget(self, cam, widget, name):
@@ -139,17 +155,18 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
         # )
         # return ret
 
-    def movePointer_Q(self, device, x,y):
+    def movePointer(self, device, x,y):
         # print("move")
-        self.parent.movePointer(device,x,y)
+        self.focus.movePointer(device,x,y)
 
-    def center_mouse_Q(self):
+    def center_mouse(self):
+        # return
 
         window_center_x = self.focus.width() // 2
         window_center_y = self.focus.height() // 2
         self.movePointer(0, window_center_x, window_center_y)
-        rel_x = -1 + 2 * window_center_x / self.parent.width()
-        rel_y = -1 + 2 * window_center_y / self.parent.height()
+        rel_x = -1 + 2 * window_center_x / self.focus.width()
+        rel_y = -1 + 2 * window_center_y / self.focus.height()
         rel_y = -rel_y
         self.prev_mouse_x = (rel_x)
         self.prev_mouse_y = (rel_y)

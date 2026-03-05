@@ -31,17 +31,25 @@ from direct.showbase.InputStateGlobal import inputState
 from panda3d.core import MouseWatcher #, LPoint2
 
 from util.log import Loggable
-from panda3d_game.input_source import KeyboardInput
+from util.name_manager import managed_name
+from panda3d_game.input_source import KeyboardInput,ScreenRegionInput
 from abc import ABC 
 
 __all__ = [
-        "Controller", "KeyboardController", "MouseController"
-        ]
+    "Controller", "KeyboardController", "MouseController"
+]
 
 _add_prefix = lambda x: f"control_{x}"
 
 @managed_name(transform=_add_prefix)
 class Controller(ABC):
+    @property
+    def isActive(self) -> bool:
+        return self._active
+
+    def getID(self):
+        return self.name
+
     @property
     def inputs(self):
         return NotImplemented
@@ -102,8 +110,8 @@ class KeyboardController(Controller):
         return [self.keyInput]
 
     # another way is to use dict
-    def __init__(self *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        Controller.__init__(self,*args, **kwargs)
         self.key_str_sep = '\;'
         self.key_maps: Dict[str, Callable] = {}
         self.keyInput:KeyboardInput = None 
@@ -154,6 +162,7 @@ class KeyboardController(Controller):
                     self.log(e)
                     self.log(traceback.format_exc())
                     self.log("-------------------------------------")
+                    raise e # FIXME
         return Task.cont
 
     @property
@@ -164,7 +173,7 @@ class KeyboardController(Controller):
 class MouseController(Controller):
     @property
     def inputs(self):
-        return [self.mouseInput]
+        return [self.mouseInput, self.screenRegionInput]
 
     @property
     def update_tasks(self):
@@ -176,9 +185,16 @@ class MouseController(Controller):
 
         # self.inputs = []
         self.mouseInput:MouseWatcher = None 
+        self.screenRegionInput: ScreenRegionInput = None 
 
     def setMouseInput(self, mouse_input:MouseWatcher):
         self.mouseInput = mouse_input
+
+    def setScreenRegionInput(self,  screenRegionInput:ScreenRegionInput):
+        self.screenRegionInput = screenRegionInput
+        center_x, center_y = self.screenRegionInput.getCenter()
+        self.prev_mouse_x = center_x
+        self.prev_mouse_y = center_y
 
     def getMouseXY(self):
         ret= tuple(
