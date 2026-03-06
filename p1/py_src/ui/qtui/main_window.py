@@ -73,12 +73,10 @@ class MultiViewQtGUI(ManagedDockMainWindow):
 
     def activate_widget_controllers(self, widget: QPanda3DWidget):
         # TODO: wrap this 
-        print("activate",widget.getID())
         widget_id = widget.getID()
         rows = self.widget_control_mapping_df.index[
             self.widget_control_mapping_df["widget_id"] == widget_id
         ]
-        print(rows)
         for idx in rows:
             controller_name = self.widget_control_mapping_df.at[idx, "controller_name"]
             controller = self.getController(controller_name)

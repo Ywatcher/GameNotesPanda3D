@@ -9,21 +9,7 @@ from datetime import datetime
 import numpy as np
 from direct.task import Task
 
-# from panda3d.core import (
-    # Geom,
-    # GeomNode,
-    # GeomTriangles,
-    # GeomVertexData,
-    # GeomVertexFormat,
-    # GeomVertexWriter,
-    # GeomEnums,
-    # NodePath,
 
-    # PointLight,
-    # DirectionalLight,
-    # CardMaker,
-     # WindowProperties
-# )
 from direct.showbase import DirectObject
 # TODO:
 # implement a PlayerController with InputState
@@ -67,6 +53,7 @@ class Controller(ABC):
                 # pass
 
     def deactive(self):
+        # print("de")
         self._active = False
         # for i in self.inputs:
             # try:

@@ -1,21 +1,7 @@
 from direct.task import Task
 from typing import List
 
-from panda3d.core import (
-    Geom,
-    GeomNode,
-    GeomTriangles,
-    GeomVertexData,
-    GeomVertexFormat,
-    GeomVertexWriter,
-    GeomEnums,
-    NodePath,
 
-    PointLight,
-    DirectionalLight,
-    CardMaker,
-     WindowProperties
-)
 from direct.showbase import DirectObject
 # TODO:
 # implement a PlayerController with InputState

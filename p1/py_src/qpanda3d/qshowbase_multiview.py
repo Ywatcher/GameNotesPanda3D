@@ -1,9 +1,10 @@
+# -*- coding: utf-8-*-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 # from .QtGui import QCursor
 from PyQt5.QtWidgets import *
 # panda3d imports
-from panda3d.direct import throw_new_frame, init_app_for_gui
+# from panda3d.direct import throw_new_frame, init_app_for_gui
 # from panda3d.core import loadPrcFileData
 # loadPrcFileData("", "window-type none") # Set Panda to draw its main window in an offscreen buffer
 from direct.showbase.DirectObject import DirectObject
@@ -21,10 +22,8 @@ from .mouse_watcher import QMouseWatcher
 # from QPanda3D import Panda3DWorld
 import builtins
 from datetime import datetime
-from direct.showbase.ShowBase import ShowBase
 from game.events import Events
 from util.log import Loggable
-from panda3d_game.camera_controller import CameraController, PlayerCamController
 from panda3d.core import (
     WindowProperties,
     KeyboardButton,
@@ -45,25 +44,12 @@ class QShowBaseMultiView(QObject, MultiViewShowBase):
         super().__init__()
         if not hasattr(self, "isQShowBaseInit"):
             self.focus = None # as previous "parent"
-            # QObject.__init__(self)
-            # MultiViewShowBase.__init__(self)
-           
-            # self.screenTexture = Texture()
-            # self.buff = None
-            # self.clear_color = clear_color
             self.name = name
             self._isQtStart = False
             self.isQShowBaseInit = True
-            # self.size = size
-            # self.cams = []
-            # self.views = []
-            # self.mouseWatcherNode = QMouseWatcherNode()
-            # self.pipe = GraphicsPipeSelection.get_global_ptr().make_pipe()
 
     def setFocus(self, widget:QWidget):
-        # print("set focus",type(widget))
         assert isinstance(widget, QWidget),  f"{type(widget)}"
-        # self.MouseWatcherNode.setParent(widget)
         self.focus = widget
 
     
@@ -93,13 +79,11 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
             self.isControlShowBaseInit = True
             self.controllers = {}
             self.is_cursor_in_game: bool = False
-            # self.cursor_in()
             self.default_cam_pos = (0, -10, 1)
             self.display_camera.setPos(*self.default_cam_pos)
             self.key_input = KeyboardInput()
-            # self.cam_controller = PlayerCamController(self.display_camera)
-            # self.cam_controller.setRef(self.rdr_scene)  # FIXME: autoset
             # control ------------ FIXME
+            # Do not use these
             # self.buttonThrowers[0].node().setButtonDownEvent('button')
             # self.buttonThrowers[0].node().setButtonUpEvent('button-up')
             # self.accept("space", lambda: print(self.camera.get_pos()))
@@ -119,18 +103,8 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
             self.taskMgr.add(self.handle_actions, "handle_actions",sort=300)
             # self.taskMgr.add(self.cam_controller.update, "update_cam_controller")
             # self.taskMgr.add(self.handle_actions, "handle_actions")
-            # self.delta_h = 0
-            # self.delta_p = 0
-            # self.delta_r = 0
         ControlShowBaseMultiView.__init__(self, False, False) # inits context showbase 
 
-    def startQt(self):
-        print("startQt") # not used 
-        # self.getMouseXY = self.getMouseXY_Q
-        # self.movePointer = self.movePointer_Q
-        # self.center_mouse = self.center_mouse_Q
-        # self.cam_sensitivity = 10
-        # QShowBase.startQt(self)
 
     def set_keyboard_input_for_controller(self, control_id):
         self.controllers[control_id].setKeyInput(self.key_input)
@@ -143,24 +117,6 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
         self.controllers[control_id].setScreenRegionInput(widget_region_input)
 
         
-
-
-
-
-    # def render_cam_to_widget(self, cam, widget, name):
-        # # FIXME:put into gui 
-
-        # view = self.render_cam(cam, name)
-        # widget = widget(view)
-        # control = Pla
-        
-    
-
-    # def getMouseXY_Q(self):
-        # ret= tuple(
-            # self.mouseWatcherNode.getMouse()
-        # )
-        # return ret
 
     def movePointer(self, device, x,y):
         # print("move")

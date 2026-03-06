@@ -1,3 +1,5 @@
+# -*- coding: utf-8-*-
+
 class WidgetContextManger:
     def set_focus_in(self,widget):
         pass 

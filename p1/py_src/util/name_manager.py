@@ -1,3 +1,6 @@
+# -*- coding: utf-8-*-
+
+
 """
 manage names of certain class of objects,
 so that they have legal identifier 

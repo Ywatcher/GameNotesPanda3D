@@ -115,12 +115,7 @@ class Console(ABC, Loggable):
         self.out_buffer = PyQueue()
         self.log_buffer = PyQueue()
         self.his_buffer = PyQueue()
-        # if not hasattr(self, "parsers"):
-            # self.parsers = {} 
-        # self._build_parsers()
 
-    # def _build_parsers(self):
-        # pass
 
     def execute(self, command, namespace=None, parsed=False, *args, **kwargs):
         try:
@@ -149,12 +144,6 @@ class Console(ABC, Loggable):
             traceback.print_exc()
 
     def get_cmd_parser(self, command) -> Optional[argparse.ArgumentParser]:
-        # if command in self.command_dict:
-            # cmd_item = self.command_dict[command]
-            # if isinstance(cmd_item,(list, tuple)) \
-                    # and len(cmd_item) >= 3:
-                # return cmd_item[2]
-        # return None
         return self.parsers.get(command)
 
 

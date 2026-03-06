@@ -23,6 +23,7 @@ from QPanda3D.QPanda3D_Modifiers_Translation import QPanda3D_Modifier_translatio
 from qtutil.qobserver import *
 from qtutil.event import *
 from util.name_manager import managed_name
+from panda3d_game.render_view.render_view import RenderView
 
 __all__ = ["QPanda3DWidget", "Synchronizer"]
 
@@ -96,7 +97,7 @@ def get_panda_key_modifiers_prefix(evt):
     return prefix
 
 
-from panda3d_game.render_view.render_view import RenderView
+
 
 
 # =============================================================================

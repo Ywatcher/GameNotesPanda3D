@@ -1,11 +1,9 @@
 # -*- coding: utf-8-*-
 
 from queue import Queue as PyQueue
-from typing import Callable
 # from panda3d.core import Vec3
 from console.console import Console
 from PyQt5.QtCore import Qt
-from game.events import Events
 from qpanda3d.widgets import QPanda3DWidget
 from ui.qtui.managed_docks import ManagedDock
 import argparse

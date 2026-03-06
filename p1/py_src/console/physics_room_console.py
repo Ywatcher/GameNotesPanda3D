@@ -37,9 +37,6 @@ class PhyscRoomConsole(Console):
     def objects(self):
         return self.showbase.objects
 
-    # def log(self, s: str, logtype="print"):
-        # # TODO: put to buffer
-        # print(s)
 
     # commands
     def lst_objs(self, *args):
