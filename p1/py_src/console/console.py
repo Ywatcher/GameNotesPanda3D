@@ -32,6 +32,16 @@ class Console(ABC, Loggable):
         # else:
         #     raise NotImplementedError
 
+    def get_namespace(self,cmd):
+        l = cmd.split("::")
+        if len(l)==2:
+            return l[0], l[1]
+        elif len(l) == 1:
+            return None, l[0]
+        else:
+            return NotImplemented
+        
+
     @property
     def command_list(self) -> List[str]:
         return list(self.command_dict.keys())
@@ -43,7 +53,18 @@ class Console(ABC, Loggable):
             for cmd in self.command_list
         ]
 
-    def _help(self):
+    def _help(self, cmd_name:str=None):
+        if cmd_name:
+            if cmd_name in self.command_dict:
+                func, doc = self.command_dict[cmd_name]
+                self.log(f"{cmd_name} : {doc}", logtype="output")
+                parser = getattr(func, "_argparser", None)
+                if parser:
+                    self.log(parser.format_help(), logtype="output")
+                return
+            else: 
+                self.log(f"No help found for command '{cmd_name}'", logtype="output")
+                return
         # self.log(str(self.command_list), logtype="output")
         # TODO: with alias
         command_doc_lst = [
@@ -51,6 +72,9 @@ class Console(ABC, Loggable):
             for cmd in self.command_dict.keys()
         ]
         self.log("\n".join(command_doc_lst), logtype="output")
+
+    # def _help_func_on_dict(self, cmd_name, cmd_dict):
+
 
     @staticmethod
     def parse(console:"Console", s:str):
@@ -91,20 +115,20 @@ class Console(ABC, Loggable):
         self.out_buffer = PyQueue()
         self.log_buffer = PyQueue()
         self.his_buffer = PyQueue()
-        if not hasattr(self, "parsers"):
-            self.parsers = {} 
-        self._build_parsers()
+        # if not hasattr(self, "parsers"):
+            # self.parsers = {} 
+        # self._build_parsers()
 
-    def _build_parsers(self):
-        pass
+    # def _build_parsers(self):
+        # pass
 
     def execute(self, command, namespace=None, parsed=False, *args, **kwargs):
-        print(self.parsers,"parsers")
         try:
             if (namespace is None and not self.is_local) \
                     or (namespace==self.namespace):
                 cmd_func = self.get_cmd_func(command)
-                parser = self.get_cmd_parser(command)
+                # parser = self.get_cmd_parser(command)
+                parser = getattr(cmd_func, "_argparser", None)
                 if parser is not None and not parsed:
                     parsed_args = parser.parse_args(list(args))
                     kwargs = vars(parsed_args)
@@ -230,10 +254,48 @@ class UnionConsole(Console):
 
      #TODO
     # overwrite lst_cmd
-    def _help(self):
+    def _help(self,cmd: Optional[str] = None):
         """
         重载 help：默认打印每个子 console 的 help。
         """
+
+        if cmd is not None: 
+            namespace, cmd_name = self.get_namespace(cmd)
+            namespace_console = None
+            if namespace is None or not self.namespaced_consoles:
+                # with no namespace
+                title = cmd_name
+                cmd_dict = self.command_dict
+            elif namespace not in self.namespaced_consoles:
+                # namespace not found
+                title = f"namespace:{namespace} not found; \n{cmd_name}"
+                cmd_dict = self.command_dict
+            else:
+                # has correct namespace
+                title = f"{namespace}::{cmd_name}"
+                cmd_dict = self.namespaced_consoles[namespace].command_dict
+                namespace_console = self.namespaced_consoles[namespace]
+            self.log(title, logtype="output")
+            if cmd_name in cmd_dict:
+                func, doc = cmd_dict[cmd]
+                self.log(f"{cmd_name} : {doc}", logtype="output")
+                parser = getattr(func, "_argparser", None)
+                if parser:
+                    self.log(parser.format_help(), logtype="output")
+                self.log("",logtype="output")
+                return
+            else: 
+
+                if namespace_console:
+                    # if command not found in namespace, then print help for the namespace
+                    self.log(f"No help found for command '{namespace}::{cmd_name}'", logtype="output")
+                    print_namespace_console._help()
+                else:
+                    self.log(f"No help found for command '{cmd_name}'", logtype="output")
+                return
+        # self.log(str(self.command_list), logtype="output")
+        # TODO: with alias
+
         # 如果只有 union 自身的命令，可以直接打印
         if not self.namespaced_consoles:
             super()._help()

@@ -126,11 +126,11 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
 
     def startQt(self):
         print("startQt") # not used 
-        self.getMouseXY = self.getMouseXY_Q
-        self.movePointer = self.movePointer_Q
-        self.center_mouse = self.center_mouse_Q
-        self.cam_sensitivity = 10
-        QShowBase.startQt(self)
+        # self.getMouseXY = self.getMouseXY_Q
+        # self.movePointer = self.movePointer_Q
+        # self.center_mouse = self.center_mouse_Q
+        # self.cam_sensitivity = 10
+        # QShowBase.startQt(self)
 
     def set_keyboard_input_for_controller(self, control_id):
         self.controllers[control_id].setKeyInput(self.key_input)
@@ -171,6 +171,7 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
 
         window_center_x = self.focus.width() // 2
         window_center_y = self.focus.height() // 2
+        print("center",window_center_x,window_center_y)
         self.movePointer(0, window_center_x, window_center_y)
         rel_x = -1 + 2 * window_center_x / self.focus.width()
         rel_y = -1 + 2 * window_center_y / self.focus.height()

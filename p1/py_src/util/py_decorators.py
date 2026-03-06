@@ -142,3 +142,9 @@ def forward_methods_to(member_name, method_names):
             setattr(cls, name, make_forward(name))
         return cls
     return decorator
+
+def with_parser(parser):
+    def decorator(func):
+        func._argparser = parser
+        return func
+    return decorator

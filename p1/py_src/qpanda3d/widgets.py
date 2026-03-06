@@ -286,6 +286,10 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
         global_x = widget_pos.x() + int(x)
         global_y = widget_pos.y() + int(y)
         #TODO: multi device
+        # print("movepointer--------")
+        # print("widget pos",widget_pos,"xy",x,y,int(x),int(y))
+        # print("global",global_x,global_y)
+        # print("-----")
         QCursor.setPos(global_x,global_y)
 
     # TODO:

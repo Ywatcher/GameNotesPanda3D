@@ -53,6 +53,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
             control.deactive()
 
     def hideCursor(self):
+        return
         self.setCursor(Qt.BlankCursor)
 
     # TODO:
@@ -240,7 +241,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.panda3d.cursorOutSignal.connect(lambda: self.setCursor(Qt.ArrowCursor))
         # FIXME: go back to controller of widget that currently hovering
         self.panda3d.cursorInSignal.connect(self.enablePrevController)
-        self.panda3d.cursorInSignal.connect(lambda: self.setCursor(Qt.BlankCursor))
+        # self.panda3d.cursorInSignal.connect(lambda: self.setCursor(Qt.BlankCursor))
     
         w,c = self.newPanda3DWidgetOnCam(
                 cam=self.panda3d.cam,
