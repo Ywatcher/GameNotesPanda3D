@@ -111,3 +111,40 @@ def selfdecorate(decorator_name: str):
             return inner(self, *args, **kwargs)
         return outer
     return decorator
+
+def forward_methods_to(member_name, method_names):
+    """
+    Class decorator to automatically forward specified methods
+    to a specific member.
+    for example: 
+    class Element:
+    def foo(self, x):
+        print("Element foo", x)
+    def bar(self, y):
+        print("Element bar", y)
+    def baz(self, z):
+        print("Element baz", z)
+
+    # Forward foo and bar from Container to Container.element
+    @forward_methods_to("element", ["foo", "bar"])
+    class Container:
+        def __init__(self):
+            self.element = Element()
+    """
+    def decorator(cls):
+        for name in method_names:
+            # define a function that calls the member's method
+            def make_forward(name):
+                def forward(self, *args, **kwargs):
+                    target = getattr(self, member_name)
+                    return getattr(target, name)(*args, **kwargs)
+                return forward
+            setattr(cls, name, make_forward(name))
+        return cls
+    return decorator
+
+def with_parser(parser):
+    def decorator(func):
+        func._argparser = parser
+        return func
+    return decorator

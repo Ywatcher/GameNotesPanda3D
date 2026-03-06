@@ -5,26 +5,114 @@
 # import random
 import numpy as np
 from direct.task import Task
-from panda3d.core import Camera, PerspectiveLens
+from panda3d.core import (
+        Camera, PerspectiveLens,
+        LVector3f
+)
 # controller
 # player controller
 # agent controller
 # import gizeh as gz
 
 from util.log import Loggable
-from panda3d_game.controller import PlayerController
+from panda3d_game.render_view.render_view import RenderView
 
-class CameraController:
+from typing import Union
+from util.py_decorators import forward_methods_to
+from panda3d_game.forwarded_attributes.camera_attributes import forwarded_camera_methods
+from .controller import MouseController, KeyboardController
+
+@forward_methods_to("camera", forwarded_camera_methods)
+class CameraController(MouseController):
+    
+    type_name = "camctrl"
+
+    @classmethod
+    def _default_basename(cls):
+        return cls.type_name
+    
     from panda3d.core import (
         LVector3f,
         LQuaternionf
     )
 
-    def __init__(self, camera: Camera):
+    def __init__(
+            self, camera: Union[Camera, RenderView],
+            sensitivity = .1,
+            flip_x = False,
+            flip_y = False,
+            *args, **kwargs
+            ):
+        MouseController.__init__(self, *args, **kwargs)
         self.camera = camera
         self.move_step = .5
         self.turn_step = 5
-    # FIXME: use dict
+        self.cam_sensitivity = sensitivity
+        self.delta_h = 0
+        self.delta_p = 0
+        self.delta_r = 0
+        self.flip_x = flip_x
+        self.flip_y = flip_y
+        self.use_centering = True # TODO
+
+    def update_camera(self, task: Task):
+        """Update camera to follow mouse movement"""
+        if self.mouseInput.hasMouse() and self._active:
+            # # get mouse position (unified to range(-1,1))
+
+            mouse_x, mouse_y = self.getMouseXY()
+
+            if self.use_centering and self.screenRegionInput is not None:
+                # center_x, center_y = self.screenRegionInput.getCenter()
+                center_x, center_y = 0,0
+                self.prev_mouse_x = center_x
+                self.prev_mouse_y = center_y
+
+            # # calculate the shift of the mouse
+            delta_x = mouse_x - self.prev_mouse_x
+            delta_y = mouse_y - self.prev_mouse_y
+
+            camera_h = self.camera.getH() - delta_x * self.cam_sensitivity * self.flip_x_coefficient
+            camera_p = self.camera.getP() - delta_y * self.cam_sensitivity * self.flip_y_coefficient
+            self.camera.setH(camera_h)
+            self.camera.setP(camera_p)
+
+            self.delta_h = delta_x * self.cam_sensitivity
+            self.delta_p = delta_y * self.cam_sensitivity
+
+            if not self.use_centering:
+                self.prev_mouse_x = mouse_x
+                self.prev_mouse_y = mouse_y
+
+        return task.cont
+    
+    @property
+    def flip_x_coefficient(self) -> int:
+        return -2*int(self.flip_x) + 1
+
+    @property
+    def flip_y_coefficient(self) -> int:
+        return -2*int(self.flip_y) + 1
+
+        
+
+    
+
+class KeyCamController(KeyboardController, CameraController):
+
+    
+
+    @property
+    def inputs(self):
+        return [self.keyInput,self.mouseInput]
+
+    @property
+    def update_tasks(self):
+        return [self.update_keyboard,self.update_camera]
+
+    def __init__(self,camera,sensitivity=.1,flip_x=False,flip_y=False, *args, **kwargs):
+        CameraController.__init__(self,camera,sensitivity,flip_x,flip_y, *args, **kwargs)
+        KeyboardController.__init__(self, *args, **kwargs)
 
     def call_move_forward(self, task):
         self.move(task, self.move_step)
@@ -69,43 +157,20 @@ class CameraController:
         new_H = self.getH() + angle
         self.setH(new_H)
 
-    def setPos(self, *args):
-        self.camera.setPos(*args)
-
-    def setHpr(self, *args):
-        self.camera.setHpr(*args)
-
-    def setH(self, *args):
-        self.camera.setH(*args)
-
-    def setP(self, *args):
-        self.camera.setP(*args)
-
-    def setR(self, *args):
-        self.camera.setR(*args)
-
-    def setZ(self, *args):
-        self.camera.setZ(*args)
-
-    def getQuat(self, *args):
-        return self.camera.getQuat(*args)
-
-    def getPos(self, *args):
-        return self.camera.getPos(*args)
-
-    def getZ(self, *args):
-        return self.camera.getZ(*args)
 
     def toggle_default(self, task):
         pass
 
 
-class PlayerCamController(CameraController, PlayerController):
-    def __init__(self, camera, name="PlayerCamController"):  # TODO: input keymap dict
-        Loggable.__init__(self, name)
-        CameraController.__init__(self, camera)  # TODO
-        PlayerController.__init__(self)
-        self.name = name
+class PlayerCamController(KeyCamController,Loggable):
+    def __init__(
+            self, camera,  sensitivity=.1,flip_x=False,flip_y=False,
+            *args, **kwargs
+            ):  # TODO: input keymap dict
+        KeyCamController.__init__(
+                self,camera,sensitivity,flip_x,flip_y,*args, **kwargs)
+        Loggable.__init__(self)
+        # print("controller name:", self.name)
         # from panda3d.core import KeyboardButton
         self.key_maps = {
             'w': self.call_move_forward,

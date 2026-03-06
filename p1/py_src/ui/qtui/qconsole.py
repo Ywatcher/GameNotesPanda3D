@@ -16,6 +16,7 @@ class ConsoleWidget(QPlainTextEdit, Loggable, QObserved):
         self.console = console
         self.setPlaceholderText(self.prompt)
         self.prev_cursor = self.cursor_pos
+        self.put(self.prompt, linebreak=False, prompt=False)
 
 
     @property

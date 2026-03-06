@@ -17,11 +17,12 @@ import builtins
 from panda3d.core import loadPrcFileData, Texture 
 
 from QPanda3D.QPanda3D_Buttons_Translation import QPanda3D_Button_translation
-from QPanda3D.QPanda3D_Keys_Translation import QPanda3D_Key_translation
+from .qpanda3d_keys_translation import QPanda3D_Key_translation
 from QPanda3D.QPanda3D_Modifiers_Translation import QPanda3D_Modifier_translation
 
 from qtutil.qobserver import *
 from qtutil.event import *
+from util.name_manager import managed_name
 
 __all__ = ["QPanda3DWidget", "Synchronizer"]
 
@@ -93,54 +94,81 @@ def get_panda_key_modifiers_prefix(evt):
         prefix += "-"
 
     return prefix
-class QPanda3DWidget(QWidget, QObserved):
+
+
+from panda3d_game.render_view.render_view import RenderView
+
+
+# =============================================================================
+# QPanda3DWidget definition
+# =============================================================================
+# tool class for name management
+_add_prefix = lambda x: f"qp3dwidget_{x}"
+
+@managed_name(transform=_add_prefix, name_attr="widget_id", name_param="widget_id")
+class _ManagedName:
+    @classmethod
+    def _default_basename(cls):
+        return "w"
+# =============================================================================
+
+class QPanda3DWidget(QWidget, QObserved, _ManagedName):
     """
     An interactive panda3D QWidget
     Parent : Parent QT Widget
     FPS : Number of frames per socond to refresh the screen
+    panda3DView: a view from showbase. a showbase can have multiple views
     debug: Switch printing key events to console on/off
     """
 
     def __init__(
             # FIXME: add type hint for panda3DWorld: QControl or QShowBase
-            self, panda3DWorld, parent=None, FPS=60, debug=False,
-        synchronizer=None
+            self, panda3DView:"RenderView", parent=None, FPS=60, debug=False,
+        synchronizer=None, widget_id=None
     ):
         QWidget.__init__(self, parent)
         QObserved.__init__(self)
+        _ManagedName.__init__(self,widget_id=widget_id)
+
+        self.setObjectName(self.widget_id)
 
         # set fixed geometry
-        self.panda3DWorld = panda3DWorld
-        self.panda3DWorld.set_parent(self)
-        # Setup a timer in Qt that runs taskMgr.step() to simulate Panda's own main loop
-        # pandaTimer = QTimer(self)
-        # pandaTimer.timeout.connect()
-        # pandaTimer.start(0)
+        # self.panda3DWorld = panda3DWorld
+        # self.panda3DWorld.set_parent(self)
+        self.panda3DView = panda3DView
+        self.view_id = panda3DView.name  # FIXME 
+        
+        # TODO: set self to be a focus? 
+
 
         self.setFocusPolicy(Qt.StrongFocus)
-
-        # Setup another timer that redraws this widget in a specific FPS
-        # redrawTimer = QTimer(self)
-        # redrawTimer.timeout.connect(self.update)
-        # redrawTimer.start(1000/FPS)
 
         self.paintSurface = QPainter()
         self.rotate = QTransform()
         self.rotate.rotate(180)
         self.out_image = QImage()
 
-        size = self.panda3DWorld.cam.node().get_lens().get_film_size()
+        # size = self.panda3DWorld.cam.node().get_lens().get_film_size()
+        size = self.panda3DView.get_lens().get_film_size()
         self.initial_film_size = QSizeF(size.x, size.y)
         self.initial_size = self.size()
 
-        # if synchronizer is None:
-        #     self.synchronizer = QPanda3DSynchronizer(self, FPS)
-        # else:
-        #     self.synchronizer = synchronizer
-        # if not self.synchronizer.isActive():
-        #     self.synchronizer.start()
 
         self.debug = debug
+
+    def getID(self):
+        return self.widget_id
+
+    def getViewID(self):
+        return self.panda3DView.name
+
+    def sendToMessenger(self,event_str,args=None):
+        # event_str_with_widget = f"{self.view_id};event_str"
+        # messenger.send(event_str_with_widget, args)
+        if args is None:
+            args = []
+        messenger.send(event_str,args)
+        
 
     def mousePressEvent(self, evt):
         button = evt.button()
@@ -148,7 +176,7 @@ class QPanda3DWidget(QWidget, QObserved):
             b = f"{get_panda_key_modifiers_prefix(evt)}{QPanda3D_Button_translation[button]}"
             if self.debug:
                 print(b)
-            messenger.send(b,[{"x":evt.x(),"y":evt.y()}])
+            self.sendToMessenger(b,[{"x":evt.x(),"y":evt.y()}])
         except Exception as e:
             print("Unimplemented button. Please send an issue on github to fix this problem")
             print(e)
@@ -159,7 +187,7 @@ class QPanda3DWidget(QWidget, QObserved):
             b = "mouse-move"
             if self.debug:
                 print(b)
-            messenger.send(b,[{"x":evt.x(),"y":evt.y()}])
+            self.sendToMessenger(b,[{"x":evt.x(),"y":evt.y()}])
         except Exception as e:
             print("Unimplemented button. Please send an issue on github to fix this problem")
             print(e)
@@ -170,7 +198,7 @@ class QPanda3DWidget(QWidget, QObserved):
             b = f"{get_panda_key_modifiers_prefix(evt)}{QPanda3D_Button_translation[button]}-up"
             if self.debug:
                 print(b)
-            messenger.send(b,[{"x":evt.x(),"y":evt.y()}])
+            self.sendToMessenger(b,[{"x":evt.x(),"y":evt.y()}])
         except Exception as e:
             print("Unimplemented button. Please send an issue on github to fix this problem")
             print(e)
@@ -181,7 +209,7 @@ class QPanda3DWidget(QWidget, QObserved):
             w = f"{get_panda_key_modifiers_prefix(evt)}wheel"
             if self.debug:
                 print(f"{w} {delta}")
-            messenger.send(w, [{"delta": delta}])
+            self.sendToMessenger(w, [{"delta": delta}])
         except Exception as e:
             print("Unimplemented button. Please send an issue on github to fix this problem")
             print(e)
@@ -195,11 +223,11 @@ class QPanda3DWidget(QWidget, QObserved):
             k = f"{get_panda_key_modifiers_prefix(evt)}{QPanda3D_Key_translation[key]}"
             if self.debug:
                 print(k)
-            messenger.send(k)
+            self.sendToMessenger(k)
             # FIXME: if k in the list that can be sent
-            messenger.send('button', [k])
+            self.sendToMessenger('button', [k])
         except Exception as e:
-            print("Unimplemented key. Please send an issue on github to fix this problem")
+            print("Unimplemented key. Please send an issue on github to fix this problem",key)
             print(e)
 
     def keyReleaseEvent(self, evt):
@@ -209,34 +237,43 @@ class QPanda3DWidget(QWidget, QObserved):
             k = f"{get_panda_key_modifiers_prefix(evt)}{QPanda3D_Key_translation[key]}-up"
             if self.debug:
                 print(k)
-            messenger.send(k)
+            self.sendToMessenger(k)
             # FIXME:
-            messenger.send('button-up', [k.strip('-up')])
+            self.sendToMessenger('button-up', [k.strip('-up')])
         except Exception as e:
-            print("Unimplemented key. Please send an issue on github to fix this problem")
+            print("Unimplemented key. Please send an issue on github to fix this problem", key)
             print(e)
 
     def resizeEvent(self, evt):
-        lens = self.panda3DWorld.cam.node().get_lens()
+        # FIXME
+        lens = self.panda3DView.get_lens()
         lens.set_film_size(
             self.initial_film_size.width() * evt.size().width()
             / self.initial_size.width(),
             self.initial_film_size.height() * evt.size().height()
             / self.initial_size.height()
         )
-        self.panda3DWorld.buff.setSize(evt.size().width(), evt.size().height())
+        self.panda3DView.main_buffer.setSize(evt.size().width(), evt.size().height())
+
+    closed = pyqtSignal(object)
+
+    def closeEvent(self, event):
+        # send object itself when closed
+        # the object will not be deleted immediately
+        self.closed.emit(self)
+        super().closeEvent(event)
 
     def minimumSizeHint(self):
         return QSize(400, 300)
 
     # Use the paint event to pull the contents of the panda texture to the widget
     def paintEvent(self, event):
-        if self.panda3DWorld.screenTexture.mightHaveRamImage():
-            self.panda3DWorld.screenTexture.setFormat(Texture.FRgba32)
-            data = self.panda3DWorld.screenTexture.getRamImage().getData()
+        if self.panda3DView.screenTexture.mightHaveRamImage():
+            self.panda3DView.screenTexture.setFormat(Texture.FRgba32)
+            data = self.panda3DView.screenTexture.getRamImage().getData()
             img = QImage(
-                data, self.panda3DWorld.screenTexture.getXSize(), 
-                self.panda3DWorld.screenTexture.getYSize(),
+                data, self.panda3DView.screenTexture.getXSize(), 
+                self.panda3DView.screenTexture.getYSize(),
                 QImage.Format_ARGB32
             ).mirrored()
             self.paintSurface.begin(self)
@@ -249,6 +286,10 @@ class QPanda3DWidget(QWidget, QObserved):
         global_x = widget_pos.x() + int(x)
         global_y = widget_pos.y() + int(y)
         #TODO: multi device
+        # print("movepointer--------")
+        # print("widget pos",widget_pos,"xy",x,y,int(x),int(y))
+        # print("global",global_x,global_y)
+        # print("-----")
         QCursor.setPos(global_x,global_y)
 
     # TODO:
@@ -261,29 +302,9 @@ class QPanda3DWidget(QWidget, QObserved):
 
     def setFocus(self, cursor_in=True):
         QWidget.setFocus(self)
-        if cursor_in:
-            self.panda3DWorld.cursor_in()
+        # TODO: call manager for complex bebaviours
+        # if cursor_in:
+            # self.panda3DView.cursor_in()
 
     
 
-    
-    # def update_camera_tmp(self, task):
-    #     """updata camera to follow mouse movement"""
-    #     if self.mouseWatcherNode.hasMouse() and self.is_cursor_in_game:
-    #         # get mouse position (unified to range(-1,1))
-    #         mouse_x, mouse_y = self.getMouseXY() #FIXME
-    #         # calculate the shift of the mouse
-    #         delta_x = mouse_x - self.prev_mouse_x
-    #         delta_y = mouse_y - self.prev_mouse_y
-
-    #         # 调整摄像机的水平旋转和俯仰角度
-    #         camera_h = self.display_camera.getH() - delta_x * 0.1
-    #         camera_p = self.display_camera.getP() - delta_y * 0.1
-
-    #         # 设置新的摄像机角度
-    #         self.display_camera.setH(camera_h)
-    #         self.display_camera.setP(camera_p)
-
-    #         # 将鼠标指针重置到窗口的中心
-    #         self.center_mouse()
-    #     return task.cont
