@@ -19,6 +19,7 @@ QPanda3DWidget,
 from panda3d_game.controller import Controller
 
 
+from console import UnionConsole
 from config.style import styleSheet
 from qtutil.event import *
 from util.log import *
@@ -27,6 +28,7 @@ from ui.qtui.qconsole import *
 from ui.qtui.qlogger import *
 from ui.qtui.qdataframe import DataFrameModel
 from ui.qtui.managed_docks import ManagedDock, ManagedDockMainWindow
+from ui.qtui.ui_interface_console import MultiViewUIConsole
 
 class FocusFilter(QObject):
     # TODO: move to qtutil
@@ -79,6 +81,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
             controller = self.getController(controller_name)
             controller.enactive()
             self.widget_control_mapping_df.at[idx, "active"] = True
+        DataFrameModel.refresh(self.widget_control_mapping_df)
 
     def deactivate_widget_controllers(self, widget: QPanda3DWidget):
         widget_id = widget.getID()
@@ -90,7 +93,16 @@ class MultiViewQtGUI(ManagedDockMainWindow):
             controller = self.getController(controller_name)
             controller.deactive()
             self.widget_control_mapping_df.at[idx, "active"] = False
+        DataFrameModel.refresh(self.widget_control_mapping_df)
 
+    def handle_widget_closed(self, widget):
+        widget_id = widget.getID()
+        # 删除对应行
+        df = self.widget_control_mapping_df
+        rows = df.index[df["widget_id"] == widget_id]
+        if len(rows) > 0:
+            df.drop(rows, inplace=True)
+            DataFrameModel.refresh(df)  # 刷新视图
 
     def newPanda3DWidgetOnCam(self, cam, name=None, dock=None):
         view = self.panda3d.render_cam(cam, name=name, new_view="auto")
@@ -101,6 +113,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
                 widget_id=name,
                 synchronizer=self.synchronizer)
         widget_id = new_widget.getID()
+        new_widget.closed.connect(self.handle_widget_closed)
         self.synchronizer.addWidget(new_widget)
         if dock is not None:
             dock.setWidget(new_widget)
@@ -122,6 +135,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
             control_id,
             is_active
         ]
+        DataFrameModel.refresh(self.widget_control_mapping_df)
         # -----------------------------
         return new_widget, controller
 
@@ -166,18 +180,11 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         super().__init__()
         self.FPS = FPS
         # Create three dock widgets
-        # self.dock_top_left = QDockWidget("Game Camera", self)
-        # self.dock_bottom_left = QDockWidget("Console", self)
-        # self.dock_right = QDockWidget("Logger", self)
         self.dock_top_left = self.create_dock(name="top_left", title="Game Camera", area=Qt.LeftDockWidgetArea)
         self.dock_bottom_left = self.create_dock(name="bottom_left", title="Console")
         self.dock_right = self.create_dock(name="right", title="Logger", area=Qt.RightDockWidgetArea)
 
-
         # Add the docks to the main window
-        # self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_top_left)
-        # self.addDockWidget(Qt.RightDockWidgetArea, self.dock_right)
-        # Split the left dock area vertically (top and bottom)
         self.splitDockWidget(self.dock_top_left, self.dock_bottom_left, Qt.Vertical)
         self.resizeDocks([self.dock_top_left, self.dock_bottom_left], [200, 200], Qt.Vertical)
         self.setWindowTitle(window_title)
@@ -196,15 +203,18 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.prev_active_controller = None
 
         self.widget_control_mapping_df = pd.DataFrame(
-                columns=# @managed_name 会生成 dock_name[
+                columns=[
                     "widget_id", "controller_name", "active", 
                     # "minimized"
                 ])
+        self.widget_control_mapping_model = DataFrameModel.get_model(self.widget_control_mapping_df)
 
 
         self.startGame()
         self.panda3d.log("game start")
-        self.console = self.get_console()
+        self.ui_console = self.getUIConsole()
+        self.game_console = self.get_console()
+        self.console = UnionConsole([self.ui_console, self.game_console])
         self.console_widget.console = self.console
         self.setStyleSheet(styleSheet)
         if stylesheet is not None:
@@ -218,7 +228,8 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.installEventFilter(self.focusFilter)
         self.console_widget.register_qobs(self)
 
-
+    def getUIConsole(self):
+        return MultiViewUIConsole(self)
 
 
     def startGame(self):
@@ -252,6 +263,28 @@ class MultiViewQtGUI(ManagedDockMainWindow):
     def get_console(self):
         raise NotImplementedError
 
+    def show_widget_control_df(self, dock):
+        # TODO show data frame on dock 
+        # command: currently takes only "widget-control" as df name. since we do not have other dfs 
+        from PyQt5.QtWidgets import QTableView
+
+        # 创建 TableView 或复用已有的
+        table_view = QTableView()
+        dock.setWidget(table_view)
+
+        # 获取 DataFrame 的模型
+        # model = DataFrameModel.get_model(self.widget_control_mapping_df)
+        model = self.widget_control_mapping_model
+
+        # 绑定模型到 TableView
+        table_view.setModel(model)
+
+        # 可选：调整列宽自动填充
+        table_view.horizontalHeader().setStretchLastSection(True)
+        table_view.resizeColumnsToContents()
+
+        # 保存引用，如果以后想刷新或操作 table_view
+        self._widget_control_table_view = table_view
 
 
 

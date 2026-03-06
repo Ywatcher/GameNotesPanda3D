@@ -255,6 +255,14 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
         )
         self.panda3DView.main_buffer.setSize(evt.size().width(), evt.size().height())
 
+    closed = pyqtSignal(object)
+
+    def closeEvent(self, event):
+        # send object itself when closed
+        # the object will not be deleted immediately
+        self.closed.emit(self)
+        super().closeEvent(event)
+
     def minimumSizeHint(self):
         return QSize(400, 300)
 
