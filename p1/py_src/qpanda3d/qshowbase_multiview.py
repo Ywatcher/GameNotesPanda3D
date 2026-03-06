@@ -171,7 +171,7 @@ class QControlMultiView(ControlShowBaseMultiView, QShowBaseMultiView):
 
         window_center_x = self.focus.width() // 2
         window_center_y = self.focus.height() // 2
-        print("center",window_center_x,window_center_y)
+        # print("center",window_center_x,window_center_y)
         self.movePointer(0, window_center_x, window_center_y)
         rel_x = -1 + 2 * window_center_x / self.focus.width()
         rel_y = -1 + 2 * window_center_y / self.focus.height()

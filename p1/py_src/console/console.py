@@ -240,6 +240,11 @@ class UnionConsole(Console):
         self.command_dict.update({
             "h": (self._help, "print help")
             })
+        for ns, console in self.namespaced_consoles.items():
+            orig_log = console.log
+            def proxy_log(s, logtype="print", _orig=orig_log):
+                return self.log(s, logtype)
+            console.log = proxy_log
 
 
     def execute(self, command, namespace=None, *args, **kwargs):

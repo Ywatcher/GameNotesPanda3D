@@ -53,7 +53,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
             control.deactive()
 
     def hideCursor(self):
-        return
+        # return
         self.setCursor(Qt.BlankCursor)
 
     # TODO:
@@ -73,10 +73,12 @@ class MultiViewQtGUI(ManagedDockMainWindow):
 
     def activate_widget_controllers(self, widget: QPanda3DWidget):
         # TODO: wrap this 
+        print("activate",widget.getID())
         widget_id = widget.getID()
         rows = self.widget_control_mapping_df.index[
             self.widget_control_mapping_df["widget_id"] == widget_id
         ]
+        print(rows)
         for idx in rows:
             controller_name = self.widget_control_mapping_df.at[idx, "controller_name"]
             controller = self.getController(controller_name)
@@ -150,8 +152,9 @@ class MultiViewQtGUI(ManagedDockMainWindow):
                 # view = widget.panda3DView
                 # self.panda3d.setFocus(view)
                 # FIXME: set view 
+                if previous_widget is not None:
+                    self.deactivate_widget_controllers(previous_widget)
                 self.panda3d.setFocus(widget)
-                print(self.panda3d.focus)
                 self.panda3d.center_mouse()
                 self.panda3d.cursor_in() # disables mouse, centering mouse  
                 # TODO: set that row to be active
@@ -159,8 +162,10 @@ class MultiViewQtGUI(ManagedDockMainWindow):
                 self.activate_widget_controllers(widget) 
             else:
                 self.panda3d.cursor_out() # enables mouse
-            if isinstance(previous_widget, QPanda3DWidget):
-                self.deactivate_widget_controllers(widget)
+            # FIXME
+            # if isinstance(previous_widget, QPanda3DWidget):
+                # self.deactivate_widget_controllers(widget)
+                
             
 
     def setFocusByName(self, name:str):
@@ -210,7 +215,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
                 ])
         self.widget_control_mapping_model = DataFrameModel.get_model(self.widget_control_mapping_df)
 
-
+        self.cameras = {} # TODO 
         self.startGame()
         self.panda3d.log("game start")
         self.ui_console = self.getUIConsole()
@@ -229,6 +234,9 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.installEventFilter(self.focusFilter)
         self.console_widget.register_qobs(self)
 
+        self.cameras["default"] = self.panda3d.cam
+        print(self.cameras)
+
     def getUIConsole(self):
         return MultiViewUIConsole(self)
 
@@ -241,7 +249,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.panda3d.cursorOutSignal.connect(lambda: self.setCursor(Qt.ArrowCursor))
         # FIXME: go back to controller of widget that currently hovering
         self.panda3d.cursorInSignal.connect(self.enablePrevController)
-        # self.panda3d.cursorInSignal.connect(lambda: self.setCursor(Qt.BlankCursor))
+        self.panda3d.cursorInSignal.connect(lambda: self.setCursor(Qt.BlankCursor))
     
         w,c = self.newPanda3DWidgetOnCam(
                 cam=self.panda3d.cam,

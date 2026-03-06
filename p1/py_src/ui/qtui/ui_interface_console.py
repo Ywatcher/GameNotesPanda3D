@@ -6,6 +6,7 @@ from typing import Callable
 from console.console import Console
 from PyQt5.QtCore import Qt
 from game.events import Events
+from qpanda3d.widgets import QPanda3DWidget
 from ui.qtui.managed_docks import ManagedDock
 import argparse
 from util.py_decorators import with_parser
@@ -148,8 +149,34 @@ class MultiViewUIConsole(Console):
 
 
     def list_camera(self, *args, **kwargs):
-        self.log("not implemented: list_camera")
+        """List all camera names that are currently in self.ui.cameras"""
+        cam_names = list(self.ui.cameras.keys())
+        if cam_names:
+            self.log("Available cameras:\n" + "\n".join(cam_names), logtype="output")
+        else:
+            self.log("No cameras available.", logtype="output")
 
     @with_parser(parser_show_camera())
-    def show_camera(self, *args, **kwargs):
-        self.log("not implemented: show camera")
+    def show_camera(self, dock_id, camera_name):
+        # self.log("not implemented: show camera")
+        """Show the view of a camera in the specified dock"""
+        if camera_name not in self.ui.cameras:
+            self.log(f"Camera '{camera_name}' not found.", logtype="output")
+            return
+
+        cam = self.ui.cameras[camera_name]
+
+        # 获取 dock 对象
+        dock = ManagedDock.get_object(dock_id)
+        if dock is None:
+            self.log(f"No dock named '{dock_id}'", logtype="output")
+            return
+
+        # 调用你已有的方法
+        new_widget, controller = self.ui.newPanda3DWidgetOnCam(cam, name=camera_name, dock=dock)
+
+        # 可选：保存 widget 引用以便后续操作
+        # self.ui.panda3d_widgets[camera_name] = new_widget
+
+        self.log(f"Camera '{camera_name}' shown in dock '{dock_id}'", logtype="output")
+
