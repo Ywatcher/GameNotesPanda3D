@@ -1,11 +1,21 @@
 # -*- coding: utf-8-*-
 
 from typing import Dict
-from PyQt5.QtWidgets import (
-    QWidget, QApplication, QMainWindow,
-    QDockWidget, QTextEdit, QPlainTextEdit
-)
-from PyQt5.QtCore import QObject, QEvent,Qt
+from util.env.qt_env import QtWidgets, QtCore, Qt 
+QWidget        = QtWidgets.QWidget
+QApplication   = QtWidgets.QApplication
+QMainWindow    = QtWidgets.QMainWindow
+QDockWidget    = QtWidgets.QDockWidget
+QTextEdit      = QtWidgets.QTextEdit
+QPlainTextEdit = QtWidgets.QPlainTextEdit
+QObject = QtCore.QObject
+QEvent  = QtCore.QEvent
+# from PyQt5.QtWidgets import (
+    # QWidget, QApplication, QMainWindow,
+    # QDockWidget, QTextEdit, QPlainTextEdit
+# )
+
+# from PyQt5.QtCore import QObject, QEvent,Qt
 from panda3d.core import (
     loadPrcFileData
     )
@@ -180,7 +190,10 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         return 0
         
 
-    def __init__(self, FPS=60, stylesheet=styleSheet, window_title="Three Dock Layout"):
+    def __init__(
+            self, FPS=60, stylesheet=styleSheet, window_title="Three Dock Layout",
+            prc=None
+            ):
         super().__init__()
         self.FPS = FPS
         # Create three dock widgets
@@ -195,7 +208,9 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.resize(1600, 1200)
         self.panda3d = None
         self.synchronizer = Synchronizer(self.FPS)
-        loadPrcFileData("", "window-type offscreen")
+        if prc is None:
+            prc =  "window-type offscreen"
+        loadPrcFileData("",prc)
         self.console_widget = ConsoleWidget("")
         self.dock_bottom_left.setWidget(self.console_widget)
         self.log_widget = LoggerWidget("Game Logs")

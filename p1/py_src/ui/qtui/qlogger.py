@@ -1,7 +1,9 @@
 # -*- coding: utf-8-*-
 
 import logging
-from PyQt5.QtWidgets import QPlainTextEdit
+from util.env.qt_env import QtWidgets 
+QPlainTextEdit = QtWidgets.QPlainTextEdit
+# from PyQt5.QtWidgets import QPlainTextEdit
 
 
 class QLogHandler(logging.Handler):

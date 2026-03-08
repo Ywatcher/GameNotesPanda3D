@@ -18,8 +18,9 @@ def hex2rgbastr(hexstr,a=1) -> str:
         a
     )
 
-from PyQt5.QtGui import QPalette, QColor
-def hex2pal(hexstr:str) -> QColor:
+# from PyQt5.QtGui import QPalette, QColor
+def hex2pal(hexstr:str) -> "QColor":
+    from util.env.qt_env import QPalette, QColor
     hexstr = hexstr.lstrip('#')
     return QColor(
         int(hexstr[:2],16),

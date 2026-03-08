@@ -7,7 +7,9 @@ Description :
     keyboard events.
 """
 # PySide imports
-from PyQt5.QtCore import Qt
+from util.env.qt_env import QtCore
+# from PyQt5.QtCore import Qt
+Qt = QtCore.Qt
 
 __all__ = ["QPanda3D_Keys_Translation"]
 

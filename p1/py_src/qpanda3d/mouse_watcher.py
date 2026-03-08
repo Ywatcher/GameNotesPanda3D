@@ -8,8 +8,11 @@ Description :
 """
 
 # from PySide6.QtGui import QCursor
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtGui import QCursor
+from util.env.qt_env import QtWidgets, QtGui
+# from PyQt5.QtWidgets import QWidget
+# from PyQt5.QtGui import QCursor
+QWidget = QtWidgets.QWidget
+QCursor = QtGui.QCursor
 from panda3d.core import MouseWatcher, LPoint2
 
 

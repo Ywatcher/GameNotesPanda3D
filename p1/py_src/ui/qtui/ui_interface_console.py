@@ -3,7 +3,8 @@
 from queue import Queue as PyQueue
 # from panda3d.core import Vec3
 from console.console import Console
-from PyQt5.QtCore import Qt
+from util.env.qt_env import Qt
+# from PyQt5.QtCore import Qt
 from qpanda3d.widgets import QPanda3DWidget
 from ui.qtui.managed_docks import ManagedDock
 import argparse

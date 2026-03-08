@@ -8,10 +8,25 @@ Description :
     You should first create the Panda3DWorkd object before creating this widget.
 """
 # PyQt imports
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from util.env.qt_env import QtCore, QtWidgets, QtGui, Qt
+QTimer = QtCore.QTimer
+QEvent = QtCore.QEvent
+QSize  = QtCore.QSize
+QPoint = QtCore.QPoint
+try:
+    pyqtSignal = QtCore.pyqtSignal
+except AttributeError:
+    pyqtSignal = QtCore.Signal
+QWidget = QtWidgets.QWidget
+QImage = QtGui.QImage
+QCursor = QtGui.QCursor
+QPainter = QtGui.QPainter 
+QTransform = QtGui.QTransform 
+
+# from PyQt5 import QtWidgets, QtGui
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+# from PyQt5.QtWidgets import *
 # Panda imports
 import builtins
 from panda3d.core import loadPrcFileData, Texture 
@@ -151,7 +166,8 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
 
         # size = self.panda3DWorld.cam.node().get_lens().get_film_size()
         size = self.panda3DView.get_lens().get_film_size()
-        self.initial_film_size = QSizeF(size.x, size.y)
+        print("size",size)
+        self.initial_film_size = QSize(int(size.x), int(size.y))
         self.initial_size = self.size()
 
 

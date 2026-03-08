@@ -1,6 +1,9 @@
 # -*- coding: utf-8-*-
 
-from PyQt5.QtWidgets import QWidget, QApplication
+# from PyQt5.QtWidgets import QWidget, QApplication
+from util.env.qt_env import QtWidgets 
+QWidget = QtWidgets.QWidget
+QApplication = QtWidgets.QApplication
 class QObserved:
     def __init__(self):
         if not hasattr(self, "isQObservedInit"):

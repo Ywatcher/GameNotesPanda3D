@@ -1,6 +1,8 @@
 # -*- coding: utf-8-*-
 from panda3d_game.input_source import ScreenRegionInput
-from PyQt5.QtCore import QRect
+from util.env.qt_env import QtCore
+# from PyQt5.QtCore import QRect
+QRect = QtCore.QRect
 
 class QWidgetScreenRegion(ScreenRegionInput):
     def __init__(self, widget):

@@ -1,7 +1,11 @@
 # -*- coding: utf-8-*-
 
-from PyQt5.QtCore import Qt, QObject, QEvent
-from PyQt5.QtWidgets import QPlainTextEdit
+from util.env.qt_env import QtWidgets, QtCore, Qt 
+QPlainTextEdit = QtWidgets.QPlainTextEdit
+QObject = QtCore.QObject
+QEvent  = QtCore.QEvent
+# from PyQt5.QtCore import Qt, QObject, QEvent
+# from PyQt5.QtWidgets import QPlainTextEdit
 from console import Console
 from util.log import Loggable
 from qtutil.qobserver import QObserved

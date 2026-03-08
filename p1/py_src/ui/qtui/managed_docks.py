@@ -1,11 +1,17 @@
 # -*- coding: utf-8-*-
+from util.env.qt_env import QtWidgets,Qt
 
+QMainWindow  = QtWidgets.QMainWindow
+QDockWidget  = QtWidgets.QDockWidget
+QWidget      = QtWidgets.QWidget
+QHBoxLayout  = QtWidgets.QHBoxLayout
+QLabel       = QtWidgets.QLabel
+# from PyQt5.QtWidgets import (
+        # QMainWindow, QDockWidget,QWidget,QHBoxLayout,
+        # QLabel
+        # )
 
-from PyQt5.QtWidgets import (
-        QMainWindow, QDockWidget,QWidget,QHBoxLayout,
-        QLabel
-        )
-from PyQt5.QtCore import Qt
+# from PyQt5.QtCore import Qt
 from util.name_manager import managed_name
 
 """

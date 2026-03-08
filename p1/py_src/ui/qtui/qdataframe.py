@@ -1,9 +1,12 @@
 # -*- coding: utf-8-*-
 import sys
 import pandas as pd
-
-from PyQt5.QtCore import Qt, QAbstractTableModel
-from PyQt5.QtWidgets import QApplication, QTableView
+from util.env.qt_env import QtWidgets, QtCore, Qt 
+QAbstractTableModel = QtCore.QAbstractTableModel
+QApplication = QtWidgets.QApplication
+QTableView   = QtWidgets.QTableView
+# from PyQt5.QtCore import Qt, QAbstractTableModel
+# from PyQt5.QtWidgets import QApplication, QTableView
 import weakref
 
 class DataFrameModel(QAbstractTableModel):

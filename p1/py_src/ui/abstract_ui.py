@@ -63,6 +63,14 @@ class AbstractGUI(ABC, Loggable):
         # TODO: multithread
         pass
 
+    def get_game(self) -> "ShowBase":
+        pass 
+    
+
+
+
+    
+
 
 
 

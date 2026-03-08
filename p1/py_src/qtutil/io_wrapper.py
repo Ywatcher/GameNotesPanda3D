@@ -1,6 +1,9 @@
 # -*- coding: utf-8-*-
 
-from PyQt5.QtWidgets import QTextEdit, QPlainTextEdit
+from util.env.qt_env import QtWidgets
+# from PyQt5.QtWidgets import QTextEdit, QPlainTextEdit
+QTextEdit = QtWidgets.QTextEdit
+QPlainTextEdit = QtWidgets.QPlainTextEdit
 import sys
 import io
 

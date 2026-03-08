@@ -9,10 +9,16 @@ Description :
 # from panda3d.core import
 
 # PyQt imports
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+# from PyQt5.QtCore import *
+
+# from PyQt5.QtGui import *
 # from .QtGui import QCursor
-from PyQt5.QtWidgets import *
+# from PyQt5.QtWidgets import *
+
+from util.env.qt_env import QtWidgets
+QWidget = QtWidgets.QWidget
+# from util.env.qt_env import QtGui, QtWidgets, QtCore
+
 # panda3d imports
 from panda3d.direct import throw_new_frame, init_app_for_gui
 # from panda3d.core import loadPrcFileData

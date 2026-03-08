@@ -1,8 +1,16 @@
 # -*- coding: utf-8-*-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-# from .QtGui import QCursor
-from PyQt5.QtWidgets import *
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+# # from .QtGui import QCursor
+# from PyQt5.QtWidgets import *
+# from PyQt5.QtCore import QObject, pyqtSignal
+from util.env.qt_env import QtCore, QtWidgets, QtGui
+QObject = QtCore.QObject
+QWidget = QtWidgets.QWidget
+try:
+    pyqtSignal = QtCore.pyqtSignal
+except AttributeError:
+    pyqtSignal = QtCore.Signal
 # panda3d imports
 # from panda3d.direct import throw_new_frame, init_app_for_gui
 # from panda3d.core import loadPrcFileData
@@ -18,7 +26,7 @@ from panda3d_game.app.app_ import ContextShowBase, ControlShowBase
 # Set up Panda environment
 
 import platform
-from .mouse_watcher import QMouseWatcher
+from qpanda3d.mouse_watcher import QMouseWatcher
 # from QPanda3D import Panda3DWorld
 import builtins
 from datetime import datetime
@@ -35,7 +43,7 @@ from direct.showbase.InputStateGlobal import inputState
 from panda3d_game.app import MultiViewShowBase, ControlShowBaseMultiView
 from panda3d_game.input_source import KeyboardInput, InputSource
 from qpanda3d.widget_screen_region import QWidgetScreenRegion
-from PyQt5.QtCore import QObject, pyqtSignal
+
 
 class QShowBaseMultiView(QObject, MultiViewShowBase):
     def __init__(
