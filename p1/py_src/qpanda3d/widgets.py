@@ -12,6 +12,7 @@ from util.env.qt_env import QtCore, QtWidgets, QtGui, Qt
 QTimer = QtCore.QTimer
 QEvent = QtCore.QEvent
 QSize  = QtCore.QSize
+QSizeF = QtCore.QSizeF
 QPoint = QtCore.QPoint
 try:
     pyqtSignal = QtCore.pyqtSignal
@@ -166,8 +167,7 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
 
         # size = self.panda3DWorld.cam.node().get_lens().get_film_size()
         size = self.panda3DView.get_lens().get_film_size()
-        print("size",size)
-        self.initial_film_size = QSize(int(size.x), int(size.y))
+        self.initial_film_size = QSizeF(size.x, size.y)
         self.initial_size = self.size()
 
 

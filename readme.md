@@ -61,11 +61,16 @@ qpanda3d
 vispy
 glfw # serves as vispy backend, can be replaced 
 	# by any other offscreen backend that works
+igraph-python
 ```
 
 see `dependencies.yaml` for the environment setting I am 
 currently using. However there are many packages that I
 planed to use before, but no longer required now. 
+
+# dependency for render tool-box 
+visualization: may use conda install conda-forge::cairocffi
+for graph visualization backend
 
 #  document for space game
 TODO<br>
