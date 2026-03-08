@@ -2,12 +2,14 @@
 
 from typing import Dict
 from util.env.qt_env import QtWidgets, QtCore, Qt 
+ # from PyQt5.QtWidgets import QTableView
 QWidget        = QtWidgets.QWidget
 QApplication   = QtWidgets.QApplication
 QMainWindow    = QtWidgets.QMainWindow
 QDockWidget    = QtWidgets.QDockWidget
 QTextEdit      = QtWidgets.QTextEdit
 QPlainTextEdit = QtWidgets.QPlainTextEdit
+QTableView     = QtWidgets.QTableView
 QObject = QtCore.QObject
 QEvent  = QtCore.QEvent
 # from PyQt5.QtWidgets import (
@@ -39,6 +41,14 @@ from ui.qtui.qlogger import *
 from ui.qtui.qdataframe import DataFrameModel
 from ui.qtui.managed_docks import ManagedDock, ManagedDockMainWindow
 from ui.qtui.ui_interface_console import MultiViewUIConsole
+
+
+
+_default_prc = """
+window-type offscreen
+load-display pandagl
+"""
+# the second line is required by new environment, when using jupyter
 
 class FocusFilter(QObject):
     # TODO: move to qtutil
@@ -209,7 +219,8 @@ class MultiViewQtGUI(ManagedDockMainWindow):
         self.panda3d = None
         self.synchronizer = Synchronizer(self.FPS)
         if prc is None:
-            prc =  "window-type offscreen"
+            # prc =  "window-type offscreen"
+            prc = _default_prc
         loadPrcFileData("",prc)
         self.console_widget = ConsoleWidget("")
         self.dock_bottom_left.setWidget(self.console_widget)
@@ -288,7 +299,7 @@ class MultiViewQtGUI(ManagedDockMainWindow):
     def show_widget_control_df(self, dock):
         # TODO show data frame on dock 
         # command: currently takes only "widget-control" as df name. since we do not have other dfs 
-        from PyQt5.QtWidgets import QTableView
+       
 
         # 创建 TableView 或复用已有的
         table_view = QTableView()
