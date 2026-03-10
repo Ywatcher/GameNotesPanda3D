@@ -12,7 +12,8 @@ with qt6; with build123d
  5313  conda install sympy
  5314  conda install conda-forge::cadquery
  5315  conda install scipy
- 5316  conda install conda-forge::build123d
+# ocp: 7.8
+ 5316  conda install conda-forge::build123d 0.9 
  5317  conda install vispy
  5320  conda install igraph
  5321  conda install networkx
@@ -22,6 +23,7 @@ with qt6; with build123d
   5329  conda install ipykernel
  5332  conda install conda-forge::glfw (x)
  pip install glfw
+pip install jupyter-cadquery
 
 
 (END)
