@@ -1,0 +1,10 @@
+# TODO 
+# linear control 
+
+
+# to avoid singularity:
+# Moore-Penrose pseudoinverse 
+# singularity-robust pseudoinverse 
+# offline-planning, preferred gimbal angle laws 
+# gradient or null motion methods
+# constraint based steering laws
