@@ -263,13 +263,16 @@ class QPanda3DWidget(QWidget, QObserved, _ManagedName):
 
     def resizeEvent(self, evt):
         # FIXME
+        buffer_width = evt.size().width()
+        buffer_height = evt.size().height()
         lens = self.panda3DView.get_lens()
-        lens.set_film_size(
-            self.initial_film_size.width() * evt.size().width()
-            / self.initial_size.width(),
-            self.initial_film_size.height() * evt.size().height()
-            / self.initial_size.height()
-        )
+        lens.set_aspect_ratio(buffer_width / buffer_height)
+        # lens.set_film_size(
+            # self.initial_film_size.width() * evt.size().width()
+            # / self.initial_size.width(),
+            # self.initial_film_size.height() * evt.size().height()
+            # / self.initial_size.height()
+        # )
         self.panda3DView.main_buffer.setSize(evt.size().width(), evt.size().height())
 
     closed = pyqtSignal(object)
