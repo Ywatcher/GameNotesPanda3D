@@ -1,5 +1,6 @@
 from abc import ABC 
 import torch
+from typing import List
 
 
 class CMGArray(ABC): 
@@ -37,6 +38,9 @@ class CMGArray(ABC):
         Compute CMG Jacobian matrix A, shape [3, n]
         A[:, i] = u_i x H_i
         """
+        # TODO: get availabilty 
+        # if less than 3 available CMG return False
+        # else do indexing
         H = self.currentArrayH         # [n, 3]
         u = self.currentGimbalDirections  # [n, 3]
 
@@ -64,4 +68,15 @@ class CMGArray(ABC):
         sigma_min = sigma[-1]
 
         return sigma_min < threshold
+
+    @property
+    def isMomentumSaturated(self) -> bool:
+        """whether CMG reaches the limit of momentum"""
+        # FIXME: H_max not implemented
+        H_norm = torch.linalg.norm(self.currentArrayH, dim=1)
+        return torch.any(H_norm >= self.H_max)
+
+    @property
+    def isCMGAvailable(self) -> List[bool]:
+        raise NotImplementedError
 

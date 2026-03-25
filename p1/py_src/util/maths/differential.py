@@ -66,7 +66,6 @@ def compute_uv_normals(
 
 
 def compute_vertex_normals_torch(vertices: torch.Tensor, triangles: torch.Tensor):
-    ):
     """
     Parameters
     ----------

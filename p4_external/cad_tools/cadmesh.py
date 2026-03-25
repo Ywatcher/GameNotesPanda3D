@@ -5,6 +5,7 @@ from panda3d.core import *
 from build123d import *
 from panda3d.core import NodePath
 from util.geometry import *
+from util.maths import *
 import torch
 
 try:

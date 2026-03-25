@@ -39,7 +39,7 @@ from panda3d.bullet import (
 
 from panda3d_game.app import ControlShowBase, ContextShowBase
 from panda3d_game.game_object import GameObject, PhysicsGameObject
-from panda3d_game.controller import PlayerController
+# from panda3d_game.controller import PlayerController
 
 # controller
 # player controller
