@@ -1,4 +1,5 @@
 *.pyc
+**/__pycache__/
 *.ipynb_checkpoints*
 *.swp
 */.ropeproject
@@ -15,3 +16,4 @@ p1/py_src/demos/.mypy_cache/*
 .virtual_documents/*
 *.data.json
 *.meta.json
+
